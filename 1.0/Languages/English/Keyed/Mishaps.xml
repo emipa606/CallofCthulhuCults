@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-
   <SacrificeFailMessage1>{0} sneezes during a sensitive chant.</SacrificeFailMessage1>
   <SacrificeFailMessage2>{0} forgets some of the words and makes them up.</SacrificeFailMessage2>
   <SacrificeFailMessage3>{0} starts screaming uncontrollably, as if someone else were controlling their voice.</SacrificeFailMessage3>
@@ -41,5 +40,4 @@
   <SacrificeFailMessage38>{0} stops his chanting as the earth shudders a moment as if by some cthonian growl.</SacrificeFailMessage38>
   <SacrificeFailMessage39>{0} feels rising accursed power inside themselves, mad and barely controllable.</SacrificeFailMessage39>
   <SacrificeFailMessage40>40</SacrificeFailMessage40>
-  
-  </LanguageData>
+</LanguageData>
