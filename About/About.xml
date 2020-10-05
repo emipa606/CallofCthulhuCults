@@ -25,6 +25,7 @@
   <loadAfter>
     <li>brrainz.harmony</li>
     <li>jecrell.jecstools</li>
+    <li>CETeam.CombatExtended</li>
   </loadAfter>
   <description>Update of Jecrells mod
 https://steamcommunity.com/sharedfiles/filedetails/?id=815039373
@@ -36,6 +37,10 @@ https://invite.gg/mlie
 
 Non-steam version:
 https://github.com/emipa606/CallofCthulhuCults
+
+- This is an unofficial port
+- This will be removed when/if Jecrell comes back
+- Added support for Combat Extended
 	
 --- Original Description ---
 Gameplay expansion for RimWorld.
