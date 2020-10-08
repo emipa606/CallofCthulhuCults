@@ -406,6 +406,7 @@
         <max>9</max>
       </watchBuildingStandDistanceRange>
       <watchBuildingStandRectWidth>9</watchBuildingStandRectWidth>
+      <buildingTags Inherit="False" />
     </building>
     <researchPrerequisites>
       <li>Forbidden_Altar</li>
@@ -479,6 +480,7 @@
         <max>9</max>
       </watchBuildingStandDistanceRange>
       <watchBuildingStandRectWidth>9</watchBuildingStandRectWidth>
+      <buildingTags Inherit="False" />
     </building>
     <researchPrerequisites>
       <li>Forbidden_Sacrifice</li>
@@ -552,6 +554,7 @@
         <max>9</max>
       </watchBuildingStandDistanceRange>
       <watchBuildingStandRectWidth>9</watchBuildingStandRectWidth>
+      <buildingTags Inherit="False" />
     </building>
     <researchPrerequisites>
       <li>Forbidden_Human</li>
