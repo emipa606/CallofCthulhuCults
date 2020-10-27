@@ -27,66 +27,87 @@
     <li>jecrell.jecstools</li>
     <li>CETeam.CombatExtended</li>
   </loadAfter>
-  <description>Update of Jecrells mod
+  <description>[img]https://i.imgur.com/WAEzk68.png[/img]
+Update of Jecrells mod
 https://steamcommunity.com/sharedfiles/filedetails/?id=815039373
-
-[img]https://i.imgur.com/GYswkZ7.png[/img]
-
-Support-chat:
-https://invite.gg/mlie
-
-Non-steam version:
-https://github.com/emipa606/CallofCthulhuCults
 
 - This is an unofficial port
 - This will be removed when/if Jecrell comes back
 - Added support for Combat Extended
-	
---- Original Description ---
-Gameplay expansion for RimWorld.
-You can now...
-found a cult.
-worship monstrous deities.
-make offerings and animal sacrifices.
-make human sacrifices in return for powerful spells (6 deitys and 30 spells in total, plus a dozen side effects).
+- Removed the production-tag on altars so they can be used in thronerooms
 
-This mod supports these languages:
+[img]https://i.imgur.com/7Gzt3Rg.png[/img]
+
+[table]
+	[tr]
+		[td][url=https://invite.gg/Mlie][img]https://i.imgur.com/zdzzBrc.png[/img][/url][/td]
+		[td][url=https://github.com/emipa606/CallofCthulhuCults][img]https://i.imgur.com/kTkpTOE.png[/img][/url][/td]
+	[/tr]
+[/table]
+	
+[img]https://i.imgur.com/NOW7jU1.png[/img]
+
+[h1]Gameplay expansion for RimWorld.[/h1]
+[b]You can now...[/b]
+[list]
+[*]	found a cult.
+[*]	worship monstrous deities.
+[*]	make offerings and animal sacrifices.
+[*]	make human sacrifices in return for powerful spells (6 deitys and 30 spells in total, plus a dozen side effects).
+[/list]
+
+[h1]This mod supports these languages: [/h1] 
 English, Korean 한국어 (밀수업자), and Russian русский язык (kr33man)
 
-::::: NOTICE :::::
+[h1]::::: NOTICE :::::
 ::::: THIS MOD NOW REQUIRES JECSTOOLS ::::::
-Download
+Download[/h1]
 http://steamcommunity.com/sharedfiles/filedetails/?id=932008009
 
-Recommended mods
-Cosmic Horrors (for summoning actual monsters)
-Industrial Age (for great lighting)
-Realistic Darkness (for great darkness)
+[h1]Recommended mods[/h1]
+[list]
+[*]	Cosmic Horrors (for summoning actual monsters)
+[*]	Industrial Age (for great lighting)
+[*]     Realistic Darkness (for great darkness)
+[/list]
+	
+[h1]How do I start a cult?[/h1]
+	1) Load the mod.
+	2) Play for a few days in-game.
+	3) One of your pawns will investigate something horrendous.
+	4) Build the forbidden research center.
+	5) Research the strange symbols until someone founds the cult.
+	6) Good luck.
 
-How do I start a cult?
-1) Load the mod.
-2) Play for a few days in-game.
-3) One of your pawns will investigate something horrendous.
-4) Build the forbidden research center.
-5) Research the strange symbols until someone founds the cult.
-6) Good luck.
+	
+[h1]Tips:[/h1]
+[list]
+[*] Cult-mindedness is a new feature under 'needs' that keeps track of how likely colonists are to become cultists.
+[*] Better apparel means greater worship results and higher success rates for your sacrifices.
+[*] Beware! If too many colonists are plotting against the cult, they might take matters into their own hands.
+[/list]	
 
+[list]
+[*]Want more? Check the [url=https://ludeon.com/forums/index.php?topic=26078.msg263991#msg263991]Call of Cthulhu WIP Thread[/url] on the Ludeon forums. 
+[/list]
+        	
+[h1]Special Thanks:[/h1]
 
-Tips:
-Cult-mindedness is a new feature under 'needs' that keeps track of how likely colonists are to become cultists.
-Better apparel means greater worship results and higher success rates for your sacrifices.
-Beware! If too many colonists are plotting against the cult, they might take matters into their own hands.
+	1000101 - Religious needs
+	Cpt. Ohu - Altar congregations
+	Skullywag - Helpfulness on #modding
+	Mrofa - Code for two-colored hoods
+	Justin C - Reanimation Code
+	Everyone on the modding Discord
+	
+	Want to contribute? Get in touch with us in the workshop or Ludeon forums.	
 
-Want more? Check the Call of Cthulhu WIP Thread[ludeon.com] on the Ludeon forums.
+Questions? Comments? Want to chat? Come join our Discord server. https://discord.gg/AaVFA7V
 
-Special Thanks:
+Pssst~~
+Still there?
+Jecrell here, lead programmer of the Call of Cthulhu mod series.
 
-1000101 - Religious needs
-Cpt. Ohu - Altar congregations
-Skullywag - Helpfulness on #modding
-Mrofa - Code for two-colored hoods
-Justin C - Reanimation Code
-Everyone on the modding Discord
-
-Want to contribute? Get in touch with us in the workshop or Ludeon forums.</description>
+Want to buy me a coffee? Fuel my madness for mods here below.
+https://patreon.com/jecrell</description>
 </ModMetaData>

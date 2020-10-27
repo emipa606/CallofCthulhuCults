@@ -45,6 +45,7 @@
     <selectable>true</selectable>
     <tickerType>Normal</tickerType>
     <rotatable>true</rotatable>
+    <clearBuildingArea>false</clearBuildingArea>
     <soundImpactDefault>BulletImpact_Metal</soundImpactDefault>
     <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
     <designationCategory>Structure</designationCategory>
@@ -104,6 +105,7 @@
     <selectable>true</selectable>
     <tickerType>Normal</tickerType>
     <rotatable>true</rotatable>
+    <clearBuildingArea>false</clearBuildingArea>
     <soundImpactDefault>BulletImpact_Metal</soundImpactDefault>
     <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
     <designationCategory>Structure</designationCategory>
