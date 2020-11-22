@@ -11,7 +11,7 @@ namespace CultOfCthulhu
     {
         protected override bool CanFireNowSub(IncidentParms parms)
         {
-            Map map = (Map)parms.target;
+            var map = (Map)parms.target;
             MapComponent_LocalCultTracker tracker = GetTracker(map);
             return tracker.CurrentSeedState <= CultSeedState.NeedSeed;
         }

@@ -42,7 +42,7 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
 
             //Generate the zombie
             ReanimatedPawn pawn = ReanimatedPawnUtility.DoGenerateZombiePawnFromSource(innerSacrifice(map));

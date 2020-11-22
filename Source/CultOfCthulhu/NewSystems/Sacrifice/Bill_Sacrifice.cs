@@ -20,13 +20,7 @@ namespace CultOfCthulhu
         public List<Pawn> Congregation { get => congregation; set => congregation = value; }
         public CosmicEntity Entity => entity;
         public IncidentDef Spell => spell;
-        public CultUtility.SacrificeType Type
-        {
-            get
-            {
-                return (Sacrifice?.RaceProps?.Animal ?? false) ? CultUtility.SacrificeType.animal : CultUtility.SacrificeType.human;
-            }
-        }
+        public CultUtility.SacrificeType Type => (Sacrifice?.RaceProps?.Animal ?? false) ? CultUtility.SacrificeType.animal : CultUtility.SacrificeType.human;
 
         public Bill_Sacrifice()
         {

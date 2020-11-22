@@ -22,14 +22,17 @@ namespace CultOfCthulhu
         {
             //Cthulhu.Utility.DebugReport("CanFire: " + this.def.defName);
             if (PetsToTransmogrify(map).Count<Pawn>() > 0)
+            {
                 return true;
+            }
+
             Messages.Message("No pets to transmogrify", MessageTypeDefOf.RejectInput);
             return false;
         }
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
             Transmogrify(map);
 
             return true;
@@ -66,7 +69,10 @@ namespace CultOfCthulhu
 
         public void Transmogrify(Map map, Pawn pawn = null, int count = 3)
         {
-            if (count <= 0) return;
+            if (count <= 0)
+            {
+                return;
+            }
             //No pawn? Okay, find one.
 
             if (pawn == null)
@@ -79,12 +85,12 @@ namespace CultOfCthulhu
             ), MessageTypeDefOf.NeutralEvent);
 
 
-            TargetingParameters parms = new TargetingParameters
+            var parms = new TargetingParameters
             {
                 canTargetPawns = true
             };
-            bool foundTarget = false;
-            int thisCount = count;
+            var foundTarget = false;
+            var thisCount = count;
 
             Find.Targeter.BeginTargeting(parms, delegate(LocalTargetInfo t)
             {

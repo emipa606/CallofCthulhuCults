@@ -23,15 +23,22 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (Pawn?.health?.hediffSet == null) return false;
+                if (Pawn?.health?.hediffSet == null)
+                {
+                    return false;
+                }
+
                 return Pawn.health.hediffSet.HasHediff(CultsDefOf.Cults_PsionicBrain);
             }
         }
-        
+
         /// <summary>
         /// Gives this component class to the character if they are psionic.
         /// </summary>
-        public override bool TryTransformPawn() => IsPsionic;
+        public override bool TryTransformPawn()
+        {
+            return IsPsionic;
+        }
 
         /// <summary>
         /// After getting the component class, checks 200 ticks
@@ -41,7 +48,11 @@ namespace CultOfCthulhu
         /// </summary>
         public override void CompTick()
         {
-            if (Pawn?.Spawned != true) return;
+            if (Pawn?.Spawned != true)
+            {
+                return;
+            }
+
             if (Find.TickManager.TicksGame > 200)
             {
                 if (IsPsionic)
@@ -61,8 +72,16 @@ namespace CultOfCthulhu
         /// </summary>
         private void PostInitializeTick()
         {
-            if (Pawn?.Spawned != true) return;
-            if (Pawn?.story == null) return;
+            if (Pawn?.Spawned != true)
+            {
+                return;
+            }
+
+            if (Pawn?.story == null)
+            {
+                return;
+            }
+
             firstTick = true;
             if (!gaveAbilities)
             {

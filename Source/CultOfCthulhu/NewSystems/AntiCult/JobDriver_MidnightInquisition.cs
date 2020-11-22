@@ -33,21 +33,9 @@ namespace CultOfCthulhu
         private readonly TargetIndex InquisitorIndex = TargetIndex.A;
         private readonly TargetIndex PreacherIndex = TargetIndex.B;
 
-        protected Pawn Preacher
-        {
-            get
-            {
-                return job.GetTarget(TargetIndex.B).Thing as Pawn;
-            }
-        }
+        protected Pawn Preacher => job.GetTarget(TargetIndex.B).Thing as Pawn;
 
-        protected Pawn Inquisitor
-        {
-            get
-            {
-                return (Pawn)job.GetTarget(TargetIndex.A).Thing;
-            }
-        }
+        protected Pawn Inquisitor => (Pawn)job.GetTarget(TargetIndex.A).Thing;
 
         public override void ExposeData()
         {
@@ -61,7 +49,7 @@ namespace CultOfCthulhu
         protected override IEnumerable<Toil> MakeNewToils()
         {
             //
-            Toil toil = new Toil
+            var toil = new Toil
             {
                 initAction = delegate
                 {
@@ -80,7 +68,7 @@ namespace CultOfCthulhu
 
             if (Preacher.jobs.curDriver.asleep)
             {
-                Toil watchToil = new Toil
+                var watchToil = new Toil
                 {
                     defaultCompleteMode = ToilCompleteMode.Delay,
                     defaultDuration = job.def.joyDuration
@@ -96,7 +84,7 @@ namespace CultOfCthulhu
             void hitAction()
             {
                 Pawn prey = Preacher;
-                bool surpriseAttack = firstHit;
+                var surpriseAttack = firstHit;
                 if (pawn.meleeVerbs.TryMeleeAttack(prey, job.verbToUse, surpriseAttack))
                 {
                     if (!notifiedPlayer && PawnUtility.ShouldSendNotificationAbout(prey))

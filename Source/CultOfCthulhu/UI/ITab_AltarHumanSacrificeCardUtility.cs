@@ -30,10 +30,10 @@ namespace CultOfCthulhu
         public static void DrawTempleCard(Rect rect, Building_SacrificialAltar altar)
         {
             GUI.BeginGroup(rect);
-            Rect rect3 = new Rect(2f, 0f, ITab_AltarSacrificesCardUtility.ColumnSize, ITab_AltarSacrificesCardUtility.ButtonSize);
+            var rect3 = new Rect(2f, 0f, ITab_AltarSacrificesCardUtility.ColumnSize, ITab_AltarSacrificesCardUtility.ButtonSize);
             Widgets.Label(rect3, "Deity".Translate() + ": ");
             rect3.xMin = rect3.center.x - 15f;
-            string label2 = ITab_AltarCardUtility.DeityLabel(altar, ITab_AltarCardUtility.DeityType.SacrificeDeity);
+            var label2 = ITab_AltarCardUtility.DeityLabel(altar, ITab_AltarCardUtility.DeityType.SacrificeDeity);
             if (Widgets.ButtonText(rect3, label2, true, false, true))
             {
                 ITab_AltarCardUtility.OpenDeitySelectMenu(altar, ITab_AltarCardUtility.DeityType.SacrificeDeity);
@@ -49,7 +49,7 @@ namespace CultOfCthulhu
             rect4.x += 2f;
             Widgets.Label(rect4, "Executioner".Translate() + ": ");
             rect4.xMin = rect4.center.x - 15f;
-            string label3 = ITab_AltarCardUtility.ExecutionerLabel(altar);
+            var label3 = ITab_AltarCardUtility.ExecutionerLabel(altar);
             if (Widgets.ButtonText(rect4, label3, true, false, true))
             {
                 ITab_AltarCardUtility.OpenActorSelectMenu(altar, ITab_AltarCardUtility.ActorType.executioner);
@@ -63,7 +63,7 @@ namespace CultOfCthulhu
             rect5.width = ITab_AltarSacrificesCardUtility.ColumnSize;
             Widgets.Label(rect5, "Sacrifice".Translate() + ": ");
             rect5.xMin = rect5.center.x - 15f;
-            string label4 = ITab_AltarCardUtility.SacrificeLabel(altar);
+            var label4 = ITab_AltarCardUtility.SacrificeLabel(altar);
             if (Widgets.ButtonText(rect5, label4, true, false, true))
             {
                 ITab_AltarCardUtility.OpenActorSelectMenu(altar, ITab_AltarCardUtility.ActorType.prisoner);
@@ -78,7 +78,7 @@ namespace CultOfCthulhu
             rect6.yMax += ITab_AltarSacrificesCardUtility.ButtonSize + 15f;
             Widgets.Label(rect6, "Cults_Spell".Translate() + ": ");
             rect6.xMin = rect6.center.x - 15f;
-            string label5 = SpellLabel(altar);
+            var label5 = SpellLabel(altar);
             if (Widgets.ButtonText(rect6, label5, true, false, true))
             {
                 OpenSpellSelectMenu(altar);
@@ -287,7 +287,7 @@ namespace CultOfCthulhu
 
         public static void OpenSpellSelectMenu(Building_SacrificialAltar altar)
         {
-            List<FloatMenuOption> list = new List<FloatMenuOption>
+            var list = new List<FloatMenuOption>
             {
                 new FloatMenuOption("(" + "NoneLower".Translate() + ")", delegate
                 {

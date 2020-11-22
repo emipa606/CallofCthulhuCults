@@ -13,13 +13,7 @@ namespace CultOfCthulhu
 
         public PawnFlyer pawnFlyer;
 
-        public PawnFlyerDef PawnFlyerDef
-        {
-            get
-            {
-                return pawnFlyer.def as PawnFlyerDef;
-            }
-        }
+        public PawnFlyerDef PawnFlyerDef => pawnFlyer.def as PawnFlyerDef;
 
         public void GetChildHolders(List<IThingHolder> outChildren)
         {
@@ -39,10 +33,7 @@ namespace CultOfCthulhu
 
         public ActiveDropPodInfo Contents
         {
-            get
-            {
-                return contents;
-            }
+            get => contents;
             set
             {
                 if (contents != null)
@@ -105,7 +96,7 @@ namespace CultOfCthulhu
             base.Destroy(mode);
             if (mode == DestroyMode.KillFinalize)
             {
-                for (int i = 0; i < 1; i++)
+                for (var i = 0; i < 1; i++)
                 {
                     Thing thing = ThingMaker.MakeThing(ThingDefOf.ChunkSlagSteel, null);
                     GenPlace.TryPlaceThing(thing, Position, map, ThingPlaceMode.Near, null);
@@ -135,7 +126,10 @@ namespace CultOfCthulhu
             foreach (Thing thing in contents.innerContainer.InRandomOrder())
             {
                 //Log.Message("1");
-                if (thing.Spawned) continue; //Avoid errors. We already spawned our pawnFlyer.
+                if (thing.Spawned)
+                {
+                    continue; //Avoid errors. We already spawned our pawnFlyer.
+                }
                 //Log.Message("2");
 
                 //this.contents.innerContainer.TryDrop(thing, ThingPlaceMode.Near, out thing2);
@@ -179,7 +173,7 @@ namespace CultOfCthulhu
             
             if (contents.leaveSlag)
             {
-                for (int j = 0; j < 1; j++)
+                for (var j = 0; j < 1; j++)
                 {
                     Thing thing3 = ThingMaker.MakeThing(ThingDefOf.ChunkSlagSteel, null);
                     GenPlace.TryPlaceThing(thing3, Position, Map, ThingPlaceMode.Near, null);

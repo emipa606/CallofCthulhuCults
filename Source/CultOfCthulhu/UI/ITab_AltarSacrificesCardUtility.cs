@@ -45,7 +45,7 @@ namespace CultOfCthulhu
 
         public static void DrawRename(Building_SacrificialAltar altar)
         {
-            Rect rectRename = new Rect(SacrificeCardSize.x - 85f, 0f, 30f, 30f);
+            var rectRename = new Rect(SacrificeCardSize.x - 85f, 0f, 30f, 30f);
             TooltipHandler.TipRegion(rectRename, "RenameTemple".Translate());
             if (Widgets.ButtonImage(rectRename, Buttons.RenameTex))
             {
@@ -59,9 +59,9 @@ namespace CultOfCthulhu
 
             if (CultTracker.Get.PlayerCult != null)
             {
-                float cultLabelWidth = Text.CalcSize(CultTracker.Get.PlayerCult.name).x;
+                var cultLabelWidth = Text.CalcSize(CultTracker.Get.PlayerCult.name).x;
 
-                Rect rect = new Rect(inRect);
+                var rect = new Rect(inRect);
                 rect = rect.ContractedBy(14f);
                 rect.height = 30f;
 
@@ -71,7 +71,7 @@ namespace CultOfCthulhu
 
                 DrawRename(altar);
 
-                Rect rect2 = new Rect(inRect)
+                var rect2 = new Rect(inRect)
                 {
                     yMin = rect.yMax + 10,
                     height = 22f
@@ -89,22 +89,22 @@ namespace CultOfCthulhu
                     Find.WindowStack.Add(new Dialog_RenameCult(altar.Map));
                 }
 
-                Rect rect3 = new Rect(inRect)
+                var rect3 = new Rect(inRect)
                 {
                     //rect3.height -= 45f;
                     //rect3.yMin += 45f;
                     yMin = rect2.yMax + 45f,
                     height = 550f
                 };
-                List<TabRecord> list = new List<TabRecord>();
-                TabRecord item = new TabRecord("Offering".Translate(), delegate
+                var list = new List<TabRecord>();
+                var item = new TabRecord("Offering".Translate(), delegate
                 {
                     tab = SacrificeCardTab.Offering;
                 }, tab == SacrificeCardTab.Offering);
                 list.Add(item);
                 if (altar.currentFunction >= Building_SacrificialAltar.Function.Level2)
                 {
-                    TabRecord item2 = new TabRecord("Animal".Translate(), delegate
+                    var item2 = new TabRecord("Animal".Translate(), delegate
                     {
                         tab = SacrificeCardTab.Animal;
                     }, tab == SacrificeCardTab.Animal);
@@ -113,7 +113,7 @@ namespace CultOfCthulhu
                 }
                 if (altar.currentFunction >= Building_SacrificialAltar.Function.Level3)
                 {
-                    TabRecord item3 = new TabRecord("Human".Translate(), delegate
+                    var item3 = new TabRecord("Human".Translate(), delegate
                     {
                         tab = SacrificeCardTab.Human;
                     }, tab == SacrificeCardTab.Human);
@@ -124,7 +124,7 @@ namespace CultOfCthulhu
             }
             else
             {
-                Rect rect = new Rect(inRect);
+                var rect = new Rect(inRect);
                 rect = rect.ContractedBy(14f);
                 rect.height = 30f;
 

@@ -34,21 +34,9 @@ namespace CultOfCthulhu
         private readonly TargetIndex InvestigatorIndex = TargetIndex.A;
         private readonly TargetIndex InvestigateeIndex = TargetIndex.B;
 
-        protected Thing Investigatee
-        {
-            get
-            {
-                return job.GetTarget(TargetIndex.B).Thing;
-            }
-        }
+        protected Thing Investigatee => job.GetTarget(TargetIndex.B).Thing;
 
-        protected Pawn Investigator
-        {
-            get
-            {
-                return (Pawn)job.GetTarget(TargetIndex.A).Thing;
-            }
-        }
+        protected Pawn Investigator => (Pawn)job.GetTarget(TargetIndex.A).Thing;
 
         public override void ExposeData()
         {
@@ -67,7 +55,7 @@ namespace CultOfCthulhu
 
             yield return Toils_Goto.GotoCell(Investigatee.InteractionCell, PathEndMode.OnCell);
 
-            Toil watchToil = new Toil
+            var watchToil = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = job.def.joyDuration

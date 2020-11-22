@@ -51,8 +51,11 @@ namespace CallOfCthulhu
 				buttonAText = "OK".Translate();
 			}
 			if (entity.Def.Portrait != "")
-				image = ContentFinder<Texture2D>.Get(entity.Def.Portrait);
-			forcePause = true;
+            {
+                image = ContentFinder<Texture2D>.Get(entity.Def.Portrait);
+            }
+
+            forcePause = true;
 			absorbInputAroundWindow = true;
 			creationRealTime = RealTime.LastRealTime;
 			onlyOneOfTypeAllowed = false;
@@ -60,15 +63,9 @@ namespace CallOfCthulhu
 			closeOnCancel = true;
 		}
 
-		public override Vector2 InitialSize
-		{
-			get
-			{
-				return new Vector2(InitialWidth, InitialHeight);
-			}
-		}
+        public override Vector2 InitialSize => new Vector2(InitialWidth, InitialHeight);
 
-		private float get_TimeUntilInteractive()
+        private float get_TimeUntilInteractive()
 		{
 			return interactionDelay - (Time.realtimeSinceStartup - creationRealTime);
 		}
@@ -80,7 +77,7 @@ namespace CallOfCthulhu
 
 		public override void DoWindowContents(Rect inRect)
 		{
-			float num = inRect.y;
+			var num = inRect.y;
 			if (!title.NullOrEmpty())
 			{
 				Text.Font = (GameFont)2;
@@ -98,21 +95,21 @@ namespace CallOfCthulhu
 				num += 42f;
 			}
 			Text.Font = GameFont.Small;
-			Rect outRect = new Rect(inRect.x, num, inRect.width, inRect.height - 35f - 5f - num);
-			float width = outRect.width - 16f;
-			Rect viewRect = new Rect(0f, num, width, Text.CalcHeight(text, width));
+			var outRect = new Rect(inRect.x, num, inRect.width, inRect.height - 35f - 5f - num);
+			var width = outRect.width - 16f;
+			var viewRect = new Rect(0f, num, width, Text.CalcHeight(text, width));
 			Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect, true);
 			Widgets.Label(new Rect(0f, num, viewRect.width, viewRect.height), text);
 			Widgets.EndScrollView();
-			int num2 = (!buttonCText.NullOrEmpty()) ? 3 : 2;
-			float num3 = inRect.width / (float)num2;
-			float width2 = num3 - 20f;
+			var num2 = (!buttonCText.NullOrEmpty()) ? 3 : 2;
+			var num3 = inRect.width / num2;
+			var width2 = num3 - 20f;
 			if (buttonADestructive)
 			{
 				GUI.color = new Color(1f, 0.3f, 0.35f);
 			}
-			string label = (!get_InteractionDelayExpired()) ? (buttonAText + "(" + Mathf.Ceil(get_TimeUntilInteractive()).ToString("F0") + ")") : buttonAText;
-			if (Widgets.ButtonText(new Rect(num3 * (float)(num2 - 1) + 10f, inRect.height - 35f, width2, 35f), label, true, false, true))
+			var label = (!get_InteractionDelayExpired()) ? (buttonAText + "(" + Mathf.Ceil(get_TimeUntilInteractive()).ToString("F0") + ")") : buttonAText;
+			if (Widgets.ButtonText(new Rect((num3 * (num2 - 1)) + 10f, inRect.height - 35f, width2, 35f), label, true, false, true))
 			{
 				if (get_InteractionDelayExpired())
 				{

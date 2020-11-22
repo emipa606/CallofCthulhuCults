@@ -90,6 +90,8 @@
     <joyGainRate>1</joyGainRate>
     <joyMaxParticipants>20</joyMaxParticipants>
     <joyKind>Worship</joyKind>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
   </JobDef>
   <JobDef>
     <defName>Cults_ReflectOnWorship</defName>
@@ -99,6 +101,8 @@
     <joyGainRate>1</joyGainRate>
     <joyMaxParticipants>20</joyMaxParticipants>
     <joyKind>Worship</joyKind>
+    <casualInterruptible>false</casualInterruptible>
+    <suspendable>false</suspendable>
   </JobDef>
   <!-- Let's go -->
   <JobDef>

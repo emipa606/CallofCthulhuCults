@@ -56,7 +56,7 @@ namespace CultOfCthulhu
             //Check if we have level 0 skills
             List<SkillDef> allDefsListForReading = DefDatabase<SkillDef>.AllDefsListForReading;
             HarmonyPatches.DebugMessage($"AllDefsForReading");
-            for (int i = 0; i < allDefsListForReading.Count; i++)
+            for (var i = 0; i < allDefsListForReading.Count; i++)
             {
                 SkillDef skillDef = allDefsListForReading[i];
                 SkillRecord skill = TempExecutioner(map).skills.GetSkill(skillDef);
@@ -99,21 +99,21 @@ namespace CultOfCthulhu
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             HarmonyPatches.DebugMessage("Chaos Theory attempted");
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
             Pawn pawn = map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.SacrificeData.Executioner;
             HarmonyPatches.DebugMessage("Executioner selected");
             if (HasIncapableWorkTags(pawn))
             {
                 HarmonyPatches.DebugMessage($"{pawn.Label} has incapable worktags and must be remade.");
                 HarmonyPatches.DebugMessage("Childhood redo");
-                bool fixedChildhood = false;
+                var fixedChildhood = false;
                 _ = new List<WorkTypeDef>(pawn.story.childhood.DisabledWorkTypes);
                 HarmonyPatches.DebugMessage($"childwork list defined");
                 while (fixedChildhood == false)
                 {
                     IEnumerable<WorkTypeDef> childWorkList;
                     //200 tries to set to 0 disabled work types
-                    for (int i = 0; i < 200; i++)
+                    for (var i = 0; i < 200; i++)
                     {
                         childWorkList = pawn.story.childhood.DisabledWorkTypes;
                         if (childWorkList.Count<WorkTypeDef>() == 0) { goto FirstLeap; }
@@ -121,7 +121,7 @@ namespace CultOfCthulhu
                     }
 
                     //200 tries to set to 1 disabled work type
-                    for (int i = 0; i < 200; i++)
+                    for (var i = 0; i < 200; i++)
                     {
                         childWorkList = pawn.story.childhood.DisabledWorkTypes;
                         if (childWorkList.Count<WorkTypeDef>() <= 1) { goto FirstLeap; }
@@ -134,20 +134,20 @@ namespace CultOfCthulhu
 
                 HarmonyPatches.DebugMessage($"First leap");
                 //Your adulthood is out
-                bool fixedAdulthood = false;
+                var fixedAdulthood = false;
                 _ = pawn.story.adulthood.DisabledWorkTypes;
                 while (fixedAdulthood == false)
                 {
                     IEnumerable<WorkTypeDef> adultWorkList;
                     //Try 200 times to get to 0 disabled work types
-                    for (int i = 0; i < 200; i++)
+                    for (var i = 0; i < 200; i++)
                     {
                         adultWorkList = pawn.story.adulthood.DisabledWorkTypes;
                         if (adultWorkList?.Count<WorkTypeDef>() == 0) { goto SecondLeap; }
                         pawn.story.adulthood = BackstoryDatabase.RandomBackstory(BackstorySlot.Adulthood);
                     }
                     //Try 200 times to get to 1 disabled work types
-                    for (int i = 0; i < 200; i++)
+                    for (var i = 0; i < 200; i++)
                     {
                         adultWorkList = pawn.story.adulthood.DisabledWorkTypes;
                         if (adultWorkList?.Count<WorkTypeDef>() <= 1) { goto SecondLeap; }
@@ -165,7 +165,7 @@ namespace CultOfCthulhu
                 //pawn.story.GenerateSkillsFromBackstory();
                 List<SkillDef> allDefsListForReading = DefDatabase<SkillDef>.AllDefsListForReading;
 
-                for (int i = 0; i < allDefsListForReading.Count; i++)
+                for (var i = 0; i < allDefsListForReading.Count; i++)
                 {
                     SkillDef skillDef = allDefsListForReading[i];
                     SkillRecord skill = pawn.skills.GetSkill(skillDef);

@@ -40,7 +40,7 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
 
             //Get a random cell.
             IntVec3 intVec = DropCellFinder.RandomDropSpot((Map)parms.target);

@@ -25,7 +25,10 @@ namespace CultOfCthulhu
         {
             settlement = newSettlement;
             influence = newInfluence;
-            if (newInfluence == 1.0f) dominant = true;
+            if (newInfluence == 1.0f)
+            {
+                dominant = true;
+            }
         }
 
         public void ExposeData()

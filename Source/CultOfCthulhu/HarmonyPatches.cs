@@ -16,7 +16,10 @@ namespace CultOfCthulhu
 
         public static void DebugMessage(string s)
         {
-            if (DebugMode) Log.Message(s);
+            if (DebugMode)
+            {
+                Log.Message(s);
+            }
         }
 
         static HarmonyPatches()
@@ -64,7 +67,7 @@ namespace CultOfCthulhu
 
         public static string SpeedPercentString(float extraPathTicks)
         {
-            float f = 13f / (extraPathTicks + 13f);
+            var f = 13f / (extraPathTicks + 13f);
             return f.ToStringPercent();
         }
 
@@ -82,27 +85,27 @@ namespace CultOfCthulhu
                 fert.ActiveCells.Contains(c))
             {
                 //Original Variables
-                Vector2 BotLeft = new Vector2(15f, 65f);
+                var BotLeft = new Vector2(15f, 65f);
 
-                GenUI.DrawTextWinterShadow(new Rect(256f, (float) (UI.screenHeight - 256), -256f, 256f));
+                GenUI.DrawTextWinterShadow(new Rect(256f, UI.screenHeight - 256, -256f, 256f));
                 Text.Font = GameFont.Small;
                 GUI.color = new Color(1f, 1f, 1f, 0.8f);
 
-                float num = 0f;
+                var num = 0f;
                 Rect rect;
                 if (c.Fogged(Find.CurrentMap))
                 {
-                    rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                    rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
                     Widgets.Label(rect, "Undiscovered".Translate());
                     GUI.color = Color.white;
                     return false;
                 }
-                rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
-                int num2 = Mathf.RoundToInt(Find.CurrentMap.glowGrid.GameGlowAt(c) * 100f);
-                string[] glowStrings = Traverse.Create(__instance).Field("glowStrings").GetValue<string[]>();
+                rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                var num2 = Mathf.RoundToInt(Find.CurrentMap.glowGrid.GameGlowAt(c) * 100f);
+                var glowStrings = Traverse.Create(__instance).Field("glowStrings").GetValue<string[]>();
                 Widgets.Label(rect, glowStrings[num2]);
                 num += 19f;
-                rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
                 TerrainDef terrain = c.GetTerrain(Find.CurrentMap);
                 //string SpeedPercentString = Traverse.Create(__instance).Method("SpeedPercentString", (float)terrain.pathCost).GetValue<string>();
                 //TerrainDef cachedTerrain = Traverse.Create(__instance).Field("cachedTerrain").GetValue<TerrainDef>();
@@ -111,13 +114,13 @@ namespace CultOfCthulhu
 
                 //if (terrain != cachedTerrain)
                 //{
-                float fertNum = Find.CurrentMap.fertilityGrid.FertilityAt(c);
+                var fertNum = Find.CurrentMap.fertilityGrid.FertilityAt(c);
                 string str = (fertNum <= 0.0001)
                     ? TaggedString.Empty
                     : (" " + "FertShort".Translate() + " " + fertNum.ToStringPercent());
                 string cachedTerrainString = terrain.LabelCap + ((terrain.passability == Traversability.Impassable)
                                           ? null
-                                          : (" (" + "WalkSpeed".Translate(SpeedPercentString((float)terrain.pathCost) + str + ")")));
+                                          : (" (" + "WalkSpeed".Translate(SpeedPercentString(terrain.pathCost) + str + ")")));
                 //cachedTerrain = terrain;
                 //}
                 Widgets.Label(rect, cachedTerrainString);
@@ -125,31 +128,31 @@ namespace CultOfCthulhu
                 Zone zone = c.GetZone(Find.CurrentMap);
                 if (zone != null)
                 {
-                    rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
-                    string label = zone.label;
+                    rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                    var label = zone.label;
                     Widgets.Label(rect, label);
                     num += 19f;
                 }
-                float depth = Find.CurrentMap.snowGrid.GetDepth(c);
+                var depth = Find.CurrentMap.snowGrid.GetDepth(c);
                 if (depth > 0.03f)
                 {
-                    rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                    rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
                     SnowCategory snowCategory = SnowUtility.GetSnowCategory(depth);
                     string label2 = SnowUtility.GetDescription(snowCategory) + 
                         " (" + 
-                        "WalkSpeed".Translate(SpeedPercentString((float) SnowUtility.MovementTicksAddOn(snowCategory))) + 
+                        "WalkSpeed".Translate(SpeedPercentString(SnowUtility.MovementTicksAddOn(snowCategory))) + 
                         ")";
                     Widgets.Label(rect, label2);
                     num += 19f;
                 }
                 List<Thing> thingList = c.GetThingList(Find.CurrentMap);
-                for (int i = 0; i < thingList.Count; i++)
+                for (var i = 0; i < thingList.Count; i++)
                 {
                     Thing thing = thingList[i];
                     if (thing.def.category != ThingCategory.Mote)
                     {
-                        rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
-                        string labelMouseover = thing.LabelMouseover;
+                        rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                        var labelMouseover = thing.LabelMouseover;
                         Widgets.Label(rect, labelMouseover);
                         num += 19f;
                     }
@@ -157,7 +160,7 @@ namespace CultOfCthulhu
                 RoofDef roof = c.GetRoof(Find.CurrentMap);
                 if (roof != null)
                 {
-                    rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                    rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
                     Widgets.Label(rect, roof.LabelCap);
                 }
                 GUI.color = Color.white;
@@ -192,25 +195,25 @@ namespace CultOfCthulhu
         // Verse.PawnRenderer
         public static void DrawAt_PostFix(Pawn_DrawTracker __instance, Vector3 loc)
         {
-            Pawn pawn = (Pawn) AccessTools.Field(typeof(Pawn_DrawTracker), "pawn").GetValue(__instance);
+            var pawn = (Pawn) AccessTools.Field(typeof(Pawn_DrawTracker), "pawn").GetValue(__instance);
             if (pawn?.GetComp<CompTransmogrified>() is CompTransmogrified compTrans && compTrans.IsTransmogrified &&
                 pawn.Spawned)
             {
                 Material matSingle;
                 matSingle = CultsDefOf.Cults_TransmogAura.graphicData.Graphic.MatSingle;
-                float angle = pawn.Rotation.AsAngle + (compTrans.Hediff.UndulationTicks * 100);
+                var angle = pawn.Rotation.AsAngle + (compTrans.Hediff.UndulationTicks * 100);
 
-                float xCap = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.x + 0.5f;
-                float zCap = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.y + 0.5f;
+                var xCap = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.x + 0.5f;
+                var zCap = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.y + 0.5f;
 
-                float x = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.x;
-                float z = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.y;
-                float drawX = Mathf.Clamp((x + compTrans.Hediff.UndulationTicks) * compTrans.Hediff.graphicDiv, 0.01f,
+                var x = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.x;
+                var z = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.y;
+                var drawX = Mathf.Clamp((x + compTrans.Hediff.UndulationTicks) * compTrans.Hediff.graphicDiv, 0.01f,
                     xCap);
-                float drawY = Altitudes.AltitudeFor(AltitudeLayer.Terrain);
-                float drawZ = Mathf.Clamp((z + compTrans.Hediff.UndulationTicks) * compTrans.Hediff.graphicDiv, 0.01f,
+                var drawY = Altitudes.AltitudeFor(AltitudeLayer.Terrain);
+                var drawZ = Mathf.Clamp((z + compTrans.Hediff.UndulationTicks) * compTrans.Hediff.graphicDiv, 0.01f,
                     zCap);
-                Vector3 s = new Vector3(drawX, drawY, drawZ);
+                var s = new Vector3(drawX, drawY, drawZ);
                 Matrix4x4 matrix = default;
                 matrix.SetTRS(loc, Quaternion.AngleAxis(angle, Vector3.up), s);
                 Graphics.DrawMesh(MeshPool.plane10Back, matrix, matSingle, 0);
@@ -247,10 +250,17 @@ namespace CultOfCthulhu
 
         public static void InitializeComps_PostFix(ThingWithComps __instance)
         {
-            if (!(__instance is Pawn p)) return;
-            if (p.RaceProps == null || (!p.RaceProps.Animal)) return;
+            if (!(__instance is Pawn p))
+            {
+                return;
+            }
 
-            ThingComp thingComp = (ThingComp) Activator.CreateInstance(typeof(CompTransmogrified));
+            if (p.RaceProps == null || (!p.RaceProps.Animal))
+            {
+                return;
+            }
+
+            var thingComp = (ThingComp) Activator.CreateInstance(typeof(CompTransmogrified));
             thingComp.parent = __instance;
             var comps = AccessTools.Field(typeof(ThingWithComps), "comps").GetValue(__instance);
             if (comps != null)

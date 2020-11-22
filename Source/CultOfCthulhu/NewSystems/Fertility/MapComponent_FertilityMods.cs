@@ -78,7 +78,7 @@ namespace CultOfCthulhu
             get
             {
                 MapComponent_FertilityMods MapComponent_FertilityMods = map.components.OfType<MapComponent_FertilityMods>().FirstOrDefault<MapComponent_FertilityMods>();
-                bool flag = MapComponent_FertilityMods == null;
+                var flag = MapComponent_FertilityMods == null;
                 if (flag)
                 {
                     MapComponent_FertilityMods = new MapComponent_FertilityMods(map);
@@ -102,7 +102,7 @@ namespace CultOfCthulhu
         {
             listNeedsUpdate = true;
 
-            List<IntVec3> cells = GrowableCells.ToList();
+            var cells = GrowableCells.ToList();
             if (cells == null)
             {
                 Log.Error("Missing Growable Cells List");

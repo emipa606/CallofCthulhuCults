@@ -105,10 +105,17 @@ namespace CultOfCthulhu
 
                 SkipRoom:
 
-                Toil altarToil = new Toil();
+                var altarToil = new Toil();
                 altarToil.defaultCompleteMode = ToilCompleteMode.Delay;
-                if (atTypeWriter) altarToil.PlaySustainerOrSound(SoundDef.Named("Estate_SoundManualTypewriter"));
-                else altarToil.PlaySustainerOrSound(SoundDef.Named("PencilWriting"));
+                if (atTypeWriter)
+                {
+                    altarToil.PlaySustainerOrSound(SoundDef.Named("Estate_SoundManualTypewriter"));
+                }
+                else
+                {
+                    altarToil.PlaySustainerOrSound(SoundDef.Named("PencilWriting"));
+                }
+
                 altarToil.WithProgressBarToilDelay(TargetIndex.A);
                 altarToil.defaultDuration = job.def.joyDuration;
                 altarToil.AddPreTickAction(() =>
@@ -125,7 +132,7 @@ namespace CultOfCthulhu
                 });
                 yield return altarToil;
 
-                Toil finishedAction = new Toil
+                var finishedAction = new Toil
                 {
                     defaultCompleteMode = ToilCompleteMode.Instant,
                     initAction = delegate
@@ -138,7 +145,9 @@ namespace CultOfCthulhu
                 AddFinishAction(() =>
                 {
                     if (Map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedState == CultSeedState.FinishedWriting)
+                    {
                         CultUtility.FinishedTheBook(pawn);
+                    }
                 });
             }
         }

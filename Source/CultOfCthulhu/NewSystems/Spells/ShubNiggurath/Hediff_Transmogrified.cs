@@ -9,8 +9,7 @@ namespace CultOfCthulhu
 {
     public class Hediff_Transmogrified : Hediff_Implant
     {
-        private float undulationTicks = 0.01f;
-        public float UndulationTicks { get => undulationTicks; set => undulationTicks = value; }
+        public float UndulationTicks { get; set; } = 0.01f;
 
         public static float tickMax = 2f;
         public float graphicDiv = 0.75f;
@@ -20,24 +19,30 @@ namespace CultOfCthulhu
         public override void Tick()
         {
             if (Part == null)
+            {
                 Part = pawn.health.hediffSet.GetNotMissingParts().FirstOrDefault(x => x.def == pawn.RaceProps.body.corePart.def);
+            }
 
             if (Find.TickManager.TicksGame % tickRate == 0)
             {
                 if (tickUp)
-                    undulationTicks += 0.01f;
+                {
+                    UndulationTicks += 0.01f;
+                }
                 else
-                    undulationTicks -= 0.01f;
+                {
+                    UndulationTicks -= 0.01f;
+                }
 
-                if (undulationTicks > tickMax)
+                if (UndulationTicks > tickMax)
                 {
                     tickUp = false;
                 }
-                else if (undulationTicks <= 0.01f)
+                else if (UndulationTicks <= 0.01f)
                 {
                     tickUp = true;
                 }
-                undulationTicks = Mathf.Clamp(undulationTicks, 0.01f, tickMax);
+                UndulationTicks = Mathf.Clamp(UndulationTicks, 0.01f, tickMax);
             }
         }
 
@@ -45,7 +50,7 @@ namespace CultOfCthulhu
         {
             get
             {
-                StringBuilder s = new StringBuilder();
+                var s = new StringBuilder();
                 s.Append(base.TipStringExtra);
                 s.AppendLine("Cults_Trans_HI_Body".Translate("300%"));
                 s.AppendLine("Cults_Trans_HI_Health".Translate("300%"));

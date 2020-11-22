@@ -26,13 +26,7 @@ namespace CultOfCthulhu
     class JobDriver_ReflectOnOffering : JobDriver
     {
 
-        protected Building_SacrificialAltar altar
-        {
-            get
-            {
-                return (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
-            }
-        }
+        protected Building_SacrificialAltar altar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -62,7 +56,7 @@ namespace CultOfCthulhu
             };
 
             //Toil 2 Reflect on worship
-            Toil reflectingTime = new Toil
+            var reflectingTime = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.reflectDuration

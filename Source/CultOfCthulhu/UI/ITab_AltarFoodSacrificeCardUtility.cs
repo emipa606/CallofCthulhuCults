@@ -31,10 +31,10 @@ namespace CultOfCthulhu
         public static void DrawTempleCard(Rect rect, Building_SacrificialAltar altar)
         {
             GUI.BeginGroup(rect);
-            Rect rect3 = new Rect(2f, 0f, ITab_AltarSacrificesCardUtility.ColumnSize, ITab_AltarSacrificesCardUtility.ButtonSize);
+            var rect3 = new Rect(2f, 0f, ITab_AltarSacrificesCardUtility.ColumnSize, ITab_AltarSacrificesCardUtility.ButtonSize);
             Widgets.Label(rect3, "Deity".Translate() + ": ");
             rect3.xMin = rect3.center.x - 15f;
-            string label2 = DeityLabel(altar);
+            var label2 = DeityLabel(altar);
             if (Widgets.ButtonText(rect3, label2, true, false, true))
             {
                 ITab_AltarCardUtility.OpenDeitySelectMenu(altar, ITab_AltarCardUtility.DeityType.OfferingDeity);
@@ -49,7 +49,7 @@ namespace CultOfCthulhu
             rect4.x -= rect3.x - 2;
             Widgets.Label(rect4, "Offerer".Translate() + ": ");
             rect4.xMin = rect4.center.x - 15f;
-            string label3 = OffererLabel(altar);
+            var label3 = OffererLabel(altar);
             if (Widgets.ButtonText(rect4, label3, true, false, true))
             {
                 ITab_AltarCardUtility.OpenActorSelectMenu(altar, ITab_AltarCardUtility.ActorType.offerer);
@@ -63,7 +63,7 @@ namespace CultOfCthulhu
             rect5.width = ITab_AltarSacrificesCardUtility.ColumnSize;
             Widgets.Label(rect5, "Offering".Translate() + ": ");
             rect5.xMin = rect5.center.x - 15f;
-            string label4 = OfferingLabel(altar);
+            var label4 = OfferingLabel(altar);
             if (Widgets.ButtonText(rect5, label4, true, false, true))
             {
                 OpenOfferingSelectMenu(altar);
@@ -77,7 +77,7 @@ namespace CultOfCthulhu
             rect6.width = ITab_AltarSacrificesCardUtility.ColumnSize;
             Widgets.Label(rect6, "Amount".Translate() + ": ");
             rect6.xMin = rect6.center.x - 15f;
-            string label5 = AmountLabel(altar);
+            var label5 = AmountLabel(altar);
             if (Widgets.ButtonText(rect6, label5, true, false, true))
             {
                 OpenAmountSelectMenu(altar);
@@ -159,7 +159,7 @@ namespace CultOfCthulhu
             }
             else
             {
-                StringBuilder stringBuilder = new StringBuilder();
+                var stringBuilder = new StringBuilder();
                 //stringBuilder.Append(altar.tempCurrentSacrificeDeity.LabelCap);
                 stringBuilder.AppendLine();
                 stringBuilder.Append(altar.tempCurrentOfferingDeity.def.description);
@@ -208,7 +208,7 @@ namespace CultOfCthulhu
 
             public static void OpenAmountSelectMenu(Building_SacrificialAltar altar)
         {
-            List<FloatMenuOption> list = new List<FloatMenuOption>
+            var list = new List<FloatMenuOption>
             {
                 new FloatMenuOption("(" + "NoneLower".Translate() + ")", delegate
                 {
@@ -256,7 +256,7 @@ namespace CultOfCthulhu
 
         public static void OpenOfferingSelectMenu(Building_SacrificialAltar altar)
         {
-            List<FloatMenuOption> list = new List<FloatMenuOption>
+            var list = new List<FloatMenuOption>
             {
                 new FloatMenuOption("(" + "NoneLower".Translate() + ")", delegate
                 {

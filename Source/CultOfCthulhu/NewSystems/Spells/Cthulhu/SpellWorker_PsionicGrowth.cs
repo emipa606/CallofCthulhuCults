@@ -40,7 +40,10 @@ namespace CultOfCthulhu
         {
             foreach (BodyPartRecord current in pawn.health.hediffSet.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined))
             {
-                if (current.def == BodyPartDefOf.Head) return current;
+                if (current.def == BodyPartDefOf.Head)
+                {
+                    return current;
+                }
             }
             return null;
         }
@@ -78,7 +81,7 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
             _ = pawn(map).health.hediffSet.GetBrain();
             BodyPartRecord headRecord = GetHead(pawn(map));
             //Error catch: Missing head!
@@ -89,7 +92,7 @@ namespace CultOfCthulhu
             //}
 
 
-            int rand = new System.Random().Next(1, 100);
+            var rand = new System.Random().Next(1, 100);
             if (rand > 90)
             {
                 // No effect
@@ -100,13 +103,19 @@ namespace CultOfCthulhu
                 //HediffDef quiet = null;
                 //BodyPartDamageInfo value = new BodyPartDamageInfo(tempRecord, false, quiet);
                 //pawn(map).TakeDamage(new DamageInfo(DamageDefOf.Cut, Rand.Range(5, 8), null, new BodyPartDamageInfo?(value), null));
-                if (headRecord != null) pawn(map).TakeDamage(new DamageInfo(DamageDefOf.Cut, Rand.Range(5, 8), 1f, -1f, null, headRecord, null));
+                if (headRecord != null)
+                {
+                    pawn(map).TakeDamage(new DamageInfo(DamageDefOf.Cut, Rand.Range(5, 8), 1f, -1f, null, headRecord, null));
+                }
             }
             else if (rand > 10 && rand <= 50)
             {
                 //HediffDef quiet = null;
                 //BodyPartDamageInfo value = new BodyPartDamageInfo(tempRecord, false, quiet);
-                if (headRecord != null) pawn(map).TakeDamage(new DamageInfo(DamageDefOf.Blunt, Rand.Range(8, 10), 1f, -1f, null, headRecord, null));
+                if (headRecord != null)
+                {
+                    pawn(map).TakeDamage(new DamageInfo(DamageDefOf.Blunt, Rand.Range(8, 10), 1f, -1f, null, headRecord, null));
+                }
             }
             else if (rand <= 10)
             {

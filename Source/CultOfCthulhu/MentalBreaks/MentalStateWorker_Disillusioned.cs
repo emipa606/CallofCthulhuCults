@@ -11,12 +11,23 @@ namespace CultOfCthulhu
     {
         public override bool StateCanOccur(Pawn pawn)
         {
-            if (!base.StateCanOccur(pawn)) return false;
-            if (!pawn.Spawned) return false;
+            if (!base.StateCanOccur(pawn))
+            {
+                return false;
+            }
+
+            if (!pawn.Spawned)
+            {
+                return false;
+            }
+
             Need_CultMindedness cultMind = pawn.needs.TryGetNeed<Need_CultMindedness>();
             if (cultMind != null)
             {
-                if (cultMind.CurLevel > 0.8) return true;
+                if (cultMind.CurLevel > 0.8)
+                {
+                    return true;
+                }
             }
             return false;
         }

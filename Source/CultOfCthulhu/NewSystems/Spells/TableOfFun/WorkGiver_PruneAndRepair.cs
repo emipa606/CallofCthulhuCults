@@ -9,30 +9,18 @@ namespace CultOfCthulhu
 {
     public class WorkGiver_PruneAndRepair : WorkGiver_Scanner
     {
-        public override ThingRequest PotentialWorkThingRequest
-        {
-            get
-            {
-                return ThingRequest.ForGroup(ThingRequestGroup.BuildingArtificial);
-            }
-        }
+        public override ThingRequest PotentialWorkThingRequest => ThingRequest.ForGroup(ThingRequestGroup.BuildingArtificial);
 
         public IEnumerable<Thing> NightmareAltars(Pawn pawn)
         {
-                List<Thing> thingsToCheck = new List<Thing>(from Thing things in pawn.Map.listerBuildings.allBuildingsColonist
+                var thingsToCheck = new List<Thing>(from Thing things in pawn.Map.listerBuildings.allBuildingsColonist
                                                             where things.def.defName == "Cult_NightmareSacrificeAltar"
                                                             select things);
                 return thingsToCheck;
             
         }
 
-        public override PathEndMode PathEndMode
-        {
-            get
-            {
-                return PathEndMode.Touch;
-            }
-        }
+        public override PathEndMode PathEndMode => PathEndMode.Touch;
 
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
@@ -63,7 +51,11 @@ namespace CultOfCthulhu
                 JobFailReason.Is(WorkGiver_FixBrokenDownBuilding.NotInHomeAreaTrans);
                 return false;
             }
-            if (!pawn.CanReserve(t)) return false;// pawn.Map.reservationManager.IsReserved(t, pawn.Faction)) return false;
+            if (!pawn.CanReserve(t))
+            {
+                return false;// pawn.Map.reservationManager.IsReserved(t, pawn.Faction)) return false;
+            }
+
             return true;
         }
 

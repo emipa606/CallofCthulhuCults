@@ -41,7 +41,7 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
             //Spawn a Dark Young
             if (Cthulhu.Utility.IsCosmicHorrorsLoaded())
             {

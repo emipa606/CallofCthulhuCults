@@ -44,7 +44,7 @@ namespace CultOfCthulhu
 
         public string MakeEndScreenText()
         {
-            StringBuilder stringBuilder = new StringBuilder();
+            var stringBuilder = new StringBuilder();
             foreach (Pawn current2 in map.mapPawns.FreeColonists)
             {
                 if (current2.Spawned)
@@ -70,7 +70,7 @@ namespace CultOfCthulhu
             delay = GetDelay();
             LongEventHandler.QueueLongEvent(delegate
             {
-                Cults_Screen_Credits screen_Credits = new Cults_Screen_Credits(message, 10)
+                var screen_Credits = new Cults_Screen_Credits(message, 10)
                 {
                     wonGame = true
                 };

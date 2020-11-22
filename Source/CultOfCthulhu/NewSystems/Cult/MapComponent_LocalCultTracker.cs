@@ -22,7 +22,7 @@ namespace CultOfCthulhu
         //WorldComponent_GlobalCultTracker globalCultTracker = Find.World.GetComponent<WorldComponent_GlobalCultTracker>();
 
         public CultSeedState CurrentSeedState { get { return CultTracker.Get.currentSeedState; } set { CultTracker.Get.currentSeedState = value; } }
-        public List<Pawn> antiCultists { get { return CultTracker.Get.antiCultists; } }
+        public List<Pawn> antiCultists => CultTracker.Get.antiCultists;
 
         public bool needPreacher = false;
         public bool doingInquisition = false;
@@ -45,8 +45,15 @@ namespace CultOfCthulhu
 
         public void ResolveTerribleCultFounder(Pawn founder)
         {
-            if (founder == null) return;
-            if (founder.skills.GetSkill(SkillDefOf.Social).Level > 5) return; //A preacher with at least 5 preaching skill can be a good preacher for a cultist colony.
+            if (founder == null)
+            {
+                return;
+            }
+
+            if (founder.skills.GetSkill(SkillDefOf.Social).Level > 5)
+            {
+                return; //A preacher with at least 5 preaching skill can be a good preacher for a cultist colony.
+            }
 
             //We need a preacher!
             needPreacher = true;
@@ -69,22 +76,40 @@ namespace CultOfCthulhu
             preacher = null;
             if (CultTracker.Get.PlayerCult != null)
             {
-                List<Pawn> tempList = new List<Pawn>(CultTracker.Get.PlayerCult.members);
+                var tempList = new List<Pawn>(CultTracker.Get.PlayerCult.members);
                 foreach (Pawn current in tempList.InRandomOrder<Pawn>())
                 {
-                    if (current == null) continue;
+                    if (current == null)
+                    {
+                        continue;
+                    }
+
                     if (current.Dead) { CultTracker.Get.PlayerCult.RemoveMember(current); continue; }
-                    if (preacher == null) preacher = current;
-                    if (current.skills.GetSkill(SkillDefOf.Social).Level > preacher.skills.GetSkill(SkillDefOf.Social).Level) preacher = current;
+                    if (preacher == null)
+                    {
+                        preacher = current;
+                    }
+
+                    if (current.skills.GetSkill(SkillDefOf.Social).Level > preacher.skills.GetSkill(SkillDefOf.Social).Level)
+                    {
+                        preacher = current;
+                    }
                 }
-                if (preacher != null) return true;
+                if (preacher != null)
+                {
+                    return true;
+                }
             }
             return false;
         }
 
         public void PreacherCheck()
         {
-            if (!needPreacher) return;
+            if (!needPreacher)
+            {
+                return;
+            }
+
             if (ticksToSpawnHelpfulPreacher > 0)
             {
                 ticksToSpawnHelpfulPreacher--;
@@ -106,7 +131,7 @@ namespace CultOfCthulhu
         {
             try
             {
-                ResearchProjectDef repeatableResearch = ResearchProjectDef.Named("Forbidden_Lore");
+                var repeatableResearch = ResearchProjectDef.Named("Forbidden_Lore");
 
                 if (repeatableResearch != null)
                 {
@@ -127,18 +152,30 @@ namespace CultOfCthulhu
 
         public void NewCultistCheck()
         {
-            if (CurrentSeedState < CultSeedState.FinishedWriting) return;
+            if (CurrentSeedState < CultSeedState.FinishedWriting)
+            {
+                return;
+            }
 
             //Cult Tick (500 ticks)
-            if (ticksToCheckCultists == 0) ticksToCheckCultists = Find.TickManager.TicksGame + 500;
+            if (ticksToCheckCultists == 0)
+            {
+                ticksToCheckCultists = Find.TickManager.TicksGame + 500;
+            }
+
             if (ticksToCheckCultists >= Find.TickManager.TicksGame)
+            {
                 return;
+            }
+
             ticksToCheckCultists = Find.TickManager.TicksGame + 500;
             
-            List<Pawn> spawnedColonyMembers = new List<Pawn>(map.mapPawns.FreeColonistsAndPrisonersSpawned);
+            var spawnedColonyMembers = new List<Pawn>(map.mapPawns.FreeColonistsAndPrisonersSpawned);
             Cult playerCult = CultTracker.Get.PlayerCult;
             if (spawnedColonyMembers == null || spawnedColonyMembers.Count == 0)
+            {
                 return;
+            }
 
             foreach (Pawn colonist in spawnedColonyMembers)
             {
@@ -148,7 +185,10 @@ namespace CultOfCthulhu
                     if (cultMind.CurLevelPercentage > 0.7)
                     {
                         if (playerCult == null)
+                        {
                             playerCult = new Cult(colonist);
+                        }
+
                         playerCult.SetMember(colonist);
                     }
                     //Otherwise, you will be removed from the cult.
@@ -182,13 +222,26 @@ namespace CultOfCthulhu
 
         public bool CanDoJob(JobDef job, Pawn pawn, Thing target = null, bool targetRequired = false)
         {
-            if (pawn == null) return false;
-            if (target == null && targetRequired) return false;
+            if (pawn == null)
+            {
+                return false;
+            }
 
-            if (ModSettings_Data.cultsForcedInvestigation == false && job != CultsDefOf.Cults_WriteTheBook) return false;
+            if (target == null && targetRequired)
+            {
+                return false;
+            }
+
+            if (ModSettings_Data.cultsForcedInvestigation == false && job != CultsDefOf.Cults_WriteTheBook)
+            {
+                return false;
+            }
 
             //Toxic Fallout? Let's not force the colonist to do this job.
-            if (map.GameConditionManager.GetActiveCondition(GameConditionDefOf.ToxicFallout) != null) return false;
+            if (map.GameConditionManager.GetActiveCondition(GameConditionDefOf.ToxicFallout) != null)
+            {
+                return false;
+            }
 
             if (ticksToSpawnCultSeed > 0)
             {
@@ -197,8 +250,12 @@ namespace CultOfCthulhu
             if (CurrentSeedPawn.CurJob.def != job &&
                 ticksToTryJobAgain <= 0)
             {
-                Job J = new Job(job, pawn);
-                if (CurrentSeedTarget != null) J.SetTarget(TargetIndex.B, target);
+                var J = new Job(job, pawn);
+                if (CurrentSeedTarget != null)
+                {
+                    J.SetTarget(TargetIndex.B, target);
+                }
+
                 pawn.jobs.TryTakeOrderedJob(J);
                 //pawn.CurJob.EndCurrentJob(JobCondition.InterruptForced);
                 ticksToTryJobAgain = OneMinute;

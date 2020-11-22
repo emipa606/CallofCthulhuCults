@@ -39,11 +39,11 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
             Pawn pawn = null;
             List<Pawn> listeners = map.mapPawns.AllPawnsSpawned.FindAll(x => x.RaceProps.intelligence == Intelligence.Humanlike);
-            bool[] flag = new bool[listeners.Count];
-            for (int i = 0; i < listeners.Count; i++)
+            var flag = new bool[listeners.Count];
+            for (var i = 0; i < listeners.Count; i++)
             {
                     pawn = listeners[i];
                     if (pawn.Faction == Faction.OfPlayer || (!pawn.Faction.HostileTo(Faction.OfPlayer)) || pawn.guest.IsPrisoner)
@@ -53,7 +53,7 @@ namespace CultOfCthulhu
                     else
                     {
                         MentalStateDef defaultState = MentalStateDefOf.Berserk;
-                        int tempRand = Rand.Range(1, 10);
+                        var tempRand = Rand.Range(1, 10);
                         switch (tempRand)
                         {
                             case 1:

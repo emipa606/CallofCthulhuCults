@@ -9,13 +9,7 @@ namespace CultOfCthulhu
     {
         private readonly int transportersGroup = -1;
 
-        public override bool AllowSatisfyLongNeeds
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool AllowSatisfyLongNeeds => false;
 
         public LordToil_LoadAndEnterTransportersPawn(int transportersGroup)
         {
@@ -25,9 +19,9 @@ namespace CultOfCthulhu
 
         public override void UpdateAllDuties()
         {
-            for (int i = 0; i < lord.ownedPawns.Count; i++)
+            for (var i = 0; i < lord.ownedPawns.Count; i++)
             {
-                PawnDuty pawnDuty = new PawnDuty(CultsDefOf.Cults_LoadAndEnterTransportersPawn)
+                var pawnDuty = new PawnDuty(CultsDefOf.Cults_LoadAndEnterTransportersPawn)
                 {
                     transportersGroup = transportersGroup
                 };

@@ -93,11 +93,26 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (favor <= favorTier0Max) return Tier.Zero;
-                else if (favor > favorTier0Max && favor <= favorTier1Max) return Tier.One;
-                else if (favor > favorTier1Max && favor <= favorTier2Max) return Tier.Two;
-                else if (favor > favorTier2Max && favor < favorTier3Max) return Tier.Three;
-                else return favor >= favorTier3Max ? Tier.Final : Tier.Zero;
+                if (favor <= favorTier0Max)
+                {
+                    return Tier.Zero;
+                }
+                else if (favor > favorTier0Max && favor <= favorTier1Max)
+                {
+                    return Tier.One;
+                }
+                else if (favor > favorTier1Max && favor <= favorTier2Max)
+                {
+                    return Tier.Two;
+                }
+                else if (favor > favorTier2Max && favor < favorTier3Max)
+                {
+                    return Tier.Three;
+                }
+                else
+                {
+                    return favor >= favorTier3Max ? Tier.Final : Tier.Zero;
+                }
             }
         }
 
@@ -147,22 +162,16 @@ namespace CultOfCthulhu
         {
             get
             {
-                CosmicEntityDef currentDef = def as CosmicEntityDef;
-                int i = currentDef.Version;
+                var currentDef = def as CosmicEntityDef;
+                var i = currentDef.Version;
                 Cthulhu.Utility.DebugReport(Label + " version retrieved " + i);
                 return i;
             }
         }
 
-        public float PlayerFavor
-        {
-            get { return favor; }
-        }
+        public float PlayerFavor => favor;
 
-        public bool FavorsOutdoorWorship
-        {
-            get { return ((CosmicEntityDef) def).favorsOutdoorWorship; }
-        }
+        public bool FavorsOutdoorWorship => ((CosmicEntityDef)def).favorsOutdoorWorship;
 
         public CosmicEntity()
         {
@@ -209,23 +218,26 @@ namespace CultOfCthulhu
         {
             foreach (ThingCount dictionary in altarDictionary.determinedOfferings)
             {
-                if (thingToCheck.def == dictionary.Thing.def) return true;
+                if (thingToCheck.def == dictionary.Thing.def)
+                {
+                    return true;
+                }
             }
             return false;
         }
 
         public void ConsumeOfferings(Thing offering)
         {
-            float tierModifier = (float) (((int) PlayerTier) + 1);
-            float foodModifier = DIVIDER_FOOD;
-            float math = offering.MarketValue * offering.stackCount / (foodModifier * tierModifier);
+            var tierModifier = (float) (((int) PlayerTier) + 1);
+            var foodModifier = DIVIDER_FOOD;
+            var math = offering.MarketValue * offering.stackCount / (foodModifier * tierModifier);
             offering.Destroy(0);
             AffectFavor(math);
         }
 
         public void ReceiveOffering(Pawn offerer, Building_SacrificialAltar altar, List<Thing> offerings)
         {
-            StringBuilder s = new StringBuilder();
+            var s = new StringBuilder();
             s.Append("Offering Report");
             s.AppendLine();
             s.Append("===============");
@@ -234,7 +246,7 @@ namespace CultOfCthulhu
             {
                 s.AppendLine();
                 s.Append(offering.stackCount + " " + offering.ToString() + ": $" + offering.MarketValue.ToString() +
-                         " each. Total: $" + (offering.MarketValue * (float) offering.stackCount).ToString());
+                         " each. Total: $" + (offering.MarketValue * offering.stackCount).ToString());
                 ConsumeOfferings(offering);
             }
             Cthulhu.Utility.DebugReport(s.ToString());
@@ -243,17 +255,32 @@ namespace CultOfCthulhu
         public float SacrificeBonus(Pawn sacrifice, Map map, bool favorSpell = false, bool starsAreRight = false,
             bool starsAreWrong = false)
         {
-            StringBuilder s = new StringBuilder();
+            var s = new StringBuilder();
             s.Append("Sacrifice Bonus Calculation:");
-            float result = 0f;
-            if (sacrifice == null) return result;
-            if (sacrifice.RaceProps == null) return result;
+            var result = 0f;
+            if (sacrifice == null)
+            {
+                return result;
+            }
+
+            if (sacrifice.RaceProps == null)
+            {
+                return result;
+            }
+
             MapComponent_SacrificeTracker tracker = map.GetComponent<MapComponent_SacrificeTracker>();
-            if (tracker == null) return result;
+            if (tracker == null)
+            {
+                return result;
+            }
+
             tracker.lastSacrificeName = sacrifice.LabelShort;
 
             //Divide by 0 exception
-            if (sacrifice.MarketValue == 0f) return result;
+            if (sacrifice.MarketValue == 0f)
+            {
+                return result;
+            }
 
             //Animal Sacrifice Bonuses
             if (tracker.lastSacrificeType == CultUtility.SacrificeType.animal)
@@ -331,7 +358,7 @@ namespace CultOfCthulhu
             bool starsAreWrong = false)
         {
             MapComponent_SacrificeTracker tracker = map.GetComponent<MapComponent_SacrificeTracker>();
-            float value =
+            var value =
                 (sacrifice.MarketValue + SacrificeBonus(sacrifice, map, favorSpell, starsAreRight, starsAreWrong)) /
                 DIVIDER_HUMAN;
             value += CultUtility.CongregationBonus(tracker.lastUsedAltar.SacrificeData.Congregation, this, out _,
@@ -342,15 +369,27 @@ namespace CultOfCthulhu
 
         public void ReceiveWorship(Pawn preacher)
         {
-            int preacherSoc = preacher.skills.GetSkill(SkillDefOf.Social).Level;
+            var preacherSoc = preacher.skills.GetSkill(SkillDefOf.Social).Level;
             List<Pawn>
                 congregation =
                     CultTracker.Get.PlayerCult
                         .members; //preacher.Map.GetComponent<MapComponent_LocalCultTracker>().LocalCultMembers;
-            if (preacher == null) Log.Error("Preacher is null.");
-            if (congregation == null) Log.Error("Congregation is null");
-            float value = (float) Math.Max(1, preacherSoc);
-            if (value != 0) value /= 20 * ((float) ((int) PlayerTier + 1));
+            if (preacher == null)
+            {
+                Log.Error("Preacher is null.");
+            }
+
+            if (congregation == null)
+            {
+                Log.Error("Congregation is null");
+            }
+
+            var value = (float) Math.Max(1, preacherSoc);
+            if (value != 0)
+            {
+                value /= 20 * ((float) ((int) PlayerTier + 1));
+            }
+
             value += CultUtility.CongregationBonus(congregation, this, out _, out _);
             Cthulhu.Utility.DebugReport("Worship Value: " + value.ToString());
             AffectFavor(value);
@@ -363,8 +402,8 @@ namespace CultOfCthulhu
 
         public void AffectFavor(float favorChange)
         {
-            float newFavor = (float) Math.Round(favorChange, 2);
-            float value = favor + newFavor;
+            var newFavor = (float) Math.Round(favorChange, 2);
+            var value = favor + newFavor;
             Cthulhu.Utility.DebugReport(Label + "'s favor affected: " + newFavor.ToString() + " Total: " +
                                         value.ToString());
             favor = value;
@@ -372,7 +411,7 @@ namespace CultOfCthulhu
 
         public string Info()
         {
-            StringBuilder s = new StringBuilder();
+            var s = new StringBuilder();
             s.AppendLine("Box_Titles".Translate() + ": " + Def.Titles);
             s.AppendLine();
             s.AppendLine("Box_Domains".Translate() + ": " + Def.Domains);
@@ -385,7 +424,7 @@ namespace CultOfCthulhu
         public string GetInfoText()
         {
             string text = def.LabelCap;
-            string text2 = text;
+            var text2 = text;
             text = string.Concat(new string[]
             {
                 text2,
@@ -407,7 +446,7 @@ namespace CultOfCthulhu
 
         public string DebugString()
         {
-            StringBuilder stringBuilder = new StringBuilder();
+            var stringBuilder = new StringBuilder();
             return stringBuilder.ToString();
         }
 

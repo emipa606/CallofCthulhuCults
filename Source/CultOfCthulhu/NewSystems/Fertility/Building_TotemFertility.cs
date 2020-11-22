@@ -86,7 +86,7 @@ namespace CultOfCthulhu
 
         public override string GetInspectString()
         {
-            StringBuilder stringBuilder = new StringBuilder();
+            var stringBuilder = new StringBuilder();
             // Add the inspections string from the base
             stringBuilder.Append(base.GetInspectString());
             if (stringBuilder.Length != 0)
@@ -105,7 +105,7 @@ namespace CultOfCthulhu
         public override void SpawnSetup(Map map, bool bla)
         {
             base.SpawnSetup(map, bla);
-            List<IntVec3> temp = new List<IntVec3>();
+            var temp = new List<IntVec3>();
             foreach (IntVec3 vec in GrowableCells)
             {
                 temp.Add(vec);
@@ -120,7 +120,7 @@ namespace CultOfCthulhu
         {
             Map map = Map;
             base.DeSpawn(mode);
-            List<IntVec3> temp = new List<IntVec3>();
+            var temp = new List<IntVec3>();
             foreach (IntVec3 vec in GrowableCells)
             {
                 temp.Add(vec);
@@ -153,7 +153,7 @@ namespace CultOfCthulhu
 
         private void MakeMatchingGrowZone()
         {
-            Designator_ZoneAdd_Growing designator = new Designator_ZoneAdd_Growing();
+            var designator = new Designator_ZoneAdd_Growing();
             designator.DesignateMultiCell(from tempCell in GrowableCells
                                           where designator.CanDesignateCell(tempCell).Accepted
                                           select tempCell);

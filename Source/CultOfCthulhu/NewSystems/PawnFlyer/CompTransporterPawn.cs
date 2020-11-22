@@ -34,53 +34,17 @@ namespace CultOfCthulhu
 
         public static List<CompTransporterPawn> tmpTransportersInGroup = new List<CompTransporterPawn>();
 
-        public CompProperties_TransporterPawn Props
-        {
-            get
-            {
-                return (CompProperties_TransporterPawn)props;
-            }
-        }
+        public CompProperties_TransporterPawn Props => (CompProperties_TransporterPawn)props;
 
-        public Map Map
-        {
-            get
-            {
-                return parent.MapHeld;
-            }
-        }
+        public Map Map => parent.MapHeld;
 
-        public bool Spawned
-        {
-            get
-            {
-                return parent.Spawned;
-            }
-        }
+        public bool Spawned => parent.Spawned;
 
-        public bool AnythingLeftToLoad
-        {
-            get
-            {
-                return FirstThingLeftToLoad != null;
-            }
-        }
+        public bool AnythingLeftToLoad => FirstThingLeftToLoad != null;
 
-        public bool LoadingInProgressOrReadyToLaunch
-        {
-            get
-            {
-                return groupID >= 0;
-            }
-        }
+        public bool LoadingInProgressOrReadyToLaunch => groupID >= 0;
 
-        public bool AnyInGroupHasAnythingLeftToLoad
-        {
-            get
-            {
-                return FirstThingLeftToLoadInGroup != null;
-            }
-        }
+        public bool AnyInGroupHasAnythingLeftToLoad => FirstThingLeftToLoadInGroup != null;
 
         public CompLaunchablePawn Launchable
         {
@@ -112,7 +76,7 @@ namespace CultOfCthulhu
             get
             {
                 List<CompTransporterPawn> list = TransportersInGroup(parent.Map);
-                for (int i = 0; i < list.Count; i++)
+                for (var i = 0; i < list.Count; i++)
                 {
                     Thing firstThingLeftToLoad = list[i].FirstThingLeftToLoad;
                     if (firstThingLeftToLoad != null)
@@ -175,8 +139,8 @@ namespace CultOfCthulhu
             IEnumerable<Pawn> listSel = from Pawn pawns in map.mapPawns.AllPawnsSpawned
                                         where pawns is PawnFlyer
                                         select pawns;
-            List<Pawn> list = new List<Pawn>(listSel);
-            for (int i = 0; i < list.Count; i++)
+            var list = new List<Pawn>(listSel);
+            for (var i = 0; i < list.Count; i++)
             {
                 CompTransporterPawn compTransporter = list[i].TryGetComp<CompTransporterPawn>();
                 if (compTransporter.groupID == groupID)
@@ -211,9 +175,9 @@ namespace CultOfCthulhu
                     }
                 };
             }
-            Command_LoadToTransporterPawn Command_LoadToTransporterPawn = new Command_LoadToTransporterPawn();
-            int num = 0;
-            for (int i = 0; i < Find.Selector.NumSelected; i++)
+            var Command_LoadToTransporterPawn = new Command_LoadToTransporterPawn();
+            var num = 0;
+            for (var i = 0; i < Find.Selector.NumSelected; i++)
             {
                 if (Find.Selector.SelectedObjectsListForReading[i] is Thing thing && thing.def == parent.def)
                 {
@@ -270,7 +234,7 @@ namespace CultOfCthulhu
                 Log.Error("Transferable already exists.");
                 return;
             }
-            TransferableOneWay transferableOneWay = new TransferableOneWay();
+            var transferableOneWay = new TransferableOneWay();
             leftToLoad.Add(transferableOneWay);
             transferableOneWay.things.AddRange(t.things);
             transferableOneWay.AdjustTo(count);
@@ -299,7 +263,7 @@ namespace CultOfCthulhu
             }
             TryRemoveLord(map);
             List<CompTransporterPawn> list = TransportersInGroup(map);
-            for (int i = 0; i < list.Count; i++)
+            for (var i = 0; i < list.Count; i++)
             {
                 list[i].CleanUpLoadingVars(map);
             }
@@ -311,7 +275,7 @@ namespace CultOfCthulhu
         public static Lord FindLord(int transportersGroup, Map map)
         {
             List<Lord> lords = map.lordManager.lords;
-            for (int i = 0; i < lords.Count; i++)
+            for (var i = 0; i < lords.Count; i++)
             {
                 if (lords[i].LordJob is LordJob_LoadAndEnterTransportersPawn lordJob_LoadAndEnterTransporters && lordJob_LoadAndEnterTransporters.transportersGroup == transportersGroup)
                 {
@@ -369,7 +333,7 @@ namespace CultOfCthulhu
         private void SelectPreviousInGroup()
         {
             List<CompTransporterPawn> list = TransportersInGroup(Map);
-            int num = list.IndexOf(this);
+            var num = list.IndexOf(this);
             CameraJumper.TryJumpAndSelect(list[GenMath.PositiveMod(num - 1, list.Count)].parent);
         }
 
@@ -378,7 +342,7 @@ namespace CultOfCthulhu
             List<CompTransporterPawn> list = TransportersInGroup(Map);
             Selector selector = Find.Selector;
             selector.ClearSelection();
-            for (int i = 0; i < list.Count; i++)
+            for (var i = 0; i < list.Count; i++)
             {
                 selector.Select(list[i].parent, true, true);
             }
@@ -387,7 +351,7 @@ namespace CultOfCthulhu
         private void SelectNextInGroup()
         {
             List<CompTransporterPawn> list = TransportersInGroup(Map);
-            int num = list.IndexOf(this);
+            var num = list.IndexOf(this);
             CameraJumper.TryJumpAndSelect(list[(num + 1) % list.Count].parent);
         }
     }

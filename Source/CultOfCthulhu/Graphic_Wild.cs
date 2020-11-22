@@ -13,14 +13,8 @@ namespace CultOfCthulhu
 
         private const float MaxOffset = 0.05f;
 
-        public override Material MatSingle
-        {
-            get
-            {
-                return subGraphics[Rand.Range(0, subGraphics.Length)].MatSingle;
-            }
-        }
-        
+        public override Material MatSingle => subGraphics[Rand.Range(0, subGraphics.Length)].MatSingle;
+
         public override void DrawWorker(Vector3 loc, Rot4 rot, ThingDef thingDef, Thing thing, float extraRotation)
         {
             if (thingDef == null)
@@ -33,17 +27,17 @@ namespace CultOfCthulhu
                 Log.ErrorOnce("Graphic_Wild has no subgraphics " + thingDef, 358773632);
                 return;
             }
-            int num = Find.TickManager.TicksGame;
-            int num2 = 0;
-            int num3 = 0;
-            float num4 = 1f;
+            var num = Find.TickManager.TicksGame;
+            var num2 = 0;
+            var num3 = 0;
+            var num4 = 1f;
             //CompFireOverlay compFireOverlay = null;
             if (thing != null)
             {
                 //compFireOverlay = thing.TryGetComp<CompFireOverlay>();
                 num += Mathf.Abs(thing.thingIDNumber ^ 8453458);
                 num2 = num / 15;
-                num3 = Mathf.Abs(num2 ^ thing.thingIDNumber * 391) % subGraphics.Length;
+                num3 = Mathf.Abs(num2 ^ (thing.thingIDNumber * 391)) % subGraphics.Length;
                 //Fire fire = thing as Fire;
                 //if (fire != null)
                 //{
@@ -60,15 +54,15 @@ namespace CultOfCthulhu
                 num3 = 0;
             }
             Graphic graphic = subGraphics[num3];
-            float num5 = Mathf.Min(num4 / 1.2f, 1.2f);
+            var num5 = Mathf.Min(num4 / 1.2f, 1.2f);
             Vector3 a = GenRadial.RadialPattern[num2 % GenRadial.RadialPattern.Length].ToVector3() / GenRadial.MaxRadialPatternRadius;
             a *= 0.05f;
-            Vector3 vector = loc + a * num4;
+            Vector3 vector = loc + (a * num4);
             //if (compFireOverlay != null)
             //{
             //    vector += compFireOverlay.Props.offset;
             //}
-            Vector3 s = new Vector3(num5, 1f, num5);
+            var s = new Vector3(num5, 1f, num5);
             Matrix4x4 matrix = default;
             matrix.SetTRS(vector, Quaternion.identity, s);
             Graphics.DrawMesh(MeshPool.plane10, matrix, graphic.MatSingle, 0);

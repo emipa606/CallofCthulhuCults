@@ -37,10 +37,10 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
-            int num = 0;
-            int countToSpawn = 10;
-            for (int i = 0; i < countToSpawn; i++)
+            var map = parms.target as Map;
+            var num = 0;
+            var countToSpawn = 10;
+            for (var i = 0; i < countToSpawn; i++)
             {
                 //Find floors in the home area
                 IntVec3 intVec = IntVec3.Invalid; 
@@ -91,7 +91,9 @@ namespace CultOfCthulhu
 
                 //Break the floor
                 if (intVec.InBounds(map) && map.terrainGrid.TerrainAt(intVec).layerable)
+                {
                     map.terrainGrid.RemoveTopLayer(intVec, false);
+                }
 
                 //Spawn the rat
                 Cthulhu.Utility.SpawnPawnsOfCountAt(CultsDefOf.Rat, intVec, map, Rand.Range(1, 5), null, false, true);
