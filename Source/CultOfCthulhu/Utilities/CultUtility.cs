@@ -1654,8 +1654,8 @@ namespace CultOfCthulhu
         {
             //Log.Message("1");
             if (IsPreacher(attendee)) return;
+            if (!GatheringsUtility.ShouldGuestKeepAttendingGathering(attendee)) return;
             if (attendee.Drafted) return;
-            if (attendee.IsPrisoner) return;
             if (attendee.jobs.curJob.def.defName == "ReflectOnWorship") return;
             if (attendee.jobs.curJob.def.defName == "AttendWorship") return;
 
@@ -1676,7 +1676,7 @@ namespace CultOfCthulhu
 
                 //Log.Message("3a");
 
-                Job J = new Job(CultsDefOf.Cults_AttendWorship, altar, newPos, chair)
+                Job attendJob = new Job(CultsDefOf.Cults_AttendWorship, altar, newPos, chair)
                 {
                     playerForced = true,
                     ignoreJoyTimeAssignment = true,
@@ -1684,8 +1684,15 @@ namespace CultOfCthulhu
                     ignoreDesignations = true,
                     ignoreForbidden = true
                 };
-                attendee.jobs.EndCurrentJob(JobCondition.Incompletable);
-                attendee.jobs.TryTakeOrderedJob(J);
+                if (ModSettings_Data.makeWorshipsVoluntary)
+                {
+                    attendee.jobs.TryTakeOrderedJob_NewTemp(attendJob, JobTag.Misc, true);
+                }
+                else
+                {
+                    attendee.jobs.EndCurrentJob(JobCondition.Incompletable);
+                    attendee.jobs.TryTakeOrderedJob(attendJob);
+                }
             }
             else
             {
@@ -1693,7 +1700,7 @@ namespace CultOfCthulhu
 
                 IntVec3 newPos = result + GenAdj.CardinalDirections[dir];
 
-                Job J = new Job(CultsDefOf.Cults_AttendWorship, altar, newPos, result)
+                Job attendJob = new Job(CultsDefOf.Cults_AttendWorship, altar, newPos, result)
                 {
                     playerForced = true,
                     ignoreJoyTimeAssignment = true,
@@ -1701,8 +1708,15 @@ namespace CultOfCthulhu
                     ignoreDesignations = true,
                     ignoreForbidden = true
                 };
-                attendee.jobs.EndCurrentJob(JobCondition.Incompletable);
-                attendee.jobs.TryTakeOrderedJob(J);
+                if (ModSettings_Data.makeWorshipsVoluntary)
+                {
+                    attendee.jobs.TryTakeOrderedJob_NewTemp(attendJob, JobTag.Misc, true);
+                }
+                else
+                {
+                    attendee.jobs.EndCurrentJob(JobCondition.Incompletable);
+                    attendee.jobs.TryTakeOrderedJob(attendJob);
+                }
             }
         }
 

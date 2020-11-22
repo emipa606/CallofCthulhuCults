@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
+  <Cults_MakeWorshipsVoluntary>Make sermons voluntary</Cults_MakeWorshipsVoluntary>
   <!-- 9/22/18 -->
   <ROM_TradeSanityForMadness>Go mad (clears sanity loss)</ROM_TradeSanityForMadness>
   <ROM_TradedSanityLossForMadness>{0} succumbed to a mental break, however, this has restored their sanity.</ROM_TradedSanityLossForMadness>
@@ -294,5 +295,4 @@
   <GameOverOrthogenesis>The changes were slow and subtle at first. A loss of hair, a slight enlarging of the eyes, a growing greyish pallor of the skin. Some were more advanced than others and had small gill like slits appear. It was clear your genetic destiny wasn’t aligned with the rest of mankind's.\n\nNow you hear the distant croaking of your newfound kindred. That sound that once made the night frightful, now feels familiar and welcoming. They are calling you home. You look at your belongings but decide to leave them behind. You won’t need them where you are going.\n\nWith the blessing of the great Father and Mother, who rule beneath the waves, you are now to join your brethren.\n\nThese colonists were lost to the waves:\n\n{0}</GameOverOrthogenesis>
   <GameOverTransdimensionalConvergence>I make the signs, I speak the words\nthat openeth the door!\nCome forth I say, I turn the Key,\nNow ! walk the Earth once more !\n\nYou call her from the void.You call her away from the side of the Not-to-Be-Named-One. \n\nIn the skies above you see a mist burst though, as if through a crack in the sky. Tendrils of a cloud-like substance reach down, which gives birth to eyes, teeth and limbs in a melange of biological excess.\n\nYou've opened the way for Shub Niggurath to take over your universe. These colonists were first to be destroyed after her coming\n\n{0}</GameOverTransdimensionalConvergence>
   <GameOverPilgrimageToKadath>For the last few weeks the dreams have been getting stronger and more vivid. The real world began to pale in comparison. You would close your eyes to see its magnificent marble spires and silver fountains - the dream city of Kadath. There were those that thought that these visions were not real or that they were a lure for some trap. Even if that were true, you know you would still have sought it out.\n\nAnd now Nyarlathotep has come to guide you to this paradise.\n\nNyarlathotep forced your colonists to sleep and visit Kadath. Therein, these colonists viewed Azathoth before promptly being destroyed from the madness that followed:\n\n{0}</GameOverPilgrimageToKadath>
-
 </LanguageData>

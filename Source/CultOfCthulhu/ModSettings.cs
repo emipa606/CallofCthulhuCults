@@ -10,6 +10,7 @@ namespace CultOfCthulhu
         public static bool cultsForcedInvestigation = true;
         public static bool cultsStudySuccessfulCultsIsRepeatable = true;
         public static bool cultsShowDebugCode = true;
+        public static bool makeWorshipsVoluntary = false;
     }
 
     public class ModMain : Mod
@@ -20,6 +21,7 @@ namespace CultOfCthulhu
         {
             settings = GetSettings<Settings>();
             ModSettings_Data.cultsForcedInvestigation = settings.cultsForcedInvestigation;
+            ModSettings_Data.makeWorshipsVoluntary = settings.makeWorshipsVoluntary;
             ModSettings_Data.cultsStudySuccessfulCultsIsRepeatable =
                 settings.cultsStudySuccessfulCultsIsRepeatable;
             ModSettings_Data.cultsShowDebugCode = settings.cultsShowDebugCode;
@@ -40,6 +42,9 @@ namespace CultOfCthulhu
                 ref settings.cultsStudySuccessfulCultsIsRepeatable);
             Widgets.CheckboxLabeled(
                 new Rect(inRect.x + offset, inRect.y + offset + spacer + offset + spacer, inRect.width - offset,
+                    height), "Cults_MakeWorshipsVoluntary".Translate(), ref settings.makeWorshipsVoluntary);
+            Widgets.CheckboxLabeled(
+                new Rect(inRect.x + offset, inRect.y + offset + spacer + offset + spacer + offset + spacer, inRect.width - offset,
                     height), "ShowDebugCode".Translate(), ref settings.cultsShowDebugCode);
             settings.Write();
         }
@@ -50,6 +55,7 @@ namespace CultOfCthulhu
         public bool cultsForcedInvestigation = true;
         public bool cultsStudySuccessfulCultsIsRepeatable = true;
         public bool cultsShowDebugCode = false;
+        public bool makeWorshipsVoluntary = false;
 
 
         public override void ExposeData()
@@ -59,6 +65,7 @@ namespace CultOfCthulhu
             Scribe_Values.Look<bool>(ref cultsStudySuccessfulCultsIsRepeatable,
                 "cultsStudySuccessfulCultsIsRepeatable", true);
             Scribe_Values.Look<bool>(ref cultsShowDebugCode, "cultsShowDebugCode", true);
+            Scribe_Values.Look<bool>(ref makeWorshipsVoluntary, "makeWorshipsVoluntary", false);
         }
     }
 }
