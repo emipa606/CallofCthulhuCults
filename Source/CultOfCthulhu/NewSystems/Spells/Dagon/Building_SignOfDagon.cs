@@ -17,20 +17,11 @@ namespace CultOfCthulhu
             Building_SignOfDagon toDestroy = null;
             foreach (Building bld in map.listerBuildings.allBuildingsColonist)
             {
-                if (bld == this)
-                {
-                    continue;
-                }
-
-                if (bld is Building_SignOfDagon dagon)
-                {
-                    toDestroy = dagon;
-                }
+                if (bld == this) continue;
+                if (bld is Building_SignOfDagon dagon) toDestroy = dagon;
             }
-            if (toDestroy != null)
-            {
+            if (toDestroy != null) 
                 toDestroy.Destroy(0);
-            }
 
             List<Pawn> list = map.GetComponent<MapComponent_SacrificeTracker>().defendTheBroodPawns;
             if (list == null)
@@ -59,10 +50,7 @@ namespace CultOfCthulhu
             foreach (Pawn current in list)
             {
                 if (lord == null)
-                {
                     lord = current.GetLord();
-                }
-
                 if (lord != null)
                 {
                     map.lordManager.RemoveLord(lord);

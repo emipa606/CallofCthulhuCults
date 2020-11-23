@@ -34,9 +34,15 @@ namespace CultOfCthulhu
         private const TargetIndex TakeeIndex = TargetIndex.A;
         private const TargetIndex AltarIndex = TargetIndex.B;
 
-        protected Pawn Takee => (Pawn)job.GetTarget(TargetIndex.A).Thing;
+        protected Pawn Takee
+        {
+            get { return (Pawn)job.GetTarget(TargetIndex.A).Thing; }
+        }
 
-        protected Building_SacrificialAltar DropAltar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.B).Thing;
+        protected Building_SacrificialAltar DropAltar
+        {
+            get { return (Building_SacrificialAltar)job.GetTarget(TargetIndex.B).Thing; }
+        }
 
         [DebuggerHidden]
         protected override IEnumerable<Toil> MakeNewToils()
@@ -72,7 +78,7 @@ namespace CultOfCthulhu
                 {
                     if (job.def.makeTargetPrisoner)
                     {
-                        var pawn = (Pawn) job.targetA.Thing;
+                        Pawn pawn = (Pawn) job.targetA.Thing;
                         Lord lord = pawn.GetLord();
                         if (lord != null)
                         {
@@ -105,7 +111,7 @@ namespace CultOfCthulhu
                         Takee.Position = DropAltar.GetLyingSlotPos();
                         Takee.Notify_Teleported(false);
                         Takee.stances.CancelBusyStanceHard();
-                        var job = new Job(CultsDefOf.Cults_WaitTiedDown, DropAltar);
+                        Job job = new Job(CultsDefOf.Cults_WaitTiedDown, DropAltar);
                         Takee.jobs.StartJob(job);
                     }
                 },
@@ -113,7 +119,7 @@ namespace CultOfCthulhu
             };
 
             //Toil 6: Time to chant ominously
-            var chantingTime = new Toil
+            Toil chantingTime = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.ritualDuration
@@ -124,9 +130,7 @@ namespace CultOfCthulhu
             chantingTime.initAction = delegate
             {
                 if (deitySymbol != null)
-                {
                     MoteMaker.MakeInteractionBubble(pawn, null, ThingDefOf.Mote_Speech, deitySymbol);
-                }
 
 
                 //STATE - SACRIFICING
@@ -162,7 +166,7 @@ namespace CultOfCthulhu
             AddFinishAction(() =>
             {
                 //It's a day to remember
-                var taleToAdd = TaleDef.Named("HeldSermon");
+                TaleDef taleToAdd = TaleDef.Named("HeldSermon");
                 if ((pawn.IsColonist || pawn.HostFaction == Faction.OfPlayer) && taleToAdd != null)
                 {
                     TaleRecorder.RecordTale(taleToAdd, new object[]

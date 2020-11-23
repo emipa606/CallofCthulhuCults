@@ -24,31 +24,17 @@ namespace CultOfCthulhu
         public override float RandomSelectionWeight(Pawn initiator, Pawn recipient)
         {
             //We need two individuals that are part of the colony
-            if (!initiator.IsColonist || !initiator.IsPrisoner)
-            {
-                return 0f;
-            }
-
-            if (!recipient.IsColonist || !recipient.IsPrisoner)
-            {
-                return 0f;
-            }
+            if (!initiator.IsColonist || !initiator.IsPrisoner) return 0f;
+            if (!recipient.IsColonist || !recipient.IsPrisoner) return 0f;
 
             //If they are sleeping, don't do this.
-            if (initiator.jobs.curDriver.asleep)
-            {
-                return 0f;
-            }
-
-            if (recipient.jobs.curDriver.asleep)
-            {
-                return 0f;
-            }
+            if (initiator.jobs.curDriver.asleep) return 0f;
+            if (recipient.jobs.curDriver.asleep) return 0f;
 
             //We need them to have different mindsets.
 
             //Normally, it's double chance of happening.
-            var math = 2f;
+            float math = 2f;
             //Subtract the social skill of the initiator by 10.
             //A social skill of 20 will return a 0 chance of this happening.
             math -= (float)initiator.skills.GetSkill(SkillDefOf.Social).Level / 10;

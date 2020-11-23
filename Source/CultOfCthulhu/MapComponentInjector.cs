@@ -14,9 +14,9 @@ namespace Cthulhu
     {
         static MapComponentInjectorBehavior()
         {
-            var initializer = new UnityEngine.GameObject("JecrellMapCompInjector");
+            GameObject initializer = new UnityEngine.GameObject("JecrellMapCompInjector");
             initializer.AddComponent<MapComponentInjectorBehavior>();
-            DontDestroyOnLoad(initializer);
+            DontDestroyOnLoad((UnityEngine.Object) initializer);
             mapComponents = new List<Type>();
             typeof(MapComponentInjectorBehavior).Assembly.GetTypes()
                 .Where((Type t) => t.IsClass && t.IsSubclassOf(typeof(MapComponent))).ToList()
@@ -52,7 +52,7 @@ namespace Cthulhu
                                         {
                                             if (!map.components.Any((MapComponent mp) => mp.GetType() == t))
                                             {
-                                                var comp = (MapComponent) typeof(MapComponent)
+                                                MapComponent comp = (MapComponent) typeof(MapComponent)
                                                     .GetConstructor(Type.EmptyTypes).Invoke(new object[] {map});
                                                 map.components.Add(comp);
                                             }

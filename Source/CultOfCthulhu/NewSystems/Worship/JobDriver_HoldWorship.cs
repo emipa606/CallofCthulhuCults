@@ -35,9 +35,15 @@ namespace CultOfCthulhu
 
         public bool Forced => job.playerForced;
 
-        public int TicksLeftInService = int.MaxValue;
+        public int TicksLeftInService = Int32.MaxValue;
 
-        protected Building_SacrificialAltar DropAltar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
+        protected Building_SacrificialAltar DropAltar
+        {
+            get
+            {
+                return (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
+            }
+        }
 
         private string report = "";
         public override string GetReport()
@@ -63,7 +69,7 @@ namespace CultOfCthulhu
 
             //Who are we worshipping today?
             var deitySymbol = ((CosmicEntityDef)DropAltar.currentWorshipDeity.def).Symbol;
-            var deityLabel = DropAltar.currentWorshipDeity.Label;
+            string deityLabel = DropAltar.currentWorshipDeity.Label;
 
             Toil goToAltar = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.InteractionCell);
 
@@ -72,11 +78,7 @@ namespace CultOfCthulhu
             {
                 initAction = delegate
                 {
-                    bool validator(Thing x)
-                    {
-                        return x.TryGetComp<CompWorshipCaller>() != null;
-                    }
-
+                    bool validator(Thing x) => x.TryGetComp<CompWorshipCaller>() != null;
                     Thing worshipCaller = GenClosest.ClosestThingReachable(DropAltar.Position, DropAltar.Map,
                         ThingRequest.ForGroup(ThingRequestGroup.BuildingArtificial), PathEndMode.ClosestTouch,
                         TraverseParms.For(pawn, Danger.None, TraverseMode.ByPawn), 9999, validator, null, 0, -1, false, RegionType.Set_Passable, false);
@@ -86,9 +88,7 @@ namespace CultOfCthulhu
                         job.SetTarget(TargetIndex.B, worshipCaller);
                     }
                     else
-                    {
                         JumpToToil(goToAltar);
-                    }
                 }
             };
 
@@ -105,7 +105,7 @@ namespace CultOfCthulhu
             yield return goToAltar;
 
             //Toil 2: Wait a bit for stragglers.
-            var waitingTime = new Toil
+            Toil waitingTime = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.ritualDuration,
@@ -119,7 +119,7 @@ namespace CultOfCthulhu
             yield return waitingTime;
 
             //Toil 3: Preach the sermon.
-            var preachingTime = new Toil
+            Toil preachingTime = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.ritualDuration,
@@ -129,9 +129,7 @@ namespace CultOfCthulhu
                         deityLabel
                     );
                     if (deitySymbol != null)
-                    {
                         MoteMaker.MakeInteractionBubble(pawn, null, ThingDefOf.Mote_Speech, deitySymbol);
-                    }
                 },
                 tickAction = delegate
                 {
@@ -144,7 +142,7 @@ namespace CultOfCthulhu
             yield return preachingTime;
 
             //Toil 4: Time to pray
-            var chantingTime = new Toil
+            Toil chantingTime = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.ritualDuration
@@ -157,9 +155,7 @@ namespace CultOfCthulhu
                         deityLabel
                     );
                 if (deitySymbol != null)
-                {
                     MoteMaker.MakeInteractionBubble(pawn, null, ThingDefOf.Mote_Speech, deitySymbol);
-                }
             };
             chantingTime.tickAction = delegate
             {

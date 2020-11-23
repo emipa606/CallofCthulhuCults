@@ -11,7 +11,7 @@ namespace CultOfCthulhu
     {
         public override DamageWorker.DamageResult Apply(DamageInfo dinfo, Thing victim)
         {
-            var result = new DamageResult();
+            DamageWorker.DamageResult result = new DamageResult();
             if (victim is Pawn pawn)
             {
                 if (pawn.Spawned && !pawn.Dead)
@@ -20,7 +20,7 @@ namespace CultOfCthulhu
                     if (pawn.health != null)
                     {
 
-                        var d20 = Rand.Range(1, 20);
+                        int d20 = Rand.Range(1, 20);
 
                         if (d20 <= 1)
                         {
@@ -64,11 +64,7 @@ namespace CultOfCthulhu
                         {
                             MoteMaker.ThrowText(dinfo.Instigator.DrawPos, dinfo.Instigator.Map, "Success", 12.0f);
                             BodyPartRecord part = pawn.health.hediffSet.GetBrain();
-                            if (part == null)
-                            {
-                                Log.ErrorOnce("Cults :: Missing Brain", 6781923);
-                            }
-
+                            if (part == null) Log.ErrorOnce("Cults :: Missing Brain", 6781923);
                             pawn.TakeDamage(new DamageInfo(CultsDefOf.Cults_Psionic, Rand.Range(5, 8), 1f, -1, dinfo.Instigator, part));
 
                             return result;
@@ -77,11 +73,7 @@ namespace CultOfCthulhu
                         {
                             MoteMaker.ThrowText(dinfo.Instigator.DrawPos, dinfo.Instigator.Map, "Critical Success", 12.0f);
                             BodyPartRecord part = pawn.health.hediffSet.GetBrain();
-                            if (part == null)
-                            {
-                                Log.ErrorOnce("Cults :: Missing Brain", 6781923);
-                            }
-
+                            if (part == null) Log.ErrorOnce("Cults :: Missing Brain", 6781923);
                             victim.TakeDamage(new DamageInfo(CultsDefOf.Cults_Psionic, 9999, 1f, -1, dinfo.Instigator, part));
 
                             return result;

@@ -29,7 +29,13 @@ namespace CultOfCthulhu
         {
             return true;
         }
-        protected Building_SacrificialAltar altar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
+        protected Building_SacrificialAltar altar
+        {
+            get
+            {
+                return (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
+            }
+        }
 
         [DebuggerHidden]
         protected override IEnumerable<Toil> MakeNewToils()
@@ -54,7 +60,7 @@ namespace CultOfCthulhu
             };
 
             //Toil 2 Reflect on worship
-            var reflectingTime = new Toil
+            Toil reflectingTime = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.reflectDuration

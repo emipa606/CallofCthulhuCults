@@ -40,7 +40,7 @@ namespace CultOfCthulhu
 
         public override string GetInspectString()
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendLine(base.GetInspectString());
             stringBuilder.AppendLine("AwokeDaysAgo".Translate(
                 age.TicksToDays().ToString("F1")
@@ -56,11 +56,11 @@ namespace CultOfCthulhu
        
         private void TrySpawnMadSailors()
         {
-            var lordList = new List<Pawn>();
+            List<Pawn> lordList = new List<Pawn>();
             Faction faction = Find.FactionManager.FirstFactionOfDef(CultsDefOf.Cults_Sailors);
             Cthulhu.Utility.DebugReport(faction.ToString());
             //Log.Message("Building_LandedShip LordJob_DefendPoint");
-            var lordJob = new LordJob_DefendPoint(Position);
+            LordJob_DefendPoint lordJob = new LordJob_DefendPoint(Position);
             if (pointsLeft <= 0f)
             {
                 return;
@@ -75,7 +75,7 @@ namespace CultOfCthulhu
                      where cell.Walkable(Map)
                      select cell).TryRandomElement(out IntVec3 center))
                 {
-                    var request = new PawnGenerationRequest(CultsDefOf.Cults_Sailor, faction, PawnGenerationContext.NonPlayer, Map.Tile, false, false, false, false, true, true, 20f, false, true, true, false, false, false, false, false, 0, null, 0, null, null, null);
+                    PawnGenerationRequest request = new PawnGenerationRequest(CultsDefOf.Cults_Sailor, faction, PawnGenerationContext.NonPlayer, Map.Tile, false, false, false, false, true, true, 20f, false, true, true, false, false, false, false, false, 0, null, 0, null, null, null);
                     Pawn pawn = PawnGenerator.GeneratePawn(request);
                     if (GenPlace.TryPlaceThing(pawn, center, Map, ThingPlaceMode.Near, null))
                     {

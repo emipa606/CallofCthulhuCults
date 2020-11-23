@@ -30,38 +30,18 @@ namespace CultOfCthulhu
         public override float RandomSelectionWeight(Pawn initiator, Pawn recipient)
         {
             //We need two individuals that are part of the colony
-            if (!initiator.IsColonist || !initiator.IsPrisoner)
-            {
-                return 0f;
-            }
-
-            if (!recipient.IsColonist || !recipient.IsPrisoner)
-            {
-                return 0f;
-            }
+            if (!initiator.IsColonist || !initiator.IsPrisoner) return 0f;
+            if (!recipient.IsColonist || !recipient.IsPrisoner) return 0f;
 
             //If they are sleeping, don't do this.
-            if (initiator.jobs.curDriver.asleep)
-            {
-                return 0f;
-            }
-
-            if (recipient.jobs.curDriver.asleep)
-            {
-                return 0f;
-            }
+            if (initiator.jobs.curDriver.asleep) return 0f;
+            if (recipient.jobs.curDriver.asleep) return 0f;
 
             //The recipient must not be cult-minded.
-            if (CultUtility.IsCultMinded(recipient))
-            {
-                return 0f;
-            }
+            if (CultUtility.IsCultMinded(recipient)) return 0f;
 
             //The initiator must be cult-minded.
-            if (!CultUtility.IsCultMinded(initiator))
-            {
-                return 0f;
-            }
+            if (!CultUtility.IsCultMinded(initiator)) return 0f;
 
             //If they have a good relationship, increase the chances of the interaction.
             return initiator.relations.OpinionOf(recipient) > 0 ? Rand.Range(0.8f, 1f) : 0f;

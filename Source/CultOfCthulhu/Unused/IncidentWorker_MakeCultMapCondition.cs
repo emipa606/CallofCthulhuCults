@@ -12,10 +12,10 @@ namespace CultOfCthulhu
         {
             //Map map = (Map)parms.target;
             _ = Find.Maps;
-            var cultConditionActive = 
+            bool cultConditionActive = 
                 Find.World.GameConditionManager.ConditionIsActive(CultsDefOf.CultgameCondition_StarsAreWrong) ||
                 Find.World.GameConditionManager.ConditionIsActive(CultsDefOf.CultgameCondition_StarsAreRight);
-            var cultAvailable = CultTracker.Get.PlayerCult != null && CultTracker.Get.PlayerCult.active;
+            bool cultAvailable = CultTracker.Get.PlayerCult != null && CultTracker.Get.PlayerCult.active;
             return cultAvailable && !cultConditionActive && base.CanFireNowSub(parms);
         }
     }

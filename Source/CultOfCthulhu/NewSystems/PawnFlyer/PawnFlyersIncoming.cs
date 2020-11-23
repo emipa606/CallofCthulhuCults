@@ -70,7 +70,13 @@ namespace CultOfCthulhu
             }
         }
 
-        private PawnFlyerDef PawnFlyerDef => pawnFlyer.def as PawnFlyerDef;
+        private PawnFlyerDef PawnFlyerDef
+        {
+            get
+            {
+                return pawnFlyer.def as PawnFlyerDef;
+            }
+        }
 
         public ActiveDropPodInfo Contents
         {
@@ -220,20 +226,17 @@ namespace CultOfCthulhu
         private void Impact()
         {
             Cthulhu.Utility.DebugReport("Impacted Called");
-            for (var i = 0; i < 6; i++)
+            for (int i = 0; i < 6; i++)
             {
                 Vector3 loc = Position.ToVector3Shifted() + Gen.RandomHorizontalVector(1f);
                 MoteMaker.ThrowDustPuff(loc, Map, 1.2f);
             }
             MoteMaker.ThrowLightningGlow(Position.ToVector3Shifted(), Map, 2f);
-            var pawnFlyerLanded = (PawnFlyersLanded)ThingMaker.MakeThing(PawnFlyerDef.landedDef, null);
+            PawnFlyersLanded pawnFlyerLanded = (PawnFlyersLanded)ThingMaker.MakeThing(PawnFlyerDef.landedDef, null);
             pawnFlyerLanded.pawnFlyer = pawnFlyer;
             pawnFlyerLanded.Contents = contents;
             if (!pawnFlyerLanded.Contents.innerContainer.Contains(pawnFlyer))
-            {
                 pawnFlyerLanded.Contents.innerContainer.TryAdd(pawnFlyer);
-            }
-
             GenSpawn.Spawn(pawnFlyerLanded, Position, Map, Rotation);
             RoofDef roof = Position.GetRoof(Map);
             if (roof != null)
@@ -244,7 +247,7 @@ namespace CultOfCthulhu
                 }
                 if (roof.filthLeaving != null)
                 {
-                    for (var j = 0; j < 3; j++)
+                    for (int j = 0; j < 3; j++)
                     {
                         FilthMaker.TryMakeFilth(Position, Map, roof.filthLeaving, 1);
                     }

@@ -42,9 +42,23 @@ namespace CultOfCthulhu
 
         private static readonly List<Thing> tmpActiveDropPods = new List<Thing>();
 
-        private PawnFlyerDef PawnFlyerDef => pawnFlyer.def as PawnFlyerDef;
+        private PawnFlyerDef PawnFlyerDef
+        {
+            get
+            {
+                return pawnFlyer.def as PawnFlyerDef;
+            }
+        }
 
-        public override Vector3 DrawPos => SkyfallerDrawPosUtility.DrawPos_Accelerate(base.DrawPos, ticksSinceStart, -33f, def.skyfaller.speed);//return DropPodAnimationUtility.DrawPosAt(this.ticksSinceStart, base.Position);
+        public override Vector3 DrawPos
+        {
+            get
+            {
+                return SkyfallerDrawPosUtility.DrawPos_Accelerate(base.DrawPos, ticksSinceStart, -33f, def.skyfaller.speed);
+
+                //return DropPodAnimationUtility.DrawPosAt(this.ticksSinceStart, base.Position);
+            }
+        }
 
         public void GetChildHolders(List<IThingHolder> outChildren)
         {
@@ -189,7 +203,7 @@ namespace CultOfCthulhu
                 Map.lordManager.RemoveLord(lord);
             }
 
-            var PawnFlyersTraveling = (PawnFlyersTraveling)WorldObjectMaker.MakeWorldObject(PawnFlyerDef.travelingDef);
+            PawnFlyersTraveling PawnFlyersTraveling = (PawnFlyersTraveling)WorldObjectMaker.MakeWorldObject(PawnFlyerDef.travelingDef);
             PawnFlyersTraveling.pawnFlyer = pawnFlyer;
             PawnFlyersTraveling.Tile = Map.Tile;
             PawnFlyersTraveling.destinationTile = destinationTile;
@@ -200,7 +214,7 @@ namespace CultOfCthulhu
             tmpActiveDropPods.Clear();
             tmpActiveDropPods.AddRange(Map.listerThings.ThingsInGroup(ThingRequestGroup.ActiveDropPod));
 
-            for (var i = 0; i < tmpActiveDropPods.Count; i++)
+            for (int i = 0; i < tmpActiveDropPods.Count; i++)
             {
                 if (tmpActiveDropPods[i] is PawnFlyersLeaving pawnFlyerLeaving && pawnFlyerLeaving.groupID == groupID)
                 {
@@ -218,7 +232,7 @@ namespace CultOfCthulhu
         public static Lord FindLord(int transportersGroup, Map map)
         {
             List<Lord> lords = map.lordManager.lords;
-            for (var i = 0; i < lords.Count; i++)
+            for (int i = 0; i < lords.Count; i++)
             {
                 if (lords[i].LordJob is LordJob_LoadAndEnterTransportersPawn lordJob_LoadAndEnterTransporters && lordJob_LoadAndEnterTransporters.transportersGroup == transportersGroup)
                 {

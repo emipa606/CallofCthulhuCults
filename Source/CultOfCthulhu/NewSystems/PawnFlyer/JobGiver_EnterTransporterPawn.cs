@@ -24,8 +24,8 @@ namespace CultOfCthulhu
             IEnumerable<Pawn> listSel = from Pawn pawns in map.mapPawns.AllPawnsSpawned
                                                      where pawns is PawnFlyer
                                                      select pawns;
-            var list = new List<Pawn>(listSel);
-            for (var i = 0; i < list.Count; i++)
+            List<Pawn> list = new List<Pawn>(listSel);
+            for (int i = 0; i < list.Count; i++)
             {
                 CompTransporterPawn compTransporter = list[i].TryGetComp<CompTransporterPawn>();
                 if (compTransporter.groupID == transportersGroup)
@@ -40,7 +40,7 @@ namespace CultOfCthulhu
         protected override Job TryGiveJob(Pawn pawn)
         {
             Cthulhu.Utility.DebugReport("JobGiver_EnterTransporterPawn Called");
-            var transportersGroup = pawn.mindState.duty.transportersGroup;
+            int transportersGroup = pawn.mindState.duty.transportersGroup;
             GetTransportersInGroup(transportersGroup, pawn.Map, tmpTransporters);
             CompTransporterPawn compTransporter = FindMyTransporter(tmpTransporters, pawn);
             return compTransporter == null || !pawn.CanReserveAndReach(compTransporter.parent, PathEndMode.Touch, Danger.Deadly, 1)
@@ -50,17 +50,17 @@ namespace CultOfCthulhu
 
         private CompTransporterPawn FindMyTransporter(List<CompTransporterPawn> transporters, Pawn me)
         {
-            for (var i = 0; i < transporters.Count; i++)
+            for (int i = 0; i < transporters.Count; i++)
             {
                 List<TransferableOneWay> leftToLoad = transporters[i].leftToLoad;
                 if (leftToLoad != null)
                 {
-                    for (var j = 0; j < leftToLoad.Count; j++)
+                    for (int j = 0; j < leftToLoad.Count; j++)
                     {
                         if (leftToLoad[j].AnyThing is Pawn)
                         {
                             List<Thing> things = leftToLoad[j].things;
-                            for (var k = 0; k < things.Count; k++)
+                            for (int k = 0; k < things.Count; k++)
                             {
                                 if (things[k] == me)
                                 {

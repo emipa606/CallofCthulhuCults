@@ -9,16 +9,25 @@ namespace CultOfCthulhu
 {
     public class WorkGiver_LoadTransportersPawn : WorkGiver_Scanner
     {
-        public override ThingRequest PotentialWorkThingRequest => ThingRequest.ForGroup(ThingRequestGroup.Pawn);
+        public override ThingRequest PotentialWorkThingRequest
+        {
+            get
+            {
+                return ThingRequest. ForGroup(ThingRequestGroup.Pawn);
+            }
+        }
 
-        public override PathEndMode PathEndMode => PathEndMode.Touch;
+        public override PathEndMode PathEndMode
+        {
+            get
+            {
+                return PathEndMode.Touch;
+            }
+        }
 
         public override bool HasJobOnThing(Pawn pawn, Thing t, bool forced = false)
         {
-            if (t == null)
-            {
-                return false;
-            }
+            if (t == null) return false;
 
             if (!(t is Pawn pawn2) || pawn2 == pawn)
             {

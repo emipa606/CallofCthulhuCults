@@ -44,11 +44,7 @@ namespace CultOfCthulhu
                         break;
                     }
                 }
-                if (pawn == null)
-                {
-                    StartedUse = false;
-                }
-
+                if (pawn == null) StartedUse = false;
                 return pawn;
             }
         }
@@ -73,27 +69,19 @@ namespace CultOfCthulhu
         private void ForbiddenChecker()
         {
             ResearchProjectDef currentProject = Find.ResearchManager.currentProj;
-            if (currentProject == null)
-            {
-                return;
-            }
-
+            if (currentProject == null) return;
             this.SetForbidden(false);
-            if (IsThisCultistResearch(currentProject))
-            {
-                return;
-            }
-
+            if (IsThisCultistResearch(currentProject)) return;
             this.SetForbidden(true);
         }
 
         public override string GetInspectString()
         {
-            var s = new StringBuilder();
+            StringBuilder s = new StringBuilder();
             s.Append(base.GetInspectString());
             //s.AppendLine();
             s.AppendLine("Cults_AutoForbidWarning".Translate());
-            var result = s.ToString();
+            string result = s.ToString();
             result = result.TrimEndNewlines();
             return result;
 
@@ -104,27 +92,13 @@ namespace CultOfCthulhu
             //First, declare our variables.
             ResearchProjectDef currentProject = Find.ResearchManager.currentProj;
             Pawn interactingPawn = InteractingPawn;
-            if (currentProject == null)
-            {
-                return;
-            }
+            if (currentProject == null) return;
 
-            if (interactingPawn == null)
-            {
-                return;
-            }
-
-            if (Find.World.GetComponent<WorldComponent_GlobalCultTracker>().cultResearch == null)
-            {
-                return;
-            }
+            if (interactingPawn == null) return;
+            if (Find.World.GetComponent<WorldComponent_GlobalCultTracker>().cultResearch == null) return;
             //Are we using this for the correct project type?
             this.SetForbidden(false);
-            if (IsThisCultistResearch(currentProject))
-            {
-                return;
-            }
-
+            if (IsThisCultistResearch(currentProject)) return;
             this.SetForbidden(true);
             //Uh oh.
             //Let's try and find another research station to research this at.
@@ -133,10 +107,7 @@ namespace CultOfCthulhu
             {
                 if (bld != this && bld.def != def)
                 {
-                    if (bld is Building_ResearchBench)
-                    {
-                        bench = bld as Building_ResearchBench;
-                    }
+                    if (bld is Building_ResearchBench) bench = bld as Building_ResearchBench;
                 }
             }
             
@@ -164,7 +135,7 @@ namespace CultOfCthulhu
             }
             
             //Okay, assign a job over there instead of here.
-            var J = new Job(JobDefOf.Research, bench);
+            Job J = new Job(JobDefOf.Research, bench);
             Map.reservationManager.ReleaseAllClaimedBy(interactingPawn);
             interactingPawn.jobs.TryTakeOrderedJob(J);
             //interactingpawn.CurJob.EndCurrentJob(JobCondition.InterruptForced);
@@ -172,11 +143,7 @@ namespace CultOfCthulhu
 
         private void CancelResearch(string reason)
         {
-            if (reason != null)
-            {
-                Messages.Message(reason, MessageTypeDefOf.RejectInput);
-            }
-
+            if (reason != null) Messages.Message(reason, MessageTypeDefOf.RejectInput);
             Find.ResearchManager.currentProj = null;
             Find.ResearchManager.ReapplyAllMods();
             Messages.Message("Research cancelled.", MessageTypeDefOf.SilentInput);
@@ -186,10 +153,7 @@ namespace CultOfCthulhu
         {
             foreach (ResearchProjectDef def in Find.World.GetComponent<WorldComponent_GlobalCultTracker>().cultResearch)
             {
-                if (currentProject == def)
-                {
-                    return true;
-                }
+                if (currentProject == def) return true;
             }
             return false;
         }
@@ -198,23 +162,11 @@ namespace CultOfCthulhu
         {
             Pawn temp = InteractingPawn;
             ResearchProjectDef currentProject = Find.ResearchManager.currentProj;
-            var modifier = 0.0040f;
+            float modifier = 0.0040f;
 
-            if (temp == null)
-            {
-                return;
-            }
-
-            if (currentProject == null)
-            {
-                return;
-            }
-
-            if (!IsThisCultistResearch(currentProject))
-            {
-                return;
-            }
-
+            if (temp == null) return;
+            if (currentProject == null) return;
+            if (!IsThisCultistResearch(currentProject)) return;
             UsageWarning(temp);
             if (Find.ResearchManager.currentProj == ResearchProjectDef.Named("Forbidden_Lore"))
             {
@@ -226,7 +178,7 @@ namespace CultOfCthulhu
         }
         private void UsageWarning(Pawn temp)
         {
-            var sanityLevel = Cthulhu.Utility.CurrentSanityLoss(temp);
+            float sanityLevel = Cthulhu.Utility.CurrentSanityLoss(temp);
             if (storedPawn != temp)
             {
                 storedPawn = temp;
@@ -236,12 +188,8 @@ namespace CultOfCthulhu
             if (!StartedUse)
             {
                 StartedUse = true;
-                var stringToTranslate = "OccultCenterWarning" + warningLevel.ToString();
-                if (stringToTranslate == "OccultCenterWarningNone")
-                {
-                    return;
-                }
-
+                string stringToTranslate = "OccultCenterWarning" + warningLevel.ToString();
+                if (stringToTranslate == "OccultCenterWarningNone") return;
                 Messages.Message(stringToTranslate.Translate(
                     InteractingPawn.Name.ToStringShort,
                     InteractingPawn.gender.GetPronoun(),

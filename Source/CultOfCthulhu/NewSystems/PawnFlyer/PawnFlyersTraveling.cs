@@ -11,9 +11,15 @@ namespace CultOfCthulhu
     {
         public PawnFlyer pawnFlyer;
 
-        private float TravelSpeed => PawnFlyerDef.flightSpeed;
+        private float TravelSpeed
+        {
+            get { return PawnFlyerDef.flightSpeed; }
+        }
 
-        private PawnFlyerDef PawnFlyerDef => pawnFlyer.def as PawnFlyerDef;
+        private PawnFlyerDef PawnFlyerDef
+        {
+            get { return pawnFlyer.def as PawnFlyerDef; }
+        }
 
 
         public int destinationTile = -1;
@@ -34,11 +40,20 @@ namespace CultOfCthulhu
 
         private static readonly List<Pawn> tmpPawns = new List<Pawn>();
 
-        private Vector3 Start => Find.WorldGrid.GetTileCenter(initialTile);
+        private Vector3 Start
+        {
+            get { return Find.WorldGrid.GetTileCenter(initialTile); }
+        }
 
-        private Vector3 End => Find.WorldGrid.GetTileCenter(destinationTile);
+        private Vector3 End
+        {
+            get { return Find.WorldGrid.GetTileCenter(destinationTile); }
+        }
 
-        public override Vector3 DrawPos => Vector3.Slerp(Start, End, traveledPct);
+        public override Vector3 DrawPos
+        {
+            get { return Vector3.Slerp(Start, End, traveledPct); }
+        }
 
         private float TraveledPctStepPerTick
         {
@@ -50,22 +65,25 @@ namespace CultOfCthulhu
                 {
                     return 1f;
                 }
-                var num = GenMath.SphericalDistance(start.normalized, end.normalized);
+                float num = GenMath.SphericalDistance(start.normalized, end.normalized);
                 return num == 0f ? 1f : 0.00025f / num;
             }
         }
 
         //There is always the byakhee
-        private bool PodsHaveAnyPotentialCaravanOwner => true;
+        private bool PodsHaveAnyPotentialCaravanOwner
+        {
+            get { return true; }
+        }
 
         public bool PodsHaveAnyFreeColonist
         {
             get
             {
-                for (var i = 0; i < pods.Count; i++)
+                for (int i = 0; i < pods.Count; i++)
                 {
                     ThingOwner innerContainer = pods[i].innerContainer;
-                    for (var j = 0; j < innerContainer.Count; j++)
+                    for (int j = 0; j < innerContainer.Count; j++)
                     {
                         if (innerContainer[j] is Pawn pawn && pawn.IsColonist && pawn.HostFaction == null)
                         {
@@ -81,10 +99,10 @@ namespace CultOfCthulhu
         {
             get
             {
-                for (var i = 0; i < pods.Count; i++)
+                for (int i = 0; i < pods.Count; i++)
                 {
                     ThingOwner innerContainer = pods[i].innerContainer;
-                    for (var j = 0; j < innerContainer.Count; j++)
+                    for (int j = 0; j < innerContainer.Count; j++)
                     {
                         if (innerContainer[j] is Pawn pawn)
                         {
@@ -92,7 +110,7 @@ namespace CultOfCthulhu
                         }
                         else if (innerContainer[j] is PawnFlyer pawnFlyer)
                         {
-                            yield return pawnFlyer;
+                            yield return (Pawn)pawnFlyer;
                         }
                     }
                 }
@@ -140,7 +158,7 @@ namespace CultOfCthulhu
             contents.parent = null;
             pods.Add(contents);
             ThingOwner innerContainer = contents.innerContainer;
-            for (var i = 0; i < innerContainer.Count; i++)
+            for (int i = 0; i < innerContainer.Count; i++)
             {
                 if (innerContainer[i] is Pawn pawn && !pawn.IsWorldPawn())
                 {
@@ -180,7 +198,7 @@ namespace CultOfCthulhu
 
         public bool ContainsPawn(Pawn p)
         {
-            for (var i = 0; i < pods.Count; i++)
+            for (int i = 0; i < pods.Count; i++)
             {
                 if (pods[i].innerContainer.Contains(p))
                 {
@@ -192,7 +210,7 @@ namespace CultOfCthulhu
 
         public bool ContainsPawnFlyer(PawnFlyer p)
         {
-            for (var i = 0; i < pods.Count; i++)
+            for (int i = 0; i < pods.Count; i++)
             {
                 if (pods[i].innerContainer.Contains(p))
                 {
@@ -224,7 +242,7 @@ namespace CultOfCthulhu
                 }
                 else
                 {
-                    for (var i = 0; i < pods.Count; i++)
+                    for (int i = 0; i < pods.Count; i++)
                     {
                         pods[i].innerContainer.ClearAndDestroyContentsOrPassToWorld(DestroyMode.Vanish);
                     }
@@ -286,11 +304,11 @@ namespace CultOfCthulhu
                 }
                 intVec = DropCellFinder.FindRaidDropCenterDistant(map);
             }
-            for (var i = 0; i < pods.Count; i++)
+            for (int i = 0; i < pods.Count; i++)
             {
                 Cthulhu.Utility.DebugReport("PawnFlyerIncoming Generation Started");
                 DropCellFinder.TryFindDropSpotNear(intVec, map, out IntVec3 c, false, true);
-                var pawnFlyerIncoming =
+                PawnFlyersIncoming pawnFlyerIncoming =
                     (PawnFlyersIncoming) ThingMaker.MakeThing(PawnFlyerDef.incomingDef, null);
                 pawnFlyerIncoming.pawnFlyer = pawnFlyer;
                 pawnFlyerIncoming.Contents = pods[i];
@@ -308,14 +326,14 @@ namespace CultOfCthulhu
 
         private void GivePodContentsToCaravan(Caravan caravan)
         {
-            for (var i = 0; i < pods.Count; i++)
+            for (int i = 0; i < pods.Count; i++)
             {
-                var tmpContainedThings = new List<Thing>();
+                List<Thing> tmpContainedThings = new List<Thing>();
                 //PawnFlyersTraveling.tmpContainedThing.Clear();
 
                 tmpContainedThings.AddRange(pods[i].innerContainer);
                 //this.pods[i].innerContainer.
-                for (var j = 0; j < tmpContainedThings.Count; j++)
+                for (int j = 0; j < tmpContainedThings.Count; j++)
                 {
                     pods[i].innerContainer.Remove(tmpContainedThings[j]);
                     tmpContainedThings[j].holdingOwner = null;
@@ -331,7 +349,7 @@ namespace CultOfCthulhu
                     {
                         Pawn pawn2 = CaravanInventoryUtility.FindPawnToMoveInventoryTo(tmpContainedThings[j],
                             caravan.PawnsListForReading, null, null);
-                        var flag = false;
+                        bool flag = false;
                         if (pawn2 != null)
                         {
                             flag = pawn2.inventory.innerContainer.TryAdd(tmpContainedThings[j], true);
@@ -353,10 +371,10 @@ namespace CultOfCthulhu
         private void SpawnCaravanAtDestinationTile()
         {
             tmpPawns.Clear();
-            for (var i = 0; i < pods.Count; i++)
+            for (int i = 0; i < pods.Count; i++)
             {
                 ThingOwner innerContainer = pods[i].innerContainer;
-                for (var j = 0; j < innerContainer.Count; j++)
+                for (int j = 0; j < innerContainer.Count; j++)
                 {
                     if (innerContainer[j] is Pawn pawn)
                     {
@@ -364,20 +382,20 @@ namespace CultOfCthulhu
                     }
                     else if (innerContainer[j] is PawnFlyer pawnFlyer)
                     {
-                        tmpPawns.Add(pawnFlyer);
+                        tmpPawns.Add((Pawn)pawnFlyer);
                     }
                 }
             }
-            if (!GenWorldClosest.TryFindClosestPassableTile(destinationTile, out var startingTile))
+            if (!GenWorldClosest.TryFindClosestPassableTile(destinationTile, out int startingTile))
             {
                 startingTile = destinationTile;
             }
             Caravan o = CaravanMaker.MakeCaravan(tmpPawns, Faction.OfPlayer, startingTile, true);
-            o.AddPawn(pawnFlyer, false);
-            for (var k = 0; k < pods.Count; k++)
+            o.AddPawn((Pawn) pawnFlyer, false);
+            for (int k = 0; k < pods.Count; k++)
             {
                 ThingOwner innerContainer2 = pods[k].innerContainer;
-                for (var l = 0; l < innerContainer2.Count; l++)
+                for (int l = 0; l < innerContainer2.Count; l++)
                 {
                     if (!(innerContainer2[l] is Pawn))
                     {
@@ -387,13 +405,11 @@ namespace CultOfCthulhu
                     }
                     else
                     {
-                        var pawn3 = innerContainer2[l] as Pawn;
+                        Pawn pawn3 = innerContainer2[l] as Pawn;
                         if (!pawn3.IsPrisoner)
                         {
                             if (pawn3.Faction != pawnFlyer.Faction)
-                            {
                                 pawn3.SetFaction(pawnFlyer.Faction);
-                            }
                         }
                     }
                 }
@@ -405,12 +421,12 @@ namespace CultOfCthulhu
 
         private void RemoveAllPawnsFromWorldPawns()
         {
-            for (var i = 0; i < pods.Count; i++)
+            for (int i = 0; i < pods.Count; i++)
             {
                 ThingOwner innerContainer = pods[i].innerContainer;
-                for (var j = 0; j < innerContainer.Count; j++)
+                for (int j = 0; j < innerContainer.Count; j++)
                 {
-                    var pawn = innerContainer[j] as Pawn;
+                    Pawn pawn = innerContainer[j] as Pawn;
                     Pawn pawnFlyer = innerContainer[j] as PawnFlyer;
                     if (pawn != null && pawn.IsWorldPawn())
                     {
@@ -426,7 +442,7 @@ namespace CultOfCthulhu
 
         private void RemoveAllPods()
         {
-            for (var i = 0; i < pods.Count; i++)
+            for (int i = 0; i < pods.Count; i++)
             {
                 pods[i].savePawnsWithReferenceMode = false;
             }

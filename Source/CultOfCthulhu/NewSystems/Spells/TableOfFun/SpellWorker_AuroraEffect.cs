@@ -29,7 +29,7 @@ namespace CultOfCthulhu
         protected override bool CanFireNowSub(IncidentParms parms)
         {
             //Cthulhu.Utility.DebugReport("CanFire: " + this.def.defName);
-            var map = (Map)parms.target;
+            Map map = (Map)parms.target;
             return !map.GameConditionManager.ConditionIsActive(CultsDefOf.Cults_Aurora);
         }
         
@@ -42,9 +42,9 @@ namespace CultOfCthulhu
 
         protected void DoConditionAndLetter(int duration, IIncidentTarget target)
         {
-            var map = (Map)target;
+            Map map = (Map)target;
             //Cthulhu.Utility.DebugReport("Generating Map Condition");
-            var GameCondition = (GameCondition_AuroraEffect)GameConditionMaker.MakeCondition(CultsDefOf.Cults_Aurora, duration);
+            GameCondition_AuroraEffect GameCondition = (GameCondition_AuroraEffect)GameConditionMaker.MakeCondition(CultsDefOf.Cults_Aurora, duration);
             //Cthulhu.Utility.DebugReport("Getting coords.");
             Vector2 coords = Find.WorldGrid.LongLatOf(map.Tile);
             string text3;

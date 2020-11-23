@@ -40,7 +40,7 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
             //Spawn some goats
             //Cthulhu.Utility.SpawnPawnsOfCountAt(CultDefOfs.BlackIbex, altar.Position, Rand.Range(2, 5), Faction.OfPlayer);
 

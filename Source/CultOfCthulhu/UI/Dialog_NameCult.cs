@@ -15,7 +15,13 @@ namespace CultOfCthulhu
 
         private string curName = NameGenerator.GenerateName(RulePackDef.Named("NamerCults"));
 
-        public override Vector2 InitialSize => new Vector2(500f, 200f);
+        public override Vector2 InitialSize
+        {
+            get
+            {
+                return new Vector2(500f, 200f);
+            }
+        }
 
         public Dialog_NameCult(Map map)
         {
@@ -48,7 +54,7 @@ namespace CultOfCthulhu
         public override void DoWindowContents(Rect rect)
         {
             Text.Font = GameFont.Small;
-            var flag = false;
+            bool flag = false;
             if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return)
             {
                 flag = true;
@@ -64,8 +70,8 @@ namespace CultOfCthulhu
             {
                 Widgets.Label(new Rect(0f, 0f, rect.width, rect.height), "NameCultMessageNullHandler".Translate());
             }
-            curName = Widgets.TextField(new Rect(0f, rect.height - 35f, (rect.width / 2f) - 20f, 35f), curName);
-            if (Widgets.ButtonText(new Rect((rect.width / 2f) + 20f, rect.height - 35f, (rect.width / 2f) - 20f, 35f), "OK".Translate(), true, false, true) || flag)
+            curName = Widgets.TextField(new Rect(0f, rect.height - 35f, rect.width / 2f - 20f, 35f), curName);
+            if (Widgets.ButtonText(new Rect(rect.width / 2f + 20f, rect.height - 35f, rect.width / 2f - 20f, 35f), "OK".Translate(), true, false, true) || flag)
             {
                 if (IsValidCultName(curName))
                 {

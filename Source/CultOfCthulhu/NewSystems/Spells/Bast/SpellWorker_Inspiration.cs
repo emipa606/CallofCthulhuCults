@@ -20,7 +20,7 @@ namespace BastCult
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
 
             List<InspirationDef> inspirations = DefDatabase<InspirationDef>.AllDefsListForReading;
 
@@ -29,9 +29,7 @@ namespace BastCult
             {
                 //Try twice.
                 if (!colonist.mindState.inspirationHandler.TryStartInspiration(inspirations[Rand.Range(0, inspirations.Count)]))
-                {
                     colonist.mindState.inspirationHandler.TryStartInspiration(inspirations[Rand.Range(0, inspirations.Count)]);
-                }
             }
 
             return true;

@@ -40,7 +40,7 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
 
             Cthulhu.Utility.SpawnThingDefOfCountAt(CultsDefOf.Cults_ElixerOfPower, 1, new TargetInfo(altar(map).RandomAdjacentCell8Way(), map));
 

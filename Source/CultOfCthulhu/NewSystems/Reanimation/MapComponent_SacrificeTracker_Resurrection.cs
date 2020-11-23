@@ -35,31 +35,15 @@ namespace CultOfCthulhu
             try
             {
 
-                if (Find.TickManager.TicksGame % 100 != 0)
-                {
-                    return;
-                }
-
-                if (unspeakableOathPawns.NullOrEmpty())
-                {
-                    return;
-                }
-
-                var tempOathList = new List<Pawn>(unspeakableOathPawns);
+                if (Find.TickManager.TicksGame % 100 != 0) return;
+                if (unspeakableOathPawns.NullOrEmpty()) return;
+                List<Pawn> tempOathList = new List<Pawn>(unspeakableOathPawns);
                 foreach (Pawn oathtaker in tempOathList)
                 {
                     if (oathtaker.Dead)
                     {
-                        if (unspeakableOathPawns != null)
-                        {
-                            unspeakableOathPawns.Remove(oathtaker);
-                        }
-
-                        if ((toBeResurrected?.Count ?? 0) > 0)
-                        {
-                            toBeResurrected = new List<Pawn>();
-                        }
-
+                        if (unspeakableOathPawns != null) unspeakableOathPawns.Remove(oathtaker);
+                        if ((toBeResurrected?.Count ?? 0) > 0) toBeResurrected = new List<Pawn>();
                         toBeResurrected.Add(oathtaker);
                         Cthulhu.Utility.DebugReport("Started Resurrection Process");
                         ticksUntilResurrection = resurrectionTicks;
@@ -78,10 +62,7 @@ namespace CultOfCthulhu
         {
             //Check ticks
 
-            if (ticksUntilResurrection == -999)
-            {
-                return;
-            }
+            if (ticksUntilResurrection == -999) return;
 
             if (ticksUntilResurrection > 0)
             {

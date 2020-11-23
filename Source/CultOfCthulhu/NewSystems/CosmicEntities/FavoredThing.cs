@@ -17,7 +17,13 @@ namespace CultOfCthulhu
             this.favor = favor;
         }
 
-        public string Summary => favor.ToStringPercent() + " favor " + (thingDef ?? "null");
+        public string Summary
+        {
+            get
+            {
+                return favor.ToStringPercent() + " favor " + (thingDef ?? "null");
+            }
+        }
 
         public void LoadDataFromXmlCustom(XmlNode xmlRoot)
         {

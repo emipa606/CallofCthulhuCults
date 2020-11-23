@@ -14,11 +14,11 @@ namespace CultOfCthulhu
     {
         private const int InitialPawnSpawnDelay = 960;
 
-        private const float PawnSpawnRadius = 5f;
+        private const int PawnSpawnRadius = 5;
 
         private const float MaxSpawnedPawnsPoints = 500f;
 
-        private const float InitialPawnsPoints = 260f;
+        private const int InitialPawnsPoints = 260;
 
         public bool active = true;
 
@@ -41,8 +41,8 @@ namespace CultOfCthulhu
             get
             {
                 FilterOutUnspawnedPawns();
-                var num = 0f;
-                for (var i = 0; i < spawnedPawns.Count; i++)
+                float num = 0f;
+                for (int i = 0; i < spawnedPawns.Count; i++)
                 {
                     num += spawnedPawns[i].kindDef.combatPower;
                 }
@@ -61,13 +61,13 @@ namespace CultOfCthulhu
 
         public void StartInitialPawnSpawnCountdown()
         {
-            ticksToSpawnInitialPawns = InitialPawnSpawnDelay;
+            ticksToSpawnInitialPawns = 960;
         }
 
         private void SpawnInitialPawnsNow()
         {
             ticksToSpawnInitialPawns = -1;
-            while (SpawnedPawnsPoints < InitialPawnsPoints)
+            while (SpawnedPawnsPoints < 260f)
             {
                 if (!TrySpawnPawn(out _, Map))
                 {
@@ -99,7 +99,7 @@ namespace CultOfCthulhu
                 {
                     if (SpawnedPawnsPoints < MaxSpawnedPawnsPoints)
                     {
-                        var flag = TrySpawnPawn(out Pawn pawn, Map);
+                        bool flag = TrySpawnPawn(out Pawn pawn, Map);
                         if (flag && pawn.caller != null)
                         {
                             pawn.caller.DoCall();
@@ -163,9 +163,9 @@ namespace CultOfCthulhu
 
         public override string GetInspectString()
         {
-            var s = new StringBuilder();
+            StringBuilder s = new StringBuilder();
             s.Append(base.GetInspectString());
-            var text = string.Empty;
+            string text = String.Empty;
 
             if (CanSpawnPawns())
             {
@@ -186,7 +186,7 @@ namespace CultOfCthulhu
 
         private void CalculateNextPawnSpawnTick()
         {
-            var num = GenMath.LerpDouble(0f, PawnSpawnRadius, 1f, 0.5f, spawnedPawns.Count);
+            float num = GenMath.LerpDouble(0f, 5f, 1f, 0.5f, (float)spawnedPawns.Count);
             nextPawnSpawnTick = Find.TickManager.TicksGame + (int)(PawnSpawnIntervalDays.RandomInRange * 60000f / (num * Find.Storyteller.difficulty.enemyReproductionRateFactor));
             //this.nextPawnSpawnTick = Find.TickManager.TicksGame + (int)(Building_WombBetweenWorlds.PawnSpawnIntervalDays.RandomInRange * 60000f);
         }
@@ -203,7 +203,7 @@ namespace CultOfCthulhu
             try
             {
                 IntVec3 pos = Position;
-                for (var i = 0; i < 3; i++)
+                for (int i = 0; i < 3; i++)
                 {
                     pos += GenAdj.CardinalDirections[2];
                 }

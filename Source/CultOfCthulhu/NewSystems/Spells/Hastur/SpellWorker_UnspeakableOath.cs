@@ -16,11 +16,7 @@ namespace CultOfCthulhu
                 MapComponent_SacrificeTracker sacrificeTracker = map.GetComponent<MapComponent_SacrificeTracker>();
                 if (sacrificeTracker != null)
                 {
-                    if (sacrificeTracker.unspeakableOathPawns == null)
-                    {
-                        sacrificeTracker.unspeakableOathPawns = new List<Pawn>();
-                    }
-
+                    if (sacrificeTracker.unspeakableOathPawns == null) sacrificeTracker.unspeakableOathPawns = new List<Pawn>();
                     if (sacrificeTracker.unspeakableOathPawns.Contains(TempExecutioner(map)))
                     {
                         Messages.Message("Executioner has already taken an unspeakable oath.", MessageTypeDefOf.RejectInput);
@@ -46,18 +42,10 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = (Map)parms.target;
+            Map map = (Map)parms.target;
             MapComponent_SacrificeTracker sacrificeTracker = map.GetComponent<MapComponent_SacrificeTracker>();
-            if (sacrificeTracker == null)
-            {
-                return Cthulhu.Utility.ResultFalseWithReport(new StringBuilder("Missing map component."));
-            }
-
-            if (sacrificeTracker.unspeakableOathPawns == null)
-            {
-                sacrificeTracker.unspeakableOathPawns = new List<Pawn>();
-            }
-
+            if (sacrificeTracker == null) return Cthulhu.Utility.ResultFalseWithReport(new StringBuilder("Missing map component."));
+            if (sacrificeTracker.unspeakableOathPawns == null) sacrificeTracker.unspeakableOathPawns = new List<Pawn>();
             if (!Cthulhu.Utility.IsActorAvailable(executioner(map)))
             {
                 Messages.Message("Executioner is unavailable.", MessageTypeDefOf.RejectInput);

@@ -31,12 +31,30 @@ namespace CultOfCthulhu
             //ColanderThingDef = 
             //<ThingDef>.GetNamed("Apparel_Colander");
         }
+        
+        public override int GUIChangeArrow
+        {
+            get
+            {
+                return GainingNeed ? 1 : -1;
+            }
+        }
 
-        public override int GUIChangeArrow => GainingNeed ? 1 : -1;
+        public override float CurInstantLevel
+        {
+            get
+            {
+                return CurLevel;
+            }
+        }
 
-        public override float CurInstantLevel => CurLevel;
-
-        private bool GainingNeed => Find.TickManager.TicksGame < lastGainTick + 10;
+        private bool GainingNeed
+        {
+            get
+            {
+                return Find.TickManager.TicksGame < lastGainTick + 10;
+            }
+        }
 
         public Need_CultMindedness(Pawn pawn) : base(pawn)
         {
@@ -66,65 +84,32 @@ namespace CultOfCthulhu
         public override void NeedInterval()
         {
             ////Log.Messag("Need Interval");
-            if (!CultTracker.Get.ExposedToCults)
-            {
-                return;
-            }
-
-            if (pawn == null)
-            {
-                return;
-            }
-
-            if (!pawn.IsPrisonerOfColony && !pawn.IsColonist)
-            {
-                return;
-            }
-
+            if (!CultTracker.Get.ExposedToCults) return;
+            if (pawn == null) return;
+            if (!pawn.IsPrisonerOfColony && !pawn.IsColonist) return;
             if (!baseSet)
             {
-                if (ticksUntilBaseSet <= 0)
-                {
-                    SetBaseLevels();
-                }
-
+                if (ticksUntilBaseSet <= 0) SetBaseLevels();
                 ticksUntilBaseSet -= 150;
                 return;
             }
             if (CultTracker.Get.PlayerCult != null)
             {
                 if (CultTracker.Get.PlayerCult.founder == pawn ||
-                    CultTracker.Get.PlayerCult.leader == pawn)
-                {
-                    return;
-                }
+                    CultTracker.Get.PlayerCult.leader == pawn) return;
             }
             curLevelInt -= 0.00005f;
-            if (curLevelInt <= 0)
-            {
-                curLevelInt = 0;
-            }
+            if (curLevelInt <= 0) curLevelInt = 0;
         }
 
         public void SetBaseLevels()
         {
             baseSet = true;
-            var temp = CurLevel;
-            if (pawn == null)
-            {
-                return;
-            }
-
+            float temp = CurLevel;
+            if (pawn == null) return;
             temp += CultUtility.GetBaseCultistModifier(pawn);
-            if (temp > 0.99f)
-            {
-                temp = 0.99f;
-            }
-
-            if (temp < 0.01f)
-            {
-                temp = 0.01f;
-            }
+            if (temp > 0.99f) temp = 0.99f;
+            if (temp < 0.01f) temp = 0.01f;
 
             if (pawn?.Faction?.def?.defName == "ROM_TheAgency")
             {
@@ -155,7 +140,7 @@ namespace CultOfCthulhu
                 //base.DrawOnGUI(rect, maxThresholdMarkers, customMargin, drawArrows, doTooltip);
                 if (rect.height > 70f)
                 {
-                    var num = (rect.height - 70f) / 2f;
+                    float num = (rect.height - 70f) / 2f;
                     rect.height = 70f;
                     rect.y += num;
                 }
@@ -164,30 +149,30 @@ namespace CultOfCthulhu
                     Widgets.DrawHighlight(rect);
                 }
                 TooltipHandler.TipRegion(rect, new TipSignal(() => GetTipString(), rect.GetHashCode()));
-                var num2 = 14f;
-                var num3 = num2 + 15f;
+                float num2 = 14f;
+                float num3 = num2 + 15f;
                 if (rect.height < 50f)
                 {
                     num2 *= Mathf.InverseLerp(0f, 50f, rect.height);
                 }
                 Text.Font = (rect.height <= 55f) ? GameFont.Tiny : GameFont.Small;
                 Text.Anchor = TextAnchor.LowerLeft;
-                var rect2 = new Rect(rect.x + num3 + (rect.width * 0.1f), rect.y, rect.width - num3 - (rect.width * 0.1f), rect.height / 2f);
+                Rect rect2 = new Rect(rect.x + num3 + rect.width * 0.1f, rect.y, rect.width - num3 - rect.width * 0.1f, rect.height / 2f);
                 Widgets.Label(rect2, LabelCap);
                 Text.Anchor = TextAnchor.UpperLeft;
-                var rect3 = new Rect(rect.x, rect.y + (rect.height / 2f), rect.width, rect.height / 2f);
-                rect3 = new Rect(rect3.x + num3, rect3.y, rect3.width - (num3 * 2f), rect3.height - num2);
+                Rect rect3 = new Rect(rect.x, rect.y + rect.height / 2f, rect.width, rect.height / 2f);
+                rect3 = new Rect(rect3.x + num3, rect3.y, rect3.width - num3 * 2f, rect3.height - num2);
                 Widgets.FillableBar(rect3, CurLevelPercentage, Buttons.RedTex);
                 //else Widgets.FillableBar(rect3, this.CurLevelPercentage);
                 //Widgets.FillableBarChangeArrows(rect3, this.GUIChangeArrow);
                 if (threshPercents != null)
                 {
-                    for (var i = 0; i < threshPercents.Count; i++)
+                    for (int i = 0; i < threshPercents.Count; i++)
                     {
                         DrawBarThreshold(rect3, threshPercents[i]);
                     }
                 }
-                var curInstantLevelPercentage = CurInstantLevelPercentage;
+                float curInstantLevelPercentage = CurInstantLevelPercentage;
                 if (curInstantLevelPercentage >= 0f)
                 {
                     DrawBarInstantMarkerAt(rect3, curInstantLevelPercentage);
@@ -202,8 +187,8 @@ namespace CultOfCthulhu
 
         private void DrawBarThreshold(Rect barRect, float threshPct)
         {
-            var num = (float)((barRect.width <= 60f) ? 1 : 2);
-            var position = new Rect(barRect.x + (barRect.width * threshPct) - (num - 1f), barRect.y + (barRect.height / 2f), num, barRect.height / 2f);
+            float num = (float)((barRect.width <= 60f) ? 1 : 2);
+            Rect position = new Rect(barRect.x + barRect.width * threshPct - (num - 1f), barRect.y + barRect.height / 2f, num, barRect.height / 2f);
             Texture2D image;
             if (threshPct < CurLevelPercentage)
             {

@@ -19,16 +19,14 @@ namespace BastCult
             Pawn cat = TryGetClosestCatOnMap(map);
 
             if (cat == null)
-            {
                 Messages.Message("Cults_BastNoCatOnMap".Translate(), MessageTypeDefOf.RejectInput);
-            }
 
             return cat != null;
         }
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
             Pawn closestCat = TryGetClosestCatOnMap(map);
 
             GuardianProperties guardianProps = def.GetModExtension<GuardianProperties>();
@@ -46,7 +44,7 @@ namespace BastCult
                 Pawn_RelationsTracker newRelations = newGuardian.relations;
 
                 //Transfer over relations.
-                var relationList = new List<DirectPawnRelation>(oldRelations.DirectRelations);
+                List<DirectPawnRelation> relationList = new List<DirectPawnRelation>(oldRelations.DirectRelations);
                 foreach(DirectPawnRelation relation in relationList)
                 {
                     newRelations.AddDirectRelation(relation.def, relation.otherPawn);
@@ -56,7 +54,7 @@ namespace BastCult
                 //Fully train.
                 foreach(TrainableDef trainableDef in DefDatabase<TrainableDef>.AllDefs)
                 {
-                    for(var step = 0; step < trainableDef.steps; step++)
+                    for(int step = 0; step < trainableDef.steps; step++)
                     {
                         newGuardian.training.Train(trainableDef, null);
                     }
@@ -66,13 +64,9 @@ namespace BastCult
                 if(closestCat.Name != null)
                 {
                     if(closestCat.gender == Gender.Male)
-                    {
                         newGuardian.Name = new NameSingle(NameGenerator.GenerateName(RulePackDef.Named("NamerAnimalGenericMale")), false);
-                    }
                     else
-                    {
                         newGuardian.Name = new NameSingle(NameGenerator.GenerateName(RulePackDef.Named("NamerAnimalGenericFemale")), false);
-                    }
                 }
 
                 //Dump inventory, if any.

@@ -11,7 +11,7 @@ namespace CultOfCthulhu
     {
         public override DamageResult Apply(DamageInfo dinfo, Thing victim)
         {
-            var result = new DamageResult();
+            DamageWorker.DamageResult result = new DamageResult();
             return result;
         }
     }

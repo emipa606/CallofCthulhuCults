@@ -27,16 +27,13 @@ namespace CultOfCthulhu
             ModSettings_Data.cultsShowDebugCode = settings.cultsShowDebugCode;
         }
 
-        public override string SettingsCategory()
-        {
-            return "Call of Cthulhu - Cults";
-        }
+        public override string SettingsCategory() => "Call of Cthulhu - Cults";
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
-            var offset = 30;
-            var spacer = 5;
-            var height = 30;
+            int offset = 30;
+            int spacer = 5;
+            int height = 30;
             Widgets.CheckboxLabeled(new Rect(inRect.x + offset, inRect.y, inRect.width - offset, height),
                 "ForcedInvestigation".Translate(), ref settings.cultsForcedInvestigation);
             Widgets.CheckboxLabeled(

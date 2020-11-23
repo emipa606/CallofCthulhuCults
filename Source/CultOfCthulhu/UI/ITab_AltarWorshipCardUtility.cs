@@ -38,7 +38,7 @@ namespace CultOfCthulhu
 
             if (CultTracker.Get.PlayerCult != null)
             {
-                var cultLabelWidth = Text.CalcSize(CultTracker.Get.PlayerCult.name).x + 15;
+                float cultLabelWidth = Text.CalcSize(CultTracker.Get.PlayerCult.name).x + 15;
 
                 //Headings
                 _ = new Rect(rect);
@@ -52,7 +52,7 @@ namespace CultOfCthulhu
 
                 //Rename Icon
                 ITab_AltarCardUtility.DrawRename(altar);
-                var rect2 = new Rect(rect1)
+                Rect rect2 = new Rect(rect1)
                 {
                     yMin = rect1.yMax + 10,
                     height = 25f,
@@ -72,7 +72,7 @@ namespace CultOfCthulhu
                 Widgets.DrawLineHorizontal(rect2.x - 10, rect2.yMax, rect.width - 15f);
                 //---------------------------------------------------------------------
 
-                var rectMain = new Rect(0 + 15f, 0 + 30f, TempleCardSize.x, ITab_AltarSacrificesCardUtility.ButtonSize * 1.15f);
+                Rect rectMain = new Rect(0 + 15f, 0 + 30f, TempleCardSize.x, ITab_AltarSacrificesCardUtility.ButtonSize * 1.15f);
 
                 //Deity -> Cthulhu
                 Rect rect4 = rectMain;
@@ -83,7 +83,7 @@ namespace CultOfCthulhu
                 rect4.height = ITab_AltarSacrificesCardUtility.ButtonSize;
                 Widgets.Label(rect4, "Deity".Translate() + ": ");
                 rect4.xMin = rect4.center.x;
-                var label4 = DeityLabel(altar);
+                string label4 = DeityLabel(altar);
                 if (Widgets.ButtonText(rect4, label4, true, false, true))
                 {
                     OpenDeitySelectMenu(altar);
@@ -102,7 +102,7 @@ namespace CultOfCthulhu
                 rect5.width = ITab_AltarSacrificesCardUtility.ColumnSize;
                 Widgets.Label(rect5, "Preacher".Translate() + ": ");
                 rect5.xMin = rect5.center.x;
-                var label2 = PreacherLabel(altar);
+                string label2 = PreacherLabel(altar);
                 if (Widgets.ButtonText(rect5, label2, true, false, true))
                 {
                     OpenPreacherSelectMenu(altar);
@@ -115,7 +115,7 @@ namespace CultOfCthulhu
                 rect6.width = ITab_AltarSacrificesCardUtility.ColumnSize;
                 rect6.x -= rect5.x - 5;
                 rect6.x += 15f;
-                var disabled = altar.tempCurrentWorshipDeity == null;
+                bool disabled = altar.tempCurrentWorshipDeity == null;
                 Widgets.CheckboxLabeled(rect6.BottomHalf(), "MorningSermons".Translate(), ref altar.OptionMorning, disabled);
                 if (Mouse.IsOver(rect6) && Event.current.type == EventType.MouseDown && !disabled)
                 {
@@ -136,7 +136,7 @@ namespace CultOfCthulhu
             }
             else
             {
-                var newRect = new Rect(rect);
+                Rect newRect = new Rect(rect);
                 newRect = newRect.ContractedBy(14f);
                 newRect.height = 30f;
 
@@ -174,7 +174,7 @@ namespace CultOfCthulhu
             }
             else
             {
-                var stringBuilder = new StringBuilder();
+                StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.Append(altar.tempCurrentWorshipDeity.def.description);
                 return stringBuilder.ToString();
             }
@@ -182,7 +182,7 @@ namespace CultOfCthulhu
         
         public static void OpenPreacherSelectMenu(Building_SacrificialAltar altar)
         {
-            var list = new List<FloatMenuOption>
+            List<FloatMenuOption> list = new List<FloatMenuOption>
             {
                 new FloatMenuOption("(" + "Auto".Translate() + ")", delegate
                 {
@@ -212,7 +212,7 @@ namespace CultOfCthulhu
 
         public static void OpenDeitySelectMenu(Building_SacrificialAltar altar)
         {
-            var list = new List<FloatMenuOption>
+            List<FloatMenuOption> list = new List<FloatMenuOption>
             {
                 new FloatMenuOption("(" + "NoneLower".Translate() + ")", delegate
                 {
@@ -223,11 +223,7 @@ namespace CultOfCthulhu
 
             foreach (CosmicEntity current in DeityTracker.Get.DeityCache.Keys)
             {
-                if (!current.discovered)
-                {
-                    continue;
-                }
-
+                if (!current.discovered) continue;
                 Action action;
                 CosmicEntity localDeity = current;
                 action = delegate
@@ -237,11 +233,7 @@ namespace CultOfCthulhu
                     altar.tempCurrentWorshipDeity = localDeity;
                     //altar.tempCurrentSpell = null;
                 };
-                bool extraPartOnGUI(Rect rect)
-                {
-                    return DeityInfoCardButton(rect.x + 5f, rect.y + ((rect.height - 24f) / 2f), current);
-                }
-
+                bool extraPartOnGUI(Rect rect) => DeityInfoCardButton(rect.x + 5f, rect.y + (rect.height - 24f) / 2f, current);
                 list.Add(new FloatMenuOption(localDeity.LabelCap, action, MenuOptionPriority.Default, null, null, 29f, extraPartOnGUI));
             }
             Find.WindowStack.Add(new FloatMenu(list));

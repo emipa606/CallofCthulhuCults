@@ -23,13 +23,10 @@ namespace CultOfCthulhu
         {
             if (Brood(map) != null)
             {
-                var tempPawns = new List<Pawn>(Brood(map));
+                List<Pawn> tempPawns = new List<Pawn>(Brood(map));
                 foreach (Pawn p in tempPawns)
                 {
-                    if (p.Dead)
-                    {
-                        Brood(map).Remove(p);
-                    }
+                    if (p.Dead) Brood(map).Remove(p);
                 }
                 if ((Brood(map).Count + NUMTOSPAWN) > HARDLIMIT)
                 {
@@ -49,10 +46,10 @@ namespace CultOfCthulhu
 
         protected List<Pawn> SpawnPawns(IncidentParms parms)
         {
-            var map = (Map)parms.target;
-            var list = new List<Pawn>();
+            Map map = (Map)parms.target;
+            List<Pawn> list = new List<Pawn>();
 
-            var listBugs = new List<PawnKindDef>
+            List<PawnKindDef> listBugs = new List<PawnKindDef>
             {
                 PawnKindDefOf.Megascarab,
                 PawnKindDefOf.Spelopede,
@@ -61,17 +58,13 @@ namespace CultOfCthulhu
             IEnumerable<PawnKindDef> source = from x in listBugs
                                               where x.combatPower <= 500f
                                               select x;
-            var maxPawns = NUMTOSPAWN;
-            for (var i = 0; i < maxPawns; i++)
+            int maxPawns = NUMTOSPAWN;
+            for (int i = 0; i < maxPawns; i++)
             {
                 if (Cthulhu.Utility.IsCosmicHorrorsLoaded())
                 {
                     Pawn pawn = PawnGenerator.GeneratePawn(PawnKindDef.Named("ROM_DeepOne"), parms.faction);
-                    if (pawn == null)
-                    {
-                        continue;
-                    }
-
+                    if (pawn == null) continue;
                     list.Add(pawn);
                 }
                 else
@@ -82,10 +75,8 @@ namespace CultOfCthulhu
                         break;
                     }
                     Pawn pawn = PawnGenerator.GeneratePawn(kindDef, parms.faction);
-                    if (pawn != null)
-                    {
-                        list.Add(pawn);
-                    }
+                    if (pawn != null) list.Add(pawn);
+
                 }
             }
             foreach (Pawn current in list)
@@ -127,7 +118,7 @@ namespace CultOfCthulhu
             {
                 return false;
             }
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
             //Find a drop spot
             if (!CultUtility.TryFindDropCell(map.Center, map, 70, out IntVec3 intVec))
             {
@@ -145,20 +136,12 @@ namespace CultOfCthulhu
             //If they have the sign of dagon, then use it.
             IntVec3 chillSpot2 = IntVec3.Invalid;
             Building dagonSign = map.listerBuildings.allBuildingsColonist.FirstOrDefault((Building bld) => bld.def == CultsDefOf.Cults_SignOfDagon);
-            if (dagonSign != null)
-            {
+            if (dagonSign != null) 
                 chillSpot2 = dagonSign.Position;
-            }
-
-            if (chillSpot2 != null)
-            {
+            if (chillSpot2 != null) 
                 chillSpot = chillSpot2;
-            }
-
             if (chillSpot == null)
-            {
                 return false;
-            }
 
             //Log.Message("SpellWorker_DefendTheBrood LordJob_DefendPoint");
             var lordJob = new LordJob_DefendPoint(chillSpot);

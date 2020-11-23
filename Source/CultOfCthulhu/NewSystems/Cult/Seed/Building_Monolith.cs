@@ -23,21 +23,12 @@ namespace CultOfCthulhu
                 thought_MemoryObservation = (Thought_MemoryObservation)ThoughtMaker.MakeThought(DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareMonolith"));
                 thought_MemoryObservation.Target = this;
                 Pawn Dave = thought_MemoryObservation.pawn;
-                if (Dave == null)
-                {
-                    return null;
-                }
-
-                if (!Dave.IsColonist)
-                {
-                    return thought_MemoryObservation;
-                }
+                if (Dave == null) return null;
+                if (!Dave.IsColonist) return thought_MemoryObservation;
                 else
                 {
                     if (Dave.needs.TryGetNeed<Need_CultMindedness>().CurLevel > 0.7)
-                    {
                         thought_MemoryObservation = (Thought_MemoryObservation)ThoughtMaker.MakeThought(DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareMonolithCultist"));
-                    }
                 }
                 return thought_MemoryObservation;
             }
@@ -67,7 +58,7 @@ namespace CultOfCthulhu
                             {
                                 void action0()
                                 {
-                                    var job = new Job(CultsDefOf.Cults_Investigate, myPawn, this)
+                                    Job job = new Job(CultsDefOf.Cults_Investigate, myPawn, this)
                                     {
                                         playerForced = true
                                     };
@@ -87,14 +78,14 @@ namespace CultOfCthulhu
             isMuted = !isMuted;
             if (isMuted)
             {
-                var sustainer = (Sustainer)typeof(Building).GetField("sustainerAmbient", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+                Sustainer sustainer = (Sustainer)typeof(Building).GetField("sustainerAmbient", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
                 sustainer.End();
             }
             else
             {
                 _ = (Sustainer)typeof(Building).GetField("sustainerAmbient", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
 
-                var info = SoundInfo.InMap(this, MaintenanceType.None);
+                SoundInfo info = SoundInfo.InMap(this, MaintenanceType.None);
                 _ =  new Sustainer(def.building.soundAmbient, info);
             }
         }
@@ -108,7 +99,7 @@ namespace CultOfCthulhu
                 yield return current;
             }
 
-            var toggleDef = new Command_Toggle
+            Command_Toggle toggleDef = new Command_Toggle
             {
                 hotKey = KeyBindingDefOf.Command_TogglePower,
                 icon = ContentFinder<Texture2D>.Get("UI/Icons/Commands/Mute", true),

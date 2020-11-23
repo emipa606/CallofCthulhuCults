@@ -21,7 +21,7 @@ namespace CultOfCthulhu
         public CosmicEntity GetCache(CosmicEntity deity)
         {
             CosmicEntity result;
-            var flag1 = DeityCache == null;
+            bool flag1 = DeityCache == null;
             if (flag1)
             {
                 DeityCache = new Dictionary<CosmicEntity, int>();
@@ -49,7 +49,7 @@ namespace CultOfCthulhu
                 {
                     if (current.thingClass == typeof(CosmicEntity))
                     {
-                        var x = new CosmicEntity(current);
+                        CosmicEntity x = new CosmicEntity(current);
                         //x.Position = new IntVec3();
                         //x.SpawnSetup();
                         GetCache(x);
@@ -71,7 +71,7 @@ namespace CultOfCthulhu
 
         public List<CosmicEntity> undiscoveredEntities()
         {
-            var result = new List<CosmicEntity>();
+            List<CosmicEntity> result = new List<CosmicEntity>();
             foreach (CosmicEntity entity in DeityCache.Keys.InRandomOrder<CosmicEntity>())
             {
                 if (entity.discovered == false)
@@ -87,7 +87,7 @@ namespace CultOfCthulhu
         {
 
             //Cthulhu.Utility.DebugReport("Reveal Deity Check");
-            var deityResearch = ResearchProjectDef.Named("Forbidden_Deities");
+            ResearchProjectDef deityResearch = ResearchProjectDef.Named("Forbidden_Deities");
 
             if (deityResearch.IsFinished && undiscoveredEntities().Count > 0)
             {
@@ -99,7 +99,7 @@ namespace CultOfCthulhu
                     var message = "Cults_DiscoveredDeityMessage".Translate(entity.Label);
                     Messages.Message(message, MessageTypeDefOf.PositiveEvent);
 
-                    var s = new StringBuilder();
+                    StringBuilder s = new StringBuilder();
                     s.AppendLine(message);
                     s.AppendLine();
                     s.AppendLine(entity.Info());
@@ -116,13 +116,13 @@ namespace CultOfCthulhu
 
         public void ReloadCosmicEntity(CosmicEntity entity)
         {
-            var currentFavor = entity.PlayerFavor;
-            var currentDiscovery = entity.discovered;
+            float currentFavor = entity.PlayerFavor;
+            bool currentDiscovery = entity.discovered;
             //Remove entity
             DeityCache.Remove(entity);
 
             //New deity
-            var x = new CosmicEntity(entity.def);
+            CosmicEntity x = new CosmicEntity(entity.def);
             x.AffectFavor(currentFavor);
             x.discovered = currentDiscovery;
             DeityCache.Add(x, x.Version);
@@ -139,7 +139,7 @@ namespace CultOfCthulhu
             //Create a temporary dictionary.
             //Load all the current deities into it.
 
-            var tempDic = new Dictionary<CosmicEntity, int>();
+            Dictionary<CosmicEntity, int> tempDic = new Dictionary<CosmicEntity, int>();
             foreach (KeyValuePair<CosmicEntity, int> pair in DeityCache)
             {
                 tempDic.Add(pair.Key, pair.Value);
@@ -147,7 +147,7 @@ namespace CultOfCthulhu
 
             //Now, check to see if the saved "version" matches the new "version" we loaded.
 
-            var entitiesToUpdate = new List<CosmicEntity>();
+            List<CosmicEntity> entitiesToUpdate = new List<CosmicEntity>();
             foreach (KeyValuePair<CosmicEntity, int> pair in tempDic)
             {
                 //Version mismatch, let's update!
@@ -170,7 +170,7 @@ namespace CultOfCthulhu
             {
                 if (current.thingClass == typeof(CosmicEntity))
                 {
-                    var newDeity = new CosmicEntity(current);
+                    CosmicEntity newDeity = new CosmicEntity(current);
 
                     if (tempDic.Keys.FirstOrDefault((CosmicEntity oldDeity) => oldDeity.def.defName == newDeity.def.defName) != null)
                     {

@@ -13,7 +13,7 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
             //Create a spawn point for our nightmare Tree
             if (!Cthulhu.Utility.TryFindSpawnCell(CultsDefOf.Cults_MonolithNightmare, map.Center, map, 60, out IntVec3 intVec))
             {
@@ -21,7 +21,7 @@ namespace CultOfCthulhu
             }
 
             //Spawn in the nightmare tree.
-            var thing = (Building)ThingMaker.MakeThing(CultsDefOf.Cults_MonolithNightmare, null);
+            Building thing = (Building)ThingMaker.MakeThing(CultsDefOf.Cults_MonolithNightmare, null);
             //thing.Growth = 1f;
             GenPlace.TryPlaceThing(thing, intVec.RandomAdjacentCell8Way(), map, ThingPlaceMode.Near);
 

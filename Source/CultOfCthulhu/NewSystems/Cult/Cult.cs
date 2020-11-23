@@ -21,22 +21,15 @@ namespace CultOfCthulhu
         public int numHumanSacrifices = 0;
         public List<Pawn> MembersAt(Map map)
         {
-            if (!active)
-            {
-                return null;
-            }
-
-            var result = map.mapPawns.AllPawnsSpawned.Where((Pawn x) => x.RaceProps != null && x.RaceProps.Humanlike && IsMember(x)).ToList<Pawn>();
+            if (!active) return null;
+            List<Pawn> result = map.mapPawns.AllPawnsSpawned.Where((Pawn x) => x.RaceProps != null && x.RaceProps.Humanlike && IsMember(x)).ToList<Pawn>();
             return result;
         }
         public bool IsMember(Pawn pawn)
         {
             if (active && members != null && members.Count > 0)
             {
-                if (members.Contains(pawn))
-                {
-                    return true;
-                }
+                if (members.Contains(pawn)) return true;
             }
             return false;
         }
@@ -83,10 +76,7 @@ namespace CultOfCthulhu
             influences = new List<CultInfluence>();
             foreach (Settlement set in Find.WorldObjects.Settlements)
             {
-                if (set == foundingCity)
-                {
-                    influences.Add(new CultInfluence(set, 1.0f));
-                }
+                if (set == foundingCity) influences.Add(new CultInfluence(set, 1.0f));
                 else
                 {
                     influences.Add(new CultInfluence(set, 0.0f));
@@ -101,7 +91,7 @@ namespace CultOfCthulhu
                 SendCultLetterFounded(newFounder);
 
                 //It's a day to remember
-                var taleToAdd = TaleDef.Named("FoundedCult");
+                TaleDef taleToAdd = TaleDef.Named("FoundedCult");
                 if ((newFounder.IsColonist || newFounder.HostFaction == Faction.OfPlayer) && taleToAdd != null)
                 {
                     TaleRecorder.RecordTale(taleToAdd, new object[]
@@ -173,12 +163,8 @@ namespace CultOfCthulhu
                 return;
             }
 
-            if (members.Count == 0)
-            {
-                return;
-            }
-
-            var tempList = new List<Pawn>(members);
+            if (members.Count == 0) return;
+            List<Pawn> tempList = new List<Pawn>(members);
             foreach (Pawn current in tempList)
             {
                 if (current == cultMember)

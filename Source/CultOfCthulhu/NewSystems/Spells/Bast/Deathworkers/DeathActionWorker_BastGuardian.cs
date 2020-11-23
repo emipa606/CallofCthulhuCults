@@ -20,7 +20,7 @@ namespace BastCult
             //Hurt all nearby enemy pawns.
             foreach(IntVec3 cell in GenRadial.RadialCellsAround(corpse.Position, 3f, true))
             {
-                var thingList = new List<Thing>(cell.GetThingList(corpse.Map));
+                List<Thing> thingList = new List<Thing>(cell.GetThingList(corpse.Map));
                 foreach (Thing thing in thingList)
                 {
                     if(GenHostility.HostileTo(thing, corpse.InnerPawn.Faction))

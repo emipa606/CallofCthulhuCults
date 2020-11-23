@@ -30,7 +30,7 @@ namespace BastCult
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
 
             FelineAspectProperties felineProps = def.GetModExtension<FelineAspectProperties>();
 
@@ -52,9 +52,7 @@ namespace BastCult
                         if (records?.Count > 0)
                         {
                             foreach (var record in records)
-                            {
-                                executioner.health.AddHediff(felineProps.hediffToApplyToHands, record);
-                            }
+                                executioner.health.AddHediff(felineProps.hediffToApplyToHands, record);                            
                         }
                     }
                 }

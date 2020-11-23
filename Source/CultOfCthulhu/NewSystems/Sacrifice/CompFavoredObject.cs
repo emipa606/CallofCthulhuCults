@@ -8,8 +8,20 @@ namespace CultOfCthulhu
 {
     public class CompFavoredObject : ThingComp
     {
-        public List<FavoredEntry> Deities => Props.deities;
+        public List<FavoredEntry> Deities
+        {
+            get
+            {
+                return Props.deities;
+            }
+        }
 
-        public CompProperties_FavoredObject Props => (CompProperties_FavoredObject)props;
+        public CompProperties_FavoredObject Props
+        {
+            get
+            {
+                return (CompProperties_FavoredObject)props;
+            }
+        }
     }
 }

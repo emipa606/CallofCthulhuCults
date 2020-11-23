@@ -36,15 +36,15 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
             if (!CultUtility.TryFindDropCell(map.Center, map, 999999, out IntVec3 intVec))
             {
                 return false;
             }
             //this.EndOnDespawnedOrNull(this.pawn, JobCondition.Incompletable);
-            for (var i = 0; i < Rand.Range(1,3); i++)
+            for (int i = 0; i < Rand.Range(1,3); i++)
             {
-                var thing = (Building_TreasureChest)ThingMaker.MakeThing(CultsDefOf.Cults_TreasureChest, null);
+                Building_TreasureChest thing = (Building_TreasureChest)ThingMaker.MakeThing(CultsDefOf.Cults_TreasureChest, null);
                 GenPlace.TryPlaceThing(thing, intVec.RandomAdjacentCell8Way(), map, ThingPlaceMode.Near);
             }
 

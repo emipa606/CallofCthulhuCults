@@ -13,9 +13,9 @@ namespace CultOfCthulhu
         protected override Job TryGiveJob(Pawn pawn)
         {
             Cthulhu.Utility.DebugReport("JobGiver_LoadTransportersPawn Called");
-            var transportersGroup = pawn.mindState.duty.transportersGroup;
+            int transportersGroup = pawn.mindState.duty.transportersGroup;
             LoadTransportersPawnJobUtility.GetTransportersInGroup(transportersGroup, pawn.Map, tmpTransporters);
-            for (var i = 0; i < tmpTransporters.Count; i++)
+            for (int i = 0; i < tmpTransporters.Count; i++)
             {
                 CompTransporterPawn transporter = tmpTransporters[i];
                 if (LoadTransportersPawnJobUtility.HasJobOnTransporter(pawn, transporter))

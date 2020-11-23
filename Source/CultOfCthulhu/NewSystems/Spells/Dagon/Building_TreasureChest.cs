@@ -17,7 +17,13 @@ namespace CultOfCthulhu
 
         protected bool SpawnedStorage = false;
 
-        public bool HasAnyContents => innerContainer.Count > 0;
+        public bool HasAnyContents
+        {
+            get
+            {
+                return innerContainer.Count > 0;
+            }
+        }
 
         public override IEnumerable<Gizmo> GetGizmos()
         {
@@ -45,7 +51,7 @@ namespace CultOfCthulhu
                 SpawnedStorage = true;
                 if (def == CultsDefOf.Cults_TreasureChest)
                 {
-                    for (var i = 0; i < 5; i++)
+                    for (int i = 0; i < 5; i++)
                     {
                         Thing thing1 = ThingMaker.MakeThing(ThingDefOf.Gold, null);
                         thing1.stackCount = Rand.Range(20, 40);
@@ -68,14 +74,8 @@ namespace CultOfCthulhu
                 }
                 if (def == CultsDefOf.Cults_TreasureChest_Relic)
                 {
-                    if (Rand.Range(1, 100) > 50)
-                    {
-                        GetDirectlyHeldThings().TryAdd(GenerateLegendaryWeapon());
-                    }
-                    else
-                    {
-                        GetDirectlyHeldThings().TryAdd(GenerateLegendaryArmor());
-                    }
+                    if (Rand.Range(1, 100) > 50) GetDirectlyHeldThings().TryAdd(GenerateLegendaryWeapon());
+                    else GetDirectlyHeldThings().TryAdd(GenerateLegendaryArmor());
                 }
             }
         }
@@ -89,7 +89,7 @@ namespace CultOfCthulhu
             {
                 return null;
             }
-            var thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, null);
+            ThingWithComps thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, null);
             CompQuality compQuality = thingWithComps.TryGetComp<CompQuality>();
             compQuality.SetQuality(QualityCategory.Legendary, ArtGenerationContext.Outsider);
             return thingWithComps;
@@ -110,7 +110,7 @@ namespace CultOfCthulhu
             {
                 return null;
             }
-            var thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, null);
+            ThingWithComps thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, null);
             thingWithComps.stackCount = 1;
             CompQuality compQuality = thingWithComps.TryGetComp<CompQuality>();
             compQuality.SetQuality(QualityCategory.Legendary, ArtGenerationContext.Outsider);
@@ -123,11 +123,29 @@ namespace CultOfCthulhu
             return td == ThingDefOf.Apparel_ShieldBelt || (td.tradeability != Tradeability.None && td.techLevel <= TechLevel.Industrial && td.IsApparel && (td.GetStatValueAbstract(StatDefOf.ArmorRating_Blunt, null) > 0.15f || td.GetStatValueAbstract(StatDefOf.ArmorRating_Sharp, null) > 0.15f));
         }
 
-        public Thing ContainedThing => (innerContainer.Count != 0) ? innerContainer[0] : null;
+        public Thing ContainedThing
+        {
+            get
+            {
+                return (innerContainer.Count != 0) ? innerContainer[0] : null;
+            }
+        }
 
-        public bool CanOpen => HasAnyContents;
+        public bool CanOpen
+        {
+            get
+            {
+                return HasAnyContents;
+            }
+        }
 
-        public bool StorageTabVisible => false;
+        public bool StorageTabVisible
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         public Building_TreasureChest()
         {
@@ -193,7 +211,7 @@ namespace CultOfCthulhu
         {
             if (innerContainer.Any)
             {
-                for (var i = 0; i < innerContainer.Count; i++)
+                for (int i = 0; i < innerContainer.Count; i++)
                 {
                     if (innerContainer[i].Faction == fac)
                     {
@@ -243,8 +261,8 @@ namespace CultOfCthulhu
             {
                 if (mode != DestroyMode.Deconstruct)
                 {
-                    var list = new List<Pawn>();
-                    foreach (Thing current in innerContainer)
+                    List<Pawn> list = new List<Pawn>();
+                    foreach (Thing current in (IEnumerable<Thing>)innerContainer)
                     {
                         if (current is Pawn pawn)
                         {
@@ -270,7 +288,7 @@ namespace CultOfCthulhu
 
         public override string GetInspectString()
         {
-            var text = base.GetInspectString();
+            string text = base.GetInspectString();
             string str;
             if (!contentsKnown)
             {

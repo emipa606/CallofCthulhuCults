@@ -69,16 +69,12 @@ namespace CultOfCthulhu
         
         public void ApplyAspect(Pawn p, int count = 3)
         {
-            if (count <= 0)
-            {
-                return;
-            }
-
-            var parms = new TargetingParameters
+            if (count <= 0) return;
+            TargetingParameters parms = new TargetingParameters
             {
                 canTargetPawns = true
             };
-            var foundPawn = false;
+            bool foundPawn = false;
             Messages.Message("Cults_AspectOfCthulhu_TargetACharacter".Translate(), MessageTypeDefOf.NeutralEvent);
 
             Find.Targeter.BeginTargeting(parms, delegate (LocalTargetInfo t)
@@ -86,7 +82,7 @@ namespace CultOfCthulhu
                 if (t.Thing is Pawn pawn)
                 {
                     BodyPartRecord tempRecord = null;
-                    var isEye = false;
+                    bool isEye = false;
                     foreach (BodyPartRecord current in pawn.RaceProps.body.AllParts.InRandomOrder<BodyPartRecord>())
                     {
                         if (current.def == BodyPartDefOf.Eye)
@@ -139,15 +135,8 @@ namespace CultOfCthulhu
                         return;
                     }
 
-                    if (isEye)
-                    {
-                        pawn.health.AddHediff(CultsDefOf.Cults_CthulhidEyestalk, tempRecord, null);
-                    }
-                    else
-                    {
-                        pawn.health.AddHediff(CultsDefOf.Cults_CthulhidTentacle, tempRecord, null);
-                    }
-
+                    if (isEye) pawn.health.AddHediff(CultsDefOf.Cults_CthulhidEyestalk, tempRecord, null);
+                    else pawn.health.AddHediff(CultsDefOf.Cults_CthulhidTentacle, tempRecord, null);
                     Messages.Message("Cults_AspectOfCthulhuDesc".Translate(
                         pawn.LabelShort, tempRecord.def.label), MessageTypeDefOf.PositiveEvent);
                     pawn.Map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = pawn.Position;
@@ -170,7 +159,7 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
             Pawn pawn = altar(map).SacrificeData.Executioner;
             ApplyAspect(pawn);
             return true;

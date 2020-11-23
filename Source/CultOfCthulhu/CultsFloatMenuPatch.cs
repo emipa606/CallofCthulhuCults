@@ -15,14 +15,14 @@ namespace CultOfCthulhu
         public override IEnumerable<KeyValuePair<_Condition, Func<Vector3, Pawn, Thing, List<FloatMenuOption>>>>
             GetFloatMenus()
         {
-            var floatMenus =
+            List<KeyValuePair<_Condition, Func<Vector3, Pawn, Thing, List<FloatMenuOption>>>> floatMenus =
                 new List<KeyValuePair<_Condition, Func<Vector3, Pawn, Thing, List<FloatMenuOption>>>>();
 
-            var madnessCondition = new _Condition(_ConditionType.IsType, typeof(Pawn));
+            _Condition madnessCondition = new _Condition(_ConditionType.IsType, typeof(Pawn));
             List<FloatMenuOption> madnessFunc(Vector3 clickPos, Pawn pawn, Thing curThing)
             {
                 List<FloatMenuOption> opts = null;
-                var target = curThing as Pawn;
+                Pawn target = curThing as Pawn;
                 if (pawn == target)
                 {
                     if (Cthulhu.Utility.HasSanityLoss(pawn))
@@ -34,11 +34,7 @@ namespace CultOfCthulhu
                                 ? DefDatabase<MentalStateDef>.AllDefs.InRandomOrder()
                                     .FirstOrDefault(x => x.IsAggro == false) : MentalStateDefOf.Berserk;
                             Cthulhu.Utility.DebugReport("Selected mental state: " + newMentalState.label);
-                            if (pawn.Drafted)
-                            {
-                                pawn.drafter.Drafted = false;
-                            }
-
+                            if (pawn.Drafted) pawn.drafter.Drafted = false;
                             pawn.ClearMind();
                             pawn.pather.StopDead();
                             if (!pawn.mindState.mentalStateHandler.TryStartMentalState(newMentalState))
@@ -59,7 +55,7 @@ namespace CultOfCthulhu
 
                 return null;
             }
-            var curSec =
+            KeyValuePair<_Condition, Func<Vector3, Pawn, Thing, List<FloatMenuOption>>> curSec =
                 new KeyValuePair<_Condition, Func<Vector3, Pawn, Thing, List<FloatMenuOption>>>(madnessCondition,
                     madnessFunc);
             floatMenus.Add(curSec);

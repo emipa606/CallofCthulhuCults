@@ -36,7 +36,7 @@ namespace CultOfCthulhu
             {
                 if (compTransporterPawn.LoadingInProgressOrReadyToLaunch)
                 {
-                    var command_Action = new Command_Action
+                    Command_Action command_Action = new Command_Action
                     {
                         defaultLabel = "CommandLaunchGroup".Translate(),
                         defaultDesc = "CommandLaunchGroupDesc".Translate(),
@@ -76,9 +76,9 @@ namespace CultOfCthulhu
                         }
                     };
                 }
-                var command_LoadToTransporter = new Command_LoadToTransporterPawn();
-                var num = 0;
-                for (var i = 0; i < Find.Selector.NumSelected; i++)
+                Command_LoadToTransporterPawn command_LoadToTransporter = new Command_LoadToTransporterPawn();
+                int num = 0;
+                for (int i = 0; i < Find.Selector.NumSelected; i++)
                 {
                     if (Find.Selector.SelectedObjectsListForReading[i] is Thing thing && thing.def == def)
                     {

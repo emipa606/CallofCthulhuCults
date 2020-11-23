@@ -42,7 +42,7 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            for (var i = 0; i < Rand.Range(1, 2); i++)
+            for (int i = 0; i < Rand.Range(1, 2); i++)
             {
                 if (Colonists((Map)parms.target).Count<Pawn>() != 0)
                 {

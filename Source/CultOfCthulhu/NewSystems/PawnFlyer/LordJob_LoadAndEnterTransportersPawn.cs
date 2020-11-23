@@ -29,12 +29,12 @@ namespace CultOfCthulhu
 
         public override StateGraph CreateGraph()
         {
-            var stateGraph = new StateGraph();
-            var lordToil_LoadAndEnterTransporters = new LordToil_LoadAndEnterTransportersPawn(transportersGroup);
+            StateGraph stateGraph = new StateGraph();
+            LordToil_LoadAndEnterTransportersPawn lordToil_LoadAndEnterTransporters = new LordToil_LoadAndEnterTransportersPawn(transportersGroup);
             stateGraph.StartingToil = lordToil_LoadAndEnterTransporters;
-            var lordToil_End = new LordToil_End();
+            LordToil_End lordToil_End = new LordToil_End();
             stateGraph.AddToil(lordToil_End);
-            var transition = new Transition(lordToil_LoadAndEnterTransporters, lordToil_End);
+            Transition transition = new Transition(lordToil_LoadAndEnterTransporters, lordToil_End);
             transition.AddTrigger(new Trigger_PawnLost());
             //transition.AddPreAction(new TransitionAction_Message("MessageFailedToLoadTransportersBecauseColonistLost".Translate(), MessageTypeDefOf.NegativeEvent));
             transition.AddPreAction(new TransitionAction_Custom(new Action(CancelLoadingProcess)));
@@ -45,7 +45,7 @@ namespace CultOfCthulhu
         private void CancelLoadingProcess()
         {
             List<Thing> list = lord.Map.listerThings.ThingsInGroup(ThingRequestGroup.Pawn);
-            for (var i = 0; i < list.Count; i++)
+            for (int i = 0; i < list.Count; i++)
             {
                 if (list[i] != null)
                 {

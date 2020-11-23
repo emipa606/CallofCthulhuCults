@@ -49,10 +49,7 @@ namespace CultOfCthulhu
 
         public void NeedSeedCountDown()
         {
-            if (ticksToSpawnCultSeed > 0)
-            {
-                ticksToSpawnCultSeed -= 1;
-            }
+            if (ticksToSpawnCultSeed > 0) ticksToSpawnCultSeed -= 1;
             else
             {
                 if (GenLocalDate.HourInteger(map) > 21 || GenLocalDate.HourInteger(map) < 6)

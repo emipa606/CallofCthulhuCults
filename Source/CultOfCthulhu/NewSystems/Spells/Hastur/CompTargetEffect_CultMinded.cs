@@ -8,7 +8,7 @@ namespace CultOfCthulhu
     {
         public override void DoEffectOn(Pawn user, Thing target)
         {
-            var pawn = (Pawn)target;
+            Pawn pawn = (Pawn)target;
             if (pawn.Dead)
             {
                 return;

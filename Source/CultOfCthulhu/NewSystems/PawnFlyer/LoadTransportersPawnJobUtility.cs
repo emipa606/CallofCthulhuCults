@@ -26,8 +26,8 @@ namespace CultOfCthulhu
             IEnumerable<Pawn> listSel = from Pawn pawns in map.mapPawns.AllPawnsSpawned
                 where pawns is PawnFlyer
                 select pawns;
-            var list = new List<Pawn>(listSel);
-            for (var i = 0; i < list.Count; i++)
+            List<Pawn> list = new List<Pawn>(listSel);
+            for (int i = 0; i < list.Count; i++)
             {
                 CompTransporterPawn compTransporter = list[i].TryGetComp<CompTransporterPawn>();
                 if (compTransporter.groupID == transportersGroup)
@@ -55,7 +55,7 @@ namespace CultOfCthulhu
         // RimWorld.LoadTransportersJobUtility
         public static bool HasJobOnTransporter(Pawn pawn, CompTransporterPawn transporter)
         {
-            var result = !transporter.parent.IsForbidden(pawn) && transporter.AnythingLeftToLoad &&
+            bool result = !transporter.parent.IsForbidden(pawn) && transporter.AnythingLeftToLoad &&
                           pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation) &&
                           pawn.CanReserveAndReach(transporter.parent, PathEndMode.Touch, pawn.NormalMaxDanger(), 1) &&
                           FindThingToLoad(pawn, transporter) != null;
@@ -70,12 +70,12 @@ namespace CultOfCthulhu
             List<TransferableOneWay> leftToLoad = transporter.leftToLoad;
             if (leftToLoad != null)
             {
-                for (var i = 0; i < leftToLoad.Count; i++)
+                for (int i = 0; i < leftToLoad.Count; i++)
                 {
                     TransferableOneWay transferableOneWay = leftToLoad[i];
                     if (transferableOneWay.CountToTransfer > 0)
                     {
-                        for (var j = 0; j < transferableOneWay.things.Count; j++)
+                        for (int j = 0; j < transferableOneWay.things.Count; j++)
                         {
                             neededThings.Add(transferableOneWay.things[j]);
                         }
@@ -86,11 +86,8 @@ namespace CultOfCthulhu
             {
                 return null;
             }
-            bool validator(Thing x)
-            {
-                return neededThings.Contains(x) && p.CanReserve(x, 1);
-            }
-
+            bool validator(Thing x) =>
+                neededThings.Contains(x) && p.CanReserve(x, 1);
             Thing thing = GenClosest.ClosestThingReachable(p.Position, p.Map,
                 ThingRequest.ForGroup(ThingRequestGroup.HaulableEver), PathEndMode.Touch,
                 TraverseParms.For(p, Danger.Deadly, TraverseMode.ByPawn, false), 9999f, validator);
@@ -106,11 +103,7 @@ namespace CultOfCthulhu
                     }
                 }
             }
-            if (thing != null)
-            {
-                Cthulhu.Utility.DebugReport("Thing to load : " + thing.Label);
-            }
-
+            if (thing != null) Cthulhu.Utility.DebugReport("Thing to load : " + thing.Label);
             neededThings.Clear();
             return thing;
         }

@@ -39,20 +39,20 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
             //Find a drop spot
             if (!CultUtility.TryFindDropCell(map.Center, map, 999999, out IntVec3 intVec))
             {
                 return false;
             }
             //Spawn 1 relic
-            var thing = (Building_LandedShip)ThingMaker.MakeThing(CultsDefOf.Cults_LandedShip, null);
+            Building_LandedShip thing = (Building_LandedShip)ThingMaker.MakeThing(CultsDefOf.Cults_LandedShip, null);
             GenPlace.TryPlaceThing(thing, intVec.RandomAdjacentCell8Way(), map, ThingPlaceMode.Near);
 
             //Spawn 2 treasure chest
-            var thing2 = (Building_TreasureChest)ThingMaker.MakeThing(CultsDefOf.Cults_TreasureChest, null);
+            Building_TreasureChest thing2 = (Building_TreasureChest)ThingMaker.MakeThing(CultsDefOf.Cults_TreasureChest, null);
             GenPlace.TryPlaceThing(thing2, intVec.RandomAdjacentCell8Way(), map, ThingPlaceMode.Near);
-            var thing3 = (Building_TreasureChest)ThingMaker.MakeThing(CultsDefOf.Cults_TreasureChest, null);
+            Building_TreasureChest thing3 = (Building_TreasureChest)ThingMaker.MakeThing(CultsDefOf.Cults_TreasureChest, null);
             GenPlace.TryPlaceThing(thing3, intVec.RandomAdjacentCell8Way(), map, ThingPlaceMode.Near);
 
             map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = intVec;

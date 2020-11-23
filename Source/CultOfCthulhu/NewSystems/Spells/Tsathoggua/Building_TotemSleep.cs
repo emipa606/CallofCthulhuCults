@@ -53,7 +53,9 @@ namespace CultOfCthulhu
             }
         }
 
-        public List<Pawn> ActiveVictims { get; set; } = new List<Pawn>();
+
+        private List<Pawn> activeVictims = new List<Pawn>();
+        public List<Pawn> ActiveVictims { get => activeVictims; set => activeVictims = value; }
 
         public override void SpawnSetup(Map map, bool respawningAfterLoad)
         {
@@ -93,7 +95,7 @@ namespace CultOfCthulhu
 
         public void TryToSendToSleep(Pawn victim)
         {
-            TicksToReset = Find.TickManager.TicksGame + (GenDate.TicksPerHour * 8);
+            TicksToReset = Find.TickManager.TicksGame + GenDate.TicksPerHour * 8;
             ActiveVictims.Add(victim);
             //victim.needs.rest.CurLevelPercentage = 0.0f;
             GenExplosion.DoExplosion(victim.PositionHeld, victim.MapHeld, 1f, DamageDefOf.Smoke, this);
@@ -120,13 +122,10 @@ namespace CultOfCthulhu
 
         public override string GetInspectString()
         {
-            var s = new StringBuilder();
-            var sBase = base.GetInspectString();
+            StringBuilder s = new StringBuilder();
+            string sBase = base.GetInspectString();
             if (sBase != "")
-            {
                 s.Append(s);
-            }
-
             switch (CurState)
             {
                 case State.Asleep:
@@ -142,7 +141,7 @@ namespace CultOfCthulhu
             }
             if (TicksToReset != -1 && TicksToReset > Find.TickManager.TicksGame)
             {
-                var ticksUntilRecovery = TicksToReset - Find.TickManager.TicksGame;
+                int ticksUntilRecovery = TicksToReset - Find.TickManager.TicksGame;
                 s.AppendLine("Cults_SleepTotem_FullyAwakensIn".Translate(ticksUntilRecovery.ToStringTicksToPeriod()));
             }
             return s.ToString().TrimEndNewlines();
@@ -156,23 +155,19 @@ namespace CultOfCthulhu
                 {
                     Pawn victim = cell.GetFirstPawn(MapHeld);
                     if (victim != null && CanSendToSleep(victim))
-                    {
                         yield return victim;
-                    }
                 }
             }
         }
 
         public bool CanSendToSleep(Pawn victim)
-        {
-            return CurState != State.Asleep && !ActiveVictims.Contains(victim) && !victim.Dead && victim.Spawned &&
-                       victim.Faction != null && victim.Faction.HostileTo(Faction) &&
-                       !victim.RaceProps.IsMechanoid && victim?.needs?.rest != null && !victim.health.hediffSet.HasHediff(CultsDefOf.Cults_SleepHediff);
-        }
+            => CurState != State.Asleep && !ActiveVictims.Contains(victim) && !victim.Dead && victim.Spawned &&
+            victim.Faction != null && victim.Faction.HostileTo(Faction)  &&
+            !victim.RaceProps.IsMechanoid && victim?.needs?.rest != null && !victim.health.hediffSet.HasHediff(CultsDefOf.Cults_SleepHediff);
 
         public Graphic GraphicConstructor(string newTexPath)
         {
-            var tempData = new GraphicData();
+            GraphicData tempData = new GraphicData();
             tempData.CopyFrom(def.graphicData);
             tempData.texPath = newTexPath;
             Graphic result = tempData.GraphicColoredFor(this);

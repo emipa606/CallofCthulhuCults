@@ -27,12 +27,12 @@ namespace BastCult
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
 
             if (GenHostility.AnyHostileActiveThreatToPlayer(map))
             {
                 //Grab all hostile targets.
-                var hashSet = new HashSet<IAttackTarget>(map.attackTargetsCache.TargetsHostileToFaction(Faction.OfPlayer));
+                HashSet<IAttackTarget> hashSet = new HashSet<IAttackTarget>(map.attackTargetsCache.TargetsHostileToFaction(Faction.OfPlayer));
 
                 if(hashSet != null && hashSet.Count > 0)
                 {

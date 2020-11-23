@@ -40,7 +40,7 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            Map map = parms.target as Map;
             
             Cthulhu.Utility.SpawnThingDefOfCountAt(CultsDefOf.Cults_BlackIchorMeal, Rand.Range(18,22), new TargetInfo(altar(map).RandomAdjacentCell8Way(), map));
 

@@ -19,14 +19,26 @@ namespace CultOfCthulhu
 
         //}
 
-        public override PathEndMode PathEndMode => PathEndMode.Touch;
+        public override PathEndMode PathEndMode
+        {
+            get
+            {
+                return PathEndMode.Touch;
+            }
+        }
 
         //public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         //{
         //    return MysteriousObjects(pawn);
         //}
 
-        public override ThingRequest PotentialWorkThingRequest => ThingRequest.ForDef(CultsDefOf.Cults_MonolithNightmare);
+        public override ThingRequest PotentialWorkThingRequest
+        {
+            get
+            {
+                return ThingRequest.ForDef(CultsDefOf.Cults_MonolithNightmare);
+            }
+        }
 
         //public override bool ShouldSkip(Pawn pawn)
         //{
@@ -80,10 +92,7 @@ namespace CultOfCthulhu
             //}
             //Log.Message("5");
 
-            if (!pawn.CanReserveAndReach(t, PathEndMode.ClosestTouch, Danger.None))
-            {
-                return false;// pawn.Map.reservationManager.IsReserved(t, pawn.Faction)) return false;
-            }
+            if (!pawn.CanReserveAndReach(t, PathEndMode.ClosestTouch, Danger.None)) return false;// pawn.Map.reservationManager.IsReserved(t, pawn.Faction)) return false;
             //Log.Message("6");
 
             return true;
