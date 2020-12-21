@@ -50,20 +50,11 @@ namespace CultOfCthulhu
 
         private static readonly List<TabRecord> tabsList = new List<TabRecord>();
 
-        public override Vector2 InitialSize
-        {
-            get { return new Vector2(1024f, (float) UI.screenHeight); }
-        }
+        public override Vector2 InitialSize => new Vector2(1024f, (float)UI.screenHeight);
 
-        protected override float Margin
-        {
-            get { return 0f; }
-        }
+        protected override float Margin => 0f;
 
-        private BiomeDef Biome
-        {
-            get { return map.Biome; }
-        }
+        private BiomeDef Biome => map.Biome;
 
 
         private Pair<ThingDef, float> ForagedFoodPerDay
@@ -73,7 +64,7 @@ namespace CultOfCthulhu
                 if (foragedFoodPerDayDirty)
                 {
                     foragedFoodPerDayDirty = false;
-                    StringBuilder stringBuilder = new StringBuilder();
+                    var stringBuilder = new StringBuilder();
                     cachedForagedFoodPerDay = ForagedFoodPerDayCalculator.ForagedFoodPerDay(transferables,
                         Biome, Faction.OfPlayer, stringBuilder);
                     cachedForagedFoodPerDayExplanation = stringBuilder.ToString();
@@ -89,7 +80,7 @@ namespace CultOfCthulhu
                 if (visibilityDirty)
                 {
                     visibilityDirty = false;
-                    StringBuilder stringBuilder = new StringBuilder();
+                    var stringBuilder = new StringBuilder();
                     cachedVisibility = CaravanVisibilityCalculator.Visibility(transferables, stringBuilder);
                     cachedVisibilityExplanation = stringBuilder.ToString();
                 }
@@ -102,10 +93,10 @@ namespace CultOfCthulhu
         {
             get
             {
-                int num = 0;
-                for (int i = 0; i < transporters.Count; i++)
+                var num = 0;
+                for (var i = 0; i < transporters.Count; i++)
                 {
-                    int result = 1; //In-case PawnFlyer doesn't work out
+                    var result = 1; //In-case PawnFlyer doesn't work out
                     if (transporters[i].parent is PawnFlyer pawnFlyer)
                     {
                         if (pawnFlyer.def is PawnFlyerDef pawnFlyerDef)
@@ -126,10 +117,10 @@ namespace CultOfCthulhu
         {
             get
             {
-                float num = 0f;
-                for (int i = 0; i < transporters.Count; i++)
+                var num = 0f;
+                for (var i = 0; i < transporters.Count; i++)
                 {
-                    float result = 150f; //In-case PawnFlyer doesn't work out
+                    var result = 150f; //In-case PawnFlyer doesn't work out
                     if (transporters[i].parent is PawnFlyer pawnFlyer)
                     {
                         result = pawnFlyer.GetStatValue(StatDefOf.CarryingCapacity);
@@ -145,15 +136,9 @@ namespace CultOfCthulhu
             }
         }
 
-        private string TransportersLabel
-        {
-            get { return Find.ActiveLanguageWorker.Pluralize(transporters[0].parent.Label); }
-        }
+        private string TransportersLabel => Find.ActiveLanguageWorker.Pluralize(transporters[0].parent.Label);
 
-        private string TransportersLabelCap
-        {
-            get { return TransportersLabel.CapitalizeFirst(); }
-        }
+        private string TransportersLabelCap => TransportersLabel.CapitalizeFirst();
 
         private float MassUsage
         {
@@ -194,7 +179,7 @@ namespace CultOfCthulhu
                 if (tilesPerDayDirty)
                 {
                     tilesPerDayDirty = false;
-                    StringBuilder stringBuilder = new StringBuilder();
+                    var stringBuilder = new StringBuilder();
                     cachedTilesPerDay = TilesPerDayCalculator.ApproxTilesPerDay(transferables, MassUsage,
                         MassCapacity, map.Tile, -1, stringBuilder);
                     cachedTilesPerDayExplanation = stringBuilder.ToString();
@@ -241,7 +226,7 @@ namespace CultOfCthulhu
                 if (daysWorthOfFoodDirty)
                 {
                     daysWorthOfFoodDirty = false;
-                    float first = DaysWorthOfFoodCalculator.ApproxDaysWorthOfFood(transferables, map.Tile,
+                    var first = DaysWorthOfFoodCalculator.ApproxDaysWorthOfFood(transferables, map.Tile,
                         IgnorePawnsInventoryMode.IgnoreIfAssignedToUnload, Faction.OfPlayer, null, 0f, 3500);
                     cachedDaysWorthOfFood = new Pair<float, float>(first,
                         DaysUntilRotCalculator.ApproxDaysUntilRot(transferables, map.Tile,
@@ -253,7 +238,7 @@ namespace CultOfCthulhu
 
         public override void DoWindowContents(Rect inRect)
         {
-            Rect rect = new Rect(0f, 0f, inRect.width, 35f);
+            var rect = new Rect(0f, 0f, inRect.width, 35f);
             Text.Font = GameFont.Medium;
             Text.Anchor = TextAnchor.MiddleCenter;
             Widgets.Label(rect, "LoadTransporters".Translate(
@@ -283,7 +268,7 @@ namespace CultOfCthulhu
             DoBottomButtons(rect2);
             Rect inRect2 = rect2;
             inRect2.yMax -= 59f;
-            bool flag = false;
+            var flag = false;
             Dialog_LoadTransportersPawn.Tab tab = this.tab;
             if (tab != Tab.Pawns)
             {
@@ -373,36 +358,36 @@ namespace CultOfCthulhu
 
         private void DoBottomButtons(Rect rect)
         {
-            Rect rect2 = new Rect(rect.width / 2f - BottomButtonSize.x / 2f, rect.height - 55f,
+            var rect2 = new Rect((rect.width / 2f) - (BottomButtonSize.x / 2f), rect.height - 55f,
                 BottomButtonSize.x, BottomButtonSize.y);
             if (Widgets.ButtonText(rect2, "AcceptButton".Translate(), true, false, true) && TryAccept())
             {
                 SoundDefOf.Tick_High.PlayOneShotOnCamera();
                 Close(false);
             }
-            Rect rect3 = new Rect(rect2.x - 10f - BottomButtonSize.x, rect2.y, BottomButtonSize.x,
+            var rect3 = new Rect(rect2.x - 10f - BottomButtonSize.x, rect2.y, BottomButtonSize.x,
                 BottomButtonSize.y);
             if (Widgets.ButtonText(rect3, "ResetButton".Translate(), true, false, true))
             {
                 SoundDefOf.Tick_Low.PlayOneShotOnCamera();
                 CalculateAndRecacheTransferables();
             }
-            Rect rect4 = new Rect(rect2.xMax + 10f, rect2.y, BottomButtonSize.x, BottomButtonSize.y);
+            var rect4 = new Rect(rect2.xMax + 10f, rect2.y, BottomButtonSize.x, BottomButtonSize.y);
             if (Widgets.ButtonText(rect4, "CancelButton".Translate(), true, false, true))
             {
                 Close(true);
             }
             if (Prefs.DevMode)
             {
-                float num = 200f;
-                float num2 = BottomButtonSize.y / 2f;
-                Rect rect5 = new Rect(rect.width - num, rect.height - 55f, num, num2);
+                var num = 200f;
+                var num2 = BottomButtonSize.y / 2f;
+                var rect5 = new Rect(rect.width - num, rect.height - 55f, num, num2);
                 if (Widgets.ButtonText(rect5, "Dev: Load instantly", true, false, true) && DebugTryLoadInstantly())
                 {
                     SoundDefOf.Tick_High.PlayOneShotOnCamera();
                     Close(false);
                 }
-                Rect rect6 = new Rect(rect.width - num, rect.height - 55f + num2, num, num2);
+                var rect6 = new Rect(rect.width - num, rect.height - 55f + num2, num, num2);
                 if (Widgets.ButtonText(rect6, "Dev: Select everything", true, false, true))
                 {
                     SoundDefOf.Tick_High.PlayOneShotOnCamera();
@@ -452,7 +437,7 @@ namespace CultOfCthulhu
                 return false;
             }
             Cthulhu.Utility.DebugReport("TryAccept Succeeded");
-            int transportersGroup = CreateAndAssignNewTransportersGroup();
+            var transportersGroup = CreateAndAssignNewTransportersGroup();
             AssignTransferablesToRandomTransporters();
             IEnumerable<Pawn> enumerable = from x in pawnsFromTransferables
                 where x.IsColonist && !x.Downed
@@ -480,8 +465,8 @@ namespace CultOfCthulhu
             Cthulhu.Utility.DebugReport("AssignTransferablesToRandomTransporters Called");
             TransferableOneWay transferableOneWay =
                 transferables.MaxBy((TransferableOneWay x) => x.CountToTransfer);
-            int num = 0;
-            for (int i = 0; i < transferables.Count; i++)
+            var num = 0;
+            for (var i = 0; i < transferables.Count; i++)
             {
                 if (transferables[i] != transferableOneWay)
                 {
@@ -495,11 +480,11 @@ namespace CultOfCthulhu
             }
             if (num < transporters.Count)
             {
-                int num2 = transferableOneWay.CountToTransfer;
-                int num3 = num2 / (transporters.Count - num);
-                for (int j = num; j < transporters.Count; j++)
+                var num2 = transferableOneWay.CountToTransfer;
+                var num3 = num2 / (transporters.Count - num);
+                for (var j = num; j < transporters.Count; j++)
                 {
-                    int num4 = (j != transporters.Count - 1) ? num3 : num2;
+                    var num4 = (j != transporters.Count - 1) ? num3 : num2;
                     if (num4 > 0)
                     {
                         transporters[j].AddToTheToLoadList(transferableOneWay, num4);
@@ -517,8 +502,8 @@ namespace CultOfCthulhu
         private int CreateAndAssignNewTransportersGroup()
         {
             Cthulhu.Utility.DebugReport("CreateAndAssignNewTransportersGroup Called");
-            int nextTransporterGroupID = Find.UniqueIDsManager.GetNextTransporterGroupID();
-            for (int i = 0; i < transporters.Count; i++)
+            var nextTransporterGroupID = Find.UniqueIDsManager.GetNextTransporterGroupID();
+            for (var i = 0; i < transporters.Count; i++)
             {
                 transporters[i].groupID = nextTransporterGroupID;
             }
@@ -557,15 +542,15 @@ namespace CultOfCthulhu
                 return false;
             }
             Map map = transporters[0].parent.Map;
-            for (int i = 0; i < transferables.Count; i++)
+            for (var i = 0; i < transferables.Count; i++)
             {
                 if (transferables[i].ThingDef.category == ThingCategory.Item)
                 {
-                    int countToTransfer = transferables[i].CountToTransfer;
-                    int num = 0;
+                    var countToTransfer = transferables[i].CountToTransfer;
+                    var num = 0;
                     if (countToTransfer > 0)
                     {
-                        for (int j = 0; j < transferables[i].things.Count; j++)
+                        for (var j = 0; j < transferables[i].things.Count; j++)
                         {
                             Thing thing = transferables[i].things[j];
                             if (map.reachability.CanReach(thing.Position, transporters[0].parent,
@@ -604,17 +589,19 @@ namespace CultOfCthulhu
         private void AddPawnsToTransferables()
         {
             List<Pawn> list = CaravanFormingUtility.AllSendablePawns(map, false, false);
-            for (int i = 0; i < list.Count; i++)
+            for (var i = 0; i < list.Count; i++)
             {
                 if (list[i].TryGetComp<CompLaunchablePawn>() == null)
+                {
                     AddToTransferables(list[i]);
+                }
             }
         }
 
         private void AddItemsToTransferables()
         {
             List<Thing> list = CaravanFormingUtility.AllReachableColonyItems(map, false, false);
-            for (int i = 0; i < list.Count; i++)
+            for (var i = 0; i < list.Count; i++)
             {
                 AddToTransferables(list[i]);
             }
@@ -627,7 +614,7 @@ namespace CultOfCthulhu
 
         private void SetToLoadEverything()
         {
-            for (int i = 0; i < transferables.Count; i++)
+            for (var i = 0; i < transferables.Count; i++)
             {
                 transferables[i].AdjustTo(transferables[i].GetMaximumToTransfer()); // SetToTransferMaxToDest();
                 //TransferableUIUtility.ClearEditBuffer(this.transferables[i]);

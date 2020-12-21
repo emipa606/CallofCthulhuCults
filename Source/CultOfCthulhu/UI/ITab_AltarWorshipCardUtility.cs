@@ -30,7 +30,7 @@ namespace CultOfCthulhu
     [StaticConstructorOnStartup]
     public class ITab_AltarWorshipCardUtility
     {
-        public static Vector2 TempleCardSize = new Vector2(600f, 400f);
+        public static Vector2 TempleCardSize = new Vector2(600f, 500f);
 
         public static void DrawTempleCard(Rect rect, Building_SacrificialAltar altar)
         {
@@ -38,7 +38,7 @@ namespace CultOfCthulhu
 
             if (CultTracker.Get.PlayerCult != null)
             {
-                float cultLabelWidth = Text.CalcSize(CultTracker.Get.PlayerCult.name).x + 15;
+                var cultLabelWidth = Text.CalcSize(CultTracker.Get.PlayerCult.name).x + 15;
 
                 //Headings
                 _ = new Rect(rect);
@@ -52,7 +52,7 @@ namespace CultOfCthulhu
 
                 //Rename Icon
                 ITab_AltarCardUtility.DrawRename(altar);
-                Rect rect2 = new Rect(rect1)
+                var rect2 = new Rect(rect1)
                 {
                     yMin = rect1.yMax + 10,
                     height = 25f,
@@ -72,7 +72,7 @@ namespace CultOfCthulhu
                 Widgets.DrawLineHorizontal(rect2.x - 10, rect2.yMax, rect.width - 15f);
                 //---------------------------------------------------------------------
 
-                Rect rectMain = new Rect(0 + 15f, 0 + 30f, TempleCardSize.x, ITab_AltarSacrificesCardUtility.ButtonSize * 1.15f);
+                var rectMain = new Rect(0 + 15f, 0 + 30f, TempleCardSize.x, ITab_AltarSacrificesCardUtility.ButtonSize * 1.15f);
 
                 //Deity -> Cthulhu
                 Rect rect4 = rectMain;
@@ -83,7 +83,7 @@ namespace CultOfCthulhu
                 rect4.height = ITab_AltarSacrificesCardUtility.ButtonSize;
                 Widgets.Label(rect4, "Deity".Translate() + ": ");
                 rect4.xMin = rect4.center.x;
-                string label4 = DeityLabel(altar);
+                var label4 = DeityLabel(altar);
                 if (Widgets.ButtonText(rect4, label4, true, false, true))
                 {
                     OpenDeitySelectMenu(altar);
@@ -102,7 +102,7 @@ namespace CultOfCthulhu
                 rect5.width = ITab_AltarSacrificesCardUtility.ColumnSize;
                 Widgets.Label(rect5, "Preacher".Translate() + ": ");
                 rect5.xMin = rect5.center.x;
-                string label2 = PreacherLabel(altar);
+                var label2 = PreacherLabel(altar);
                 if (Widgets.ButtonText(rect5, label2, true, false, true))
                 {
                     OpenPreacherSelectMenu(altar);
@@ -111,32 +111,124 @@ namespace CultOfCthulhu
 
                 Rect rect6 = rect5;
                 rect6.y += ITab_AltarSacrificesCardUtility.ButtonSize + ITab_AltarSacrificesCardUtility.SpacingOffset;
-                rect6.height = ITab_AltarSacrificesCardUtility.ButtonSize;
+                rect6.height = ITab_AltarSacrificesCardUtility.ButtonSize * 2;
                 rect6.width = ITab_AltarSacrificesCardUtility.ColumnSize;
                 rect6.x -= rect5.x - 5;
                 rect6.x += 15f;
-                bool disabled = altar.tempCurrentWorshipDeity == null;
-                Widgets.CheckboxLabeled(rect6.BottomHalf(), "MorningSermons".Translate(), ref altar.OptionMorning, disabled);
-                if (Mouse.IsOver(rect6) && Event.current.type == EventType.MouseDown && !disabled)
+                if (altar.tempCurrentWorshipDeity != null)
                 {
-                    altar.TryChangeWorshipValues(Building_SacrificialAltar.ChangeWorshipType.MorningWorship, altar.OptionMorning);
-                }
-                Rect rect7 = rect6;
-                rect7.y += ITab_AltarSacrificesCardUtility.ButtonSize + ITab_AltarSacrificesCardUtility.SpacingOffset;
-                rect7.height = ITab_AltarSacrificesCardUtility.ButtonSize;
-                Widgets.CheckboxLabeled(rect7.TopHalf(), "EveningSermons".Translate(), ref altar.OptionEvening, disabled);
-                if (Mouse.IsOver(rect7) && Event.current.type == EventType.MouseDown && !disabled)
-                {
-                    altar.TryChangeWorshipValues(Building_SacrificialAltar.ChangeWorshipType.EveningWorship, altar.OptionEvening);
+
+                    Widgets.Label(rect6.BottomHalf(), "Cults_SeasonDays".Translate());
+
+                    Text.Font = GameFont.Tiny;
+                    //Text.Anchor = TextAnchor.LowerLeft;
+                    var num = 15f;
+                    var num2 = 270f;
+                    var hourWidth = 20.833334f;
+                    Texture2D texture;
+                    for (var day = 0; day <= 14; day++)
+                    {
+                        var rect9 = new Rect(num + 4f, num2 + 0f, hourWidth, 20f);
+                        Widgets.Label(rect9, (day + 1).ToString());
+                        var rect10 = new Rect(num, num2 + 20f, hourWidth, 30f);
+                        rect10 = rect10.ContractedBy(1f);
+                        texture = TimeAssignmentDefOf.Anything.ColorTexture;
+                        switch (altar.seasonSchedule[day])
+                        {
+                            case 1:
+                                texture = SolidColorMaterials.NewSolidColorTexture(Color.red);
+                                break;
+                            case 2:
+                                texture = SolidColorMaterials.NewSolidColorTexture(Color.blue);
+                                break;
+                            case 3:
+                                texture = SolidColorMaterials.NewSolidColorTexture(Color.magenta);
+                                break;
+                        }
+
+                        GUI.DrawTexture(rect10, texture);
+                        if (Mouse.IsOver(rect10))
+                        {
+                            Widgets.DrawBox(rect10, 2);
+                            //if (Input.GetMouseButton(0))
+                            if (Widgets.ButtonInvisible(rect10))
+                            {
+                                altar.seasonSchedule[day] = (altar.seasonSchedule[day] % 4) + 1;
+                                SoundDefOf.Designate_DragStandard_Changed.PlayOneShotOnCamera();
+                                //p.timetable.SetAssignment(hour, this.selectedAssignment);
+
+                            }
+                        }
+                        num += hourWidth;
+                    }
+                    num2 += 60f;
+                    var rect11 = new Rect(15f, num2 + 3, hourWidth / 2, hourWidth / 2);
+                    rect11 = rect11.ContractedBy(1f);
+                    GUI.DrawTexture(rect11, TimeAssignmentDefOf.Anything.ColorTexture);
+                    var rect12 = new Rect(15f + hourWidth, num2, 150f, (hourWidth / 2) + 6);
+                    Widgets.Label(rect12, "NoSermonLabel".Translate());
+
+                    var rect13 = new Rect(15f + 170f, num2 + 3, hourWidth / 2, hourWidth / 2);
+                    rect13 = rect13.ContractedBy(1f);
+                    GUI.DrawTexture(rect13, SolidColorMaterials.NewSolidColorTexture(Color.magenta));
+                    var rect14 = new Rect(15f + hourWidth + 170f, num2, 150f, (hourWidth / 2) + 6);
+                    Widgets.Label(rect14, "BothSermonLabel".Translate());
+
+                    num2 += 30f;
+                    var rect15 = new Rect(15f, num2 + 3, hourWidth / 2, hourWidth / 2);
+                    rect15 = rect15.ContractedBy(1f);
+                    GUI.DrawTexture(rect15, SolidColorMaterials.NewSolidColorTexture(Color.red));
+                    var rect16 = new Rect(15f + hourWidth, num2, 150f, (hourWidth / 2) + 6);
+                    Widgets.Label(rect16, "MorningSermonLabel".Translate());
+
+                    var rect17 = new Rect(15f + 170f, num2 + 3, hourWidth / 2, hourWidth / 2);
+                    rect17 = rect17.ContractedBy(1f);
+                    GUI.DrawTexture(rect17, SolidColorMaterials.NewSolidColorTexture(Color.blue));
+                    var rect18 = new Rect(15f + hourWidth + 170f, num2, 150f, (hourWidth / 2) + 6);
+                    Widgets.Label(rect18, "EveningSermonLabel".Translate());
+
+                    num2 += 35f;
+                    var rect19 = new Rect(15f, num2, 150f, (hourWidth / 2) + 6);
+                    Widgets.Label(rect19, "Cults_SermonStartLabel".Translate());
+
+                    var dist = 5f;
+                    var button3 = new Rect(rect6.x + dist, rect6.y + 215f, 140f, 30f);
+                    var morningHour = altar.morningHour.ToString() + ":00h";
+                    if (Widgets.ButtonText(button3, "Cults_MorningSermonStart".Translate() + morningHour, true, false, true))
+                    {
+                        listHours(altar, true);
+                    }
+                    var button4 = new Rect(rect6.x + dist + 150f, rect6.y + 215f, 140f, 30f);
+                    var eveningHour = altar.eveningHour.ToString() + ":00h";
+                    if (Widgets.ButtonText(button4, "Cults_EveningSermonStart".Translate() + eveningHour, true, false, true))
+                    {
+                        listHours(altar, false);
+                    }
                 }
 
-                TooltipHandler.TipRegion(rect6, "MorningSermonsDesc".Translate());
-                TooltipHandler.TipRegion(rect7, "EveningSermonsDesc".Translate());
+                // Old code with only morning/evening setting
+
+                //Widgets.CheckboxLabeled(rect6.BottomHalf(), "MorningSermons".Translate(), ref altar.OptionMorning, disabled);
+                //if (Mouse.IsOver(rect6) && Event.current.type == EventType.MouseDown && !disabled)
+                //{
+                //    altar.TryChangeWorshipValues(Building_SacrificialAltar.ChangeWorshipType.MorningWorship, altar.OptionMorning);
+                //}
+                //Rect rect7 = rect6;
+                //rect7.y += ITab_AltarSacrificesCardUtility.ButtonSize + ITab_AltarSacrificesCardUtility.SpacingOffset;
+                //rect7.height = ITab_AltarSacrificesCardUtility.ButtonSize;
+                //Widgets.CheckboxLabeled(rect7.TopHalf(), "EveningSermons".Translate(), ref altar.OptionEvening, disabled);
+                //if (Mouse.IsOver(rect7) && Event.current.type == EventType.MouseDown && !disabled)
+                //{
+                //    altar.TryChangeWorshipValues(Building_SacrificialAltar.ChangeWorshipType.EveningWorship, altar.OptionEvening);
+                //}
+
+                //TooltipHandler.TipRegion(rect6, "MorningSermonsDesc".Translate());
+                //TooltipHandler.TipRegion(rect7, "EveningSermonsDesc".Translate());
 
             }
             else
             {
-                Rect newRect = new Rect(rect);
+                var newRect = new Rect(rect);
                 newRect = newRect.ContractedBy(14f);
                 newRect.height = 30f;
 
@@ -147,7 +239,35 @@ namespace CultOfCthulhu
 
             GUI.EndGroup();
         }
-        
+
+        public static void listHours(Building_SacrificialAltar altar, bool morning)
+        {
+            var list = new List<FloatMenuOption>();
+            var availableHours = new List<int>(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
+            if (!morning)
+            {
+                availableHours = new List<int>(new int[] { 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 });
+            }
+
+            foreach (var i in availableHours)
+            {
+                list.Add(new FloatMenuOption(i.ToString() + ":00h", delegate
+                {
+                    if (morning)
+                    {
+                        altar.morningHour = i;
+                    }
+                    else
+                    {
+                        altar.eveningHour = i;
+                    }
+                }, MenuOptionPriority.Default, null, null, 0f, null, null));
+            }
+
+
+            Find.WindowStack.Add(new FloatMenu(list));
+        }
+
         private static string PreacherLabel(Building_SacrificialAltar altar)
         {
             if (altar.tempPreacher == null)
@@ -174,15 +294,15 @@ namespace CultOfCthulhu
             }
             else
             {
-                StringBuilder stringBuilder = new StringBuilder();
+                var stringBuilder = new StringBuilder();
                 stringBuilder.Append(altar.tempCurrentWorshipDeity.def.description);
                 return stringBuilder.ToString();
             }
         }
-        
+
         public static void OpenPreacherSelectMenu(Building_SacrificialAltar altar)
         {
-            List<FloatMenuOption> list = new List<FloatMenuOption>
+            var list = new List<FloatMenuOption>
             {
                 new FloatMenuOption("(" + "Auto".Translate() + ")", delegate
                 {
@@ -212,7 +332,7 @@ namespace CultOfCthulhu
 
         public static void OpenDeitySelectMenu(Building_SacrificialAltar altar)
         {
-            List<FloatMenuOption> list = new List<FloatMenuOption>
+            var list = new List<FloatMenuOption>
             {
                 new FloatMenuOption("(" + "NoneLower".Translate() + ")", delegate
                 {
@@ -223,7 +343,11 @@ namespace CultOfCthulhu
 
             foreach (CosmicEntity current in DeityTracker.Get.DeityCache.Keys)
             {
-                if (!current.discovered) continue;
+                if (!current.discovered)
+                {
+                    continue;
+                }
+
                 Action action;
                 CosmicEntity localDeity = current;
                 action = delegate
@@ -233,16 +357,20 @@ namespace CultOfCthulhu
                     altar.tempCurrentWorshipDeity = localDeity;
                     //altar.tempCurrentSpell = null;
                 };
-                bool extraPartOnGUI(Rect rect) => DeityInfoCardButton(rect.x + 5f, rect.y + (rect.height - 24f) / 2f, current);
+                bool extraPartOnGUI(Rect rect)
+                {
+                    return DeityInfoCardButton(rect.x + 5f, rect.y + ((rect.height - 24f) / 2f), current);
+                }
+
                 list.Add(new FloatMenuOption(localDeity.LabelCap, action, MenuOptionPriority.Default, null, null, 29f, extraPartOnGUI));
             }
             Find.WindowStack.Add(new FloatMenu(list));
         }
-        
+
         public static bool DeityInfoCardButton(float x, float y, CosmicEntity entity)
         {
             bool result;
-            if ((bool)AccessTools.Method(type: typeof(Widgets), name: "InfoCardButtonWorker").Invoke(obj: null, parameters: new object[] {x, y}))
+            if ((bool)AccessTools.Method(type: typeof(Widgets), name: "InfoCardButtonWorker").Invoke(obj: null, parameters: new object[] { x, y }))
             {
                 Find.WindowStack.Add(new Dialog_CosmicEntityInfoBox(entity));
                 result = true;

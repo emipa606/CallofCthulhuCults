@@ -51,11 +51,19 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
             Pawn p = map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.SacrificeData.Executioner;
             TraitDef traitToAdd = null;
-            if (!p.story.traits.HasTrait(TraitDefOf.Cannibal)) traitToAdd = TraitDefOf.Cannibal;
-            if (!p.story.traits.HasTrait(TraitDefOf.Psychopath)) traitToAdd = TraitDefOf.Psychopath;
+            if (!p.story.traits.HasTrait(TraitDefOf.Cannibal))
+            {
+                traitToAdd = TraitDefOf.Cannibal;
+            }
+
+            if (!p.story.traits.HasTrait(TraitDefOf.Psychopath))
+            {
+                traitToAdd = TraitDefOf.Psychopath;
+            }
+
             p.story.traits.GainTrait(new Trait(traitToAdd));
             //if (p.story.traits.allTraits.Count < 3) p.story.traits.GainTrait(new Trait(traitToAdd));
             //else

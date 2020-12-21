@@ -27,7 +27,7 @@ namespace CultOfCthulhu
             }
 
             _ = transComp.Launchable;
-            for (int j = 0; j < transporters.Count; j++)
+            for (var j = 0; j < transporters.Count; j++)
             {
                 if (transporters[j] != transComp)
                 {
@@ -43,7 +43,7 @@ namespace CultOfCthulhu
 
         public override bool InheritInteractionsFrom(Gizmo other)
         {
-            Command_LoadToTransporterPawn command_LoadToTransporter = (Command_LoadToTransporterPawn)other;
+            var command_LoadToTransporter = (Command_LoadToTransporterPawn)other;
             if (command_LoadToTransporter.transComp.parent.def != transComp.parent.def)
             {
                 return false;

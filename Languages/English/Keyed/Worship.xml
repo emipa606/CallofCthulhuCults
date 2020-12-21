@@ -97,6 +97,10 @@
   <!-- 6/24/17 -->
   <Cults_Morning>morning</Cults_Morning>
   <Cults_Evening>evening</Cults_Evening>
+  <Cults_SeasonDays>Days for sermons in quandrum:</Cults_SeasonDays>
+  <Cults_SermonStartLabel>Sermon start times</Cults_SermonStartLabel>
+  <Cults_MorningSermonStart>Morning: </Cults_MorningSermonStart>
+  <Cults_EveningSermonStart>Evening: </Cults_EveningSermonStart>
   <Cults_NoPreacher>No preacher selected.</Cults_NoPreacher>
   <Cults_NoCosmicEntity>No cosmic entity selected.</Cults_NoCosmicEntity>
   <Cults_NoPreacherDrafted>Preacher is drafted.</Cults_NoPreacherDrafted>
@@ -251,6 +255,10 @@
   <MorningSermonsDesc>Host services between the hours of 6 and 10 o'clock in the morning.</MorningSermonsDesc>
   <EveningSermons>Evening Sermons</EveningSermons>
   <EveningSermonsDesc>Host services between the hours of 6 and 10 o'clock at night.</EveningSermonsDesc>
+  <NoSermonLabel>No sermon</NoSermonLabel>
+  <MorningSermonLabel>Morning sermon</MorningSermonLabel>
+  <EveningSermonLabel>Evening sermon</EveningSermonLabel>
+  <BothSermonLabel>Morning &amp; evening sermons</BothSermonLabel>
   <CommandCancelWorship>Cancel the sermon.</CommandCancelWorship>
   <!-- Cult Naming -->
   <NameCultMessage>A cult has begun to form in your colony. {0} thinks that you should give this cult a name.\n\nWhat should it be called?</NameCultMessage>

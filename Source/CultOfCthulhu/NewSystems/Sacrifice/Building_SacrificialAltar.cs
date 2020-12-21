@@ -29,13 +29,16 @@ namespace CultOfCthulhu
     public partial class Building_SacrificialAltar : Building, IBillGiver
     {
         #region IBillGiver
-        
+
         public IEnumerable<IntVec3> CellsAround => GenRadial.RadialCellsAround(Position, 5, true);
         public BillStack BillStack { get; }
         public IEnumerable<IntVec3> IngredientStackCells => GenAdj.CellsOccupiedBy(this);
-        public Building_SacrificialAltar() => BillStack = new BillStack(this);
+        public Building_SacrificialAltar()
+        {
+            BillStack = new BillStack(this);
+        }
         #endregion IBillGiver
-        
+
         #region Variables
 
         //Universal Variables
@@ -67,6 +70,9 @@ namespace CultOfCthulhu
         private bool didMorningRitual = false;
         public bool OptionEvening = false;
         private bool didEveningRitual = false;
+        public List<int> seasonSchedule = new List<int>(new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+        public int morningHour = 9;
+        public int eveningHour = 18;
 
         public Pawn preacher = null;
         public Pawn tempPreacher = null;
@@ -79,7 +85,7 @@ namespace CultOfCthulhu
 
         private Bill_Sacrifice sacrificeData = null;
         public Bill_Sacrifice SacrificeData => sacrificeData;
-        
+
         public Pawn tempSacrifice = null;
         public Pawn tempExecutioner = null;
         public CosmicEntity tempCurrentSacrificeDeity;
@@ -100,28 +106,73 @@ namespace CultOfCthulhu
         #endregion Variables
 
         #region Bools
-        private bool IsCongregating() => IsOffering() || IsSacrificing() || IsWorshipping();
-        private bool IsOffering() => 
-            currentState == State.offering || (currentOfferingState != OfferingState.finished && currentOfferingState != OfferingState.off);
-        private bool IsSacrificing() => 
-            currentState == State.sacrificing || (currentSacrificeState != SacrificeState.finished && currentSacrificeState != SacrificeState.off);
-        private bool IsWorshipping() => 
-            currentState == State.worshipping || (currentWorshipState != WorshipState.finished && currentWorshipState != WorshipState.off);
-        
-        private bool DoMorningSermon => 
+        private bool IsCongregating()
+        {
+            return IsOffering() || IsSacrificing() || IsWorshipping();
+        }
+
+        private bool IsOffering()
+        {
+            return currentState == State.offering || (currentOfferingState != OfferingState.finished && currentOfferingState != OfferingState.off);
+        }
+
+        private bool IsSacrificing()
+        {
+            return currentState == State.sacrificing || (currentSacrificeState != SacrificeState.finished && currentSacrificeState != SacrificeState.off);
+        }
+
+        private bool IsWorshipping()
+        {
+            return currentState == State.worshipping || (currentWorshipState != WorshipState.finished && currentWorshipState != WorshipState.off);
+        }
+
+        private bool DoMorningSermon =>
             OptionMorning && Cthulhu.Utility.IsMorning(Map) && (didMorningRitual == false);
-        private bool DoEveningSermon => 
+        private bool DoEveningSermon =>
             OptionEvening && Cthulhu.Utility.IsEvening(Map) && (didEveningRitual == false);
+        private bool DoSermonNow
+        {
+            get
+            {
+                var typeOfSermons = seasonSchedule[GenLocalDate.DayOfQuadrum(Map)];
+                if (typeOfSermons == 0)
+                {
+                    return false;
+                }
+                var currentHour = GenLocalDate.HourInteger(Map);
+                if (!didMorningRitual && (typeOfSermons == 1 || typeOfSermons == 3) && currentHour == morningHour)
+                {
+                    didEveningRitual = false;
+                    didMorningRitual = true;
+                    return true;
+                }
+                if (!didEveningRitual && (typeOfSermons == 2 || typeOfSermons == 3) && currentHour == eveningHour)
+                {
+                    didMorningRitual = false;
+                    didEveningRitual = true;
+                    return true;
+                }
+                return false;
+            }
+        }
 
         private bool CanUpgrade()
         {
             switch (currentFunction)
             {
                 case Function.Level1:
-                    if (ResearchProjectDef.Named("Forbidden_Sacrifice").IsFinished) return true;
+                    if (ResearchProjectDef.Named("Forbidden_Sacrifice").IsFinished)
+                    {
+                        return true;
+                    }
+
                     return false;
                 case Function.Level2:
-                    if (ResearchProjectDef.Named("Forbidden_Human").IsFinished) return true;
+                    if (ResearchProjectDef.Named("Forbidden_Human").IsFinished)
+                    {
+                        return true;
+                    }
+
                     return false;
                 case Function.Level3:
                     return false;
@@ -135,7 +186,11 @@ namespace CultOfCthulhu
         private static bool RejectMessage(string s, Pawn pawn = null)
         {
             Messages.Message(s, TargetInfo.Invalid, MessageTypeDefOf.RejectInput);
-            if (pawn != null) pawn = null;
+            if (pawn != null)
+            {
+                pawn = null;
+            }
+
             return false;
         }
         #endregion Bools
@@ -151,7 +206,11 @@ namespace CultOfCthulhu
                 currentOfferingState = OfferingState.off;
                 availableWorshippers = null;
             }
-            else Log.Error("Changed default state of Sacrificial Altar this should never happen.");
+            else
+            {
+                Log.Error("Changed default state of Sacrificial Altar this should never happen.");
+            }
+
             ReportState();
         }
         public void ChangeState(State type, WorshipState worshipState)
@@ -198,8 +257,13 @@ namespace CultOfCthulhu
             get
             {
                 for (var i = 0; i < LyingSlotsCount; i++)
+                {
                     if (GetCurOccupant() == null)
+                    {
                         return true;
+                    }
+                }
+
                 return false;
             }
         }
@@ -208,11 +272,23 @@ namespace CultOfCthulhu
         {
             var sleepingSlotPos = GetLyingSlotPos();
             var list = Map.thingGrid.ThingsListAt(sleepingSlotPos);
-            if (list.NullOrEmpty()) return null;
+            if (list.NullOrEmpty())
+            {
+                return null;
+            }
+
             foreach (var t in list)
             {
-                if (!(t is Pawn pawn)) continue;
-                if (pawn.CurJob == null) continue;
+                if (!(t is Pawn pawn))
+                {
+                    continue;
+                }
+
+                if (pawn.CurJob == null)
+                {
+                    continue;
+                }
+
                 if (pawn.jobs.posture != PawnPosture.Standing)
                 {
                     return pawn;
@@ -242,9 +318,40 @@ namespace CultOfCthulhu
         {
             base.SpawnSetup(map, bla);
             CultTracker.Get.ExposedToCults = true;
-            if (RoomName == null) RoomName = "Unnamed Temple";
+            if (RoomName == null)
+            {
+                RoomName = "Unnamed Temple";
+            }
+            if (seasonSchedule == null)
+            {
+                var settingToMigrate = 0;
+                if (OptionMorning && OptionEvening)
+                {
+                    settingToMigrate = 3;
+                }
+                else
+                {
+                    if (OptionMorning)
+                    {
+                        settingToMigrate = 1;
+                    }
+                    if (OptionEvening)
+                    {
+                        settingToMigrate = 2;
+                    }
+                }
+                seasonSchedule = new List<int>(new int[] { settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate, settingToMigrate });
+                morningHour = 9;
+                eveningHour = 18;
+            }
+            if (eveningHour == 0)
+            {
+                eveningHour = 18;
+            }
+
             DeityTracker.Get.orGenerate();
-            switch (def.defName) {
+            switch (def.defName)
+            {
                 case "Cult_AnimalSacrificeAltar":
                     currentFunction = Function.Level2;
                     break;
@@ -282,6 +389,9 @@ namespace CultOfCthulhu
             Scribe_Values.Look<bool>(ref OptionEvening, "OptionEvening");
             Scribe_Values.Look<bool>(ref didMorningRitual, "didMorningRitual");
             Scribe_Values.Look<bool>(ref didEveningRitual, "didEveningRitual");
+            Scribe_Values.Look<int>(ref this.morningHour, "morningHour", 9, false);
+            Scribe_Values.Look<int>(ref this.eveningHour, "eveningHour", 18, false);
+            Scribe_Collections.Look<int>(ref this.seasonSchedule, "seasonSchedule", LookMode.Value, false);
             //Misc
             Scribe_Values.Look<bool>(ref toBePrunedAndRepaired, "tobePrunedAndRepaired");
             Scribe_Values.Look<string>(ref lastReport, "lastReport");
@@ -297,62 +407,100 @@ namespace CultOfCthulhu
         #endregion Spawn
 
         #region Ticker
-        
+
         public override void TickRare()
         {
             if (destroyedFlag) // Do nothing further, when destroyed (just a safety)
+            {
                 return;
+            }
 
-            if (!Spawned) return;
+            if (!Spawned)
+            {
+                return;
+            }
 
             // Don't forget the base work
             base.TickRare();
             AutoWorshipRareTick();
             WorshipRareTick();
             OfferingRareTick();
-            if (currentFunction > Function.Level1) SacrificeRareTick();
-
+            if (currentFunction > Function.Level1)
+            {
+                SacrificeRareTick();
+            }
         }
 
         public override void Tick()
         {
             if (destroyedFlag) // Do nothing further, when destroyed (just a safety)
+            {
                 return;
+            }
 
-            if (!Spawned) return;
+            if (!Spawned)
+            {
+                return;
+            }
 
             // Don't forget the base work
             base.Tick();
             WorshipTick();
-            if (currentFunction > Function.Level1) SacrificeTick();
+            if (currentFunction > Function.Level1)
+            {
+                SacrificeTick();
+            }
         }
 
         public void AutoWorshipRareTick()
         {
-            //In the morning, let's gather to worship
-            if (DoMorningSermon && !IsWorshipping() && !IsSacrificing())
+            if(DoSermonNow)
             {
-                didMorningRitual = true;
                 TryTimedWorship();
             }
 
-            //In the evening, let's gather to worship
-            if (DoEveningSermon && !IsWorshipping() && !IsSacrificing())
-            {
-                didEveningRitual = true;
-                TryTimedWorship();
-            }
+            // Old code, for only morning/evening options
+
+            ////In the morning, let's gather to worship
+            //if (DoMorningSermon && !IsWorshipping() && !IsSacrificing())
+            //{
+            //    didMorningRitual = true;
+            //    TryTimedWorship();
+            //}
+
+            ////In the evening, let's gather to worship
+            //if (DoEveningSermon && !IsWorshipping() && !IsSacrificing())
+            //{
+            //    didEveningRitual = true;
+            //    TryTimedWorship();
+            //}
 
             //Reset values
-            if (Cthulhu.Utility.IsEvening(Map) || Cthulhu.Utility.IsMorning(Map)) return;
-            didEveningRitual = false;
-            didMorningRitual = false;
+            //if (Cthulhu.Utility.IsEvening(Map) || Cthulhu.Utility.IsMorning(Map))
+            //{
+            //    return;
+            //}
+
+            //didEveningRitual = false;
+            //didMorningRitual = false;
         }
         public void SacrificeRareTick()
         {
-            if (!Spawned) return;
-            if (SacrificeData?.Executioner == null) return;
-            if (currentState != State.sacrificing) return;
+            if (!Spawned)
+            {
+                return;
+            }
+
+            if (SacrificeData?.Executioner == null)
+            {
+                return;
+            }
+
+            if (currentState != State.sacrificing)
+            {
+                return;
+            }
+
             switch (currentSacrificeState)
             {
                 case SacrificeState.started:
@@ -391,7 +539,11 @@ namespace CultOfCthulhu
                         return;
                     }
                     if (SacrificeData.Executioner?.CurJob != null &&
-                        SacrificeData.Executioner.CurJob.def != CultsDefOf.Cults_ReflectOnResult) return;
+                        SacrificeData.Executioner.CurJob.def != CultsDefOf.Cults_ReflectOnResult)
+                    {
+                        return;
+                    }
+
                     GetSacrificeGroup();
                     return;
 
@@ -403,7 +555,11 @@ namespace CultOfCthulhu
         }
         public void OfferingRareTick()
         {
-            if (currentState != State.offering) return;
+            if (currentState != State.offering)
+            {
+                return;
+            }
+
             switch (currentOfferingState)
             {
                 case OfferingState.started:
@@ -440,7 +596,11 @@ namespace CultOfCthulhu
         }
         public void WorshipRareTick()
         {
-            if (currentState != State.worshipping) return;
+            if (currentState != State.worshipping)
+            {
+                return;
+            }
+
             switch (currentWorshipState)
             {
                 case WorshipState.started:
@@ -456,7 +616,11 @@ namespace CultOfCthulhu
                         CultUtility.AbortCongregation(this, "Preacher".Translate() + "IsUnavailable".Translate());
                         return;
                     }
-                    if (availableWorshippers != null) return;
+                    if (availableWorshippers != null)
+                    {
+                        return;
+                    }
+
                     GetWorshipGroup(this, GenRadial.RadialCellsAround(Position, GenRadial.MaxRadialPatternRadius - 1, true));
                     Cthulhu.Utility.DebugReport("Gathering yay");
                     return;
@@ -467,7 +631,10 @@ namespace CultOfCthulhu
                         return;
                     }
                     if (preacher.CurJob.def != CultsDefOf.Cults_ReflectOnWorship)
+                    {
                         return;
+                    }
+
                     GetWorshipGroup(this, GenRadial.RadialCellsAround(Position, GenRadial.MaxRadialPatternRadius - 1, true));
                     Cthulhu.Utility.DebugReport("Finishing yay");
                     return;
@@ -479,7 +646,11 @@ namespace CultOfCthulhu
         }
         public void SacrificeTick()
         {
-            if (currentState != State.sacrificing) return;
+            if (currentState != State.sacrificing)
+            {
+                return;
+            }
+
             switch (currentSacrificeState)
             {
                 case SacrificeState.started:
@@ -490,7 +661,10 @@ namespace CultOfCthulhu
                         if (Cthulhu.Utility.IsActorAvailable(SacrificeData.Sacrifice, true))
                         {
                             if (SacrificeData.Executioner.CurJob.def != CultsDefOf.Cults_HoldSacrifice)
+                            {
                                 CultUtility.AbortCongregation(this, "Executioner".Translate() + "IsUnavailable".Translate());
+                            }
+
                             return;
                         }
                         CultUtility.AbortCongregation(this, "Sacrifice".Translate() + "IsUnavailable".Translate());
@@ -518,7 +692,11 @@ namespace CultOfCthulhu
         }
         public void WorshipTick()
         {
-            if (currentState != State.worshipping) return;
+            if (currentState != State.worshipping)
+            {
+                return;
+            }
+
             switch (currentWorshipState)
             {
                 case WorshipState.started:
@@ -567,7 +745,9 @@ namespace CultOfCthulhu
         public override IEnumerable<Gizmo> GetGizmos()
         {
             foreach (var g in base.GetGizmos())
+            {
                 yield return g;
+            }
 
             if (currentFunction < Function.Level3)
             {
@@ -584,16 +764,24 @@ namespace CultOfCthulhu
                 if (CanUpgrade())
                 {
                     if (currentFunction == Function.Level1)
+                    {
                         command_Upgrade.icon = ContentFinder<Texture2D>.Get("UI/Commands/Upgrade2");
+                    }
                     else if (currentFunction == Function.Level2)
+                    {
                         command_Upgrade.icon = ContentFinder<Texture2D>.Get("UI/Commands/Upgrade3");
+                    }
                 }
                 else
                 {
                     if (currentFunction == Function.Level1)
+                    {
                         command_Upgrade.icon = ContentFinder<Texture2D>.Get("UI/Commands/Upgrade2Disabled");
+                    }
                     else if (currentFunction == Function.Level2)
+                    {
                         command_Upgrade.icon = ContentFinder<Texture2D>.Get("UI/Commands/Upgrade3Disabled");
+                    }
                 }
                 yield return command_Upgrade;
             }
@@ -612,7 +800,11 @@ namespace CultOfCthulhu
                     hotKey = KeyBindingDefOf.Misc1,
                     icon = ContentFinder<Texture2D>.Get("UI/Commands/Sacrifice")
                 };
-                if (currentFunction < Function.Level2) command_Action.icon = ContentFinder<Texture2D>.Get("UI/Commands/SacrificeDisabled");
+                if (currentFunction < Function.Level2)
+                {
+                    command_Action.icon = ContentFinder<Texture2D>.Get("UI/Commands/SacrificeDisabled");
+                }
+
                 yield return command_Action;
             }
             else
@@ -680,7 +872,7 @@ namespace CultOfCthulhu
                 };
                 yield return command_Cancel;
             }
-                        
+
             if (CultsDefOf.Forbidden_Reports.IsFinished)
             {
                 yield return new Command_Action
@@ -709,14 +901,20 @@ namespace CultOfCthulhu
             }
 
 
-            if (!DebugSettings.godMode) yield break;
+            if (!DebugSettings.godMode)
+            {
+                yield break;
+            }
+
             yield return new Command_Action
             {
                 defaultLabel = "Debug: Discover All Deities",
                 action = delegate
                 {
                     foreach (var entity in DeityTracker.Get.DeityCache.Keys)
+                    {
                         entity.discovered = true;
+                    }
                 }
             };
 
@@ -727,7 +925,9 @@ namespace CultOfCthulhu
                 action = delegate
                 {
                     foreach (var entity in DeityTracker.Get.DeityCache.Keys)
+                    {
                         entity.ResetFavor();
+                    }
                 }
             };
 
@@ -738,7 +938,9 @@ namespace CultOfCthulhu
                 action = delegate
                 {
                     foreach (var p in Map.mapPawns.FreeColonistsSpawned)
+                    {
                         CultUtility.AffectCultMindedness(p, 0.99f);
+                    }
                 }
             };
 
@@ -757,7 +959,9 @@ namespace CultOfCthulhu
                 action = delegate
                 {
                     foreach (var entity in DeityTracker.Get.DeityCache.Keys)
+                    {
                         entity.AffectFavor(9999999);
+                    }
                 }
             };
 
@@ -778,13 +982,15 @@ namespace CultOfCthulhu
                 {
                     var table = new CultTableOfFun();
                     var list = (from spell in table.TableOfFun
-                        let currentDef = IncidentDef.Named(spell.defName)
-                        select new FloatMenuOption(currentDef.LabelCap, delegate
-                        {
-                            var temp = DefDatabase<IncidentDef>.GetNamed(spell.defName);
-                            if (temp != null)
-                                CultUtility.CastSpell(temp, Map);
-                        })).ToList();
+                                let currentDef = IncidentDef.Named(spell.defName)
+                                select new FloatMenuOption(currentDef.LabelCap, delegate
+                                {
+                                    var temp = DefDatabase<IncidentDef>.GetNamed(spell.defName);
+                                    if (temp != null)
+                                    {
+                                        CultUtility.CastSpell(temp, Map);
+                                    }
+                                })).ToList();
                     Find.WindowStack.Add(new FloatMenu(list));
                 }
             };
@@ -805,7 +1011,10 @@ namespace CultOfCthulhu
             Find.WindowStack.Add(new Dialog_MessageBox(LastReport));
         }
 
-        public void PruneAndRepairToggle() => toBePrunedAndRepaired = !toBePrunedAndRepaired;
+        public void PruneAndRepairToggle()
+        {
+            toBePrunedAndRepaired = !toBePrunedAndRepaired;
+        }
 
         #endregion Gizmos
 
@@ -836,7 +1045,11 @@ namespace CultOfCthulhu
                     Log.Error("Tried to upgrade fully functional altar. This should never happen.");
                     return;
             }
-            if (newDefName == "") return;
+            if (newDefName == "")
+            {
+                return;
+            }
+
             ReplaceAltarWith(newDefName);
         }
 
@@ -862,7 +1075,11 @@ namespace CultOfCthulhu
                     oldDefName = "Cult_HumanSacrificeAltar";
                     break;
             }
-            if (oldDefName == "") return;
+            if (oldDefName == "")
+            {
+                return;
+            }
+
             var newAltar = ReplaceAltarWith(oldDefName);
             Messages.Message("PruningSuccessful".Translate(
                 pruner.LabelShort
@@ -908,8 +1125,14 @@ namespace CultOfCthulhu
             thing.Rotation = currentRotation;
             thing.TryGetComp<CompQuality>().SetQuality(qualityCat, ArtGenerationContext.Colony);
             thing.lastFunction = currentLastFunction;
-            if (currentFunction != Function.Nightmare) Messages.Message("UpgradeSuccessful".Translate(), new TargetInfo(currentLocation, Map), MessageTypeDefOf.PositiveEvent);
-            else Messages.Message("CorruptedAltarWarning".Translate(), MessageTypeDefOf.NegativeEvent);
+            if (currentFunction != Function.Nightmare)
+            {
+                Messages.Message("UpgradeSuccessful".Translate(), new TargetInfo(currentLocation, Map), MessageTypeDefOf.PositiveEvent);
+            }
+            else
+            {
+                Messages.Message("CorruptedAltarWarning".Translate(), MessageTypeDefOf.NegativeEvent);
+            }
 
             //Pass worship values
             thing.RoomName = s1;
@@ -953,14 +1176,17 @@ namespace CultOfCthulhu
                 return;
             }
 
-            if (!CanGatherOfferingNow()) return;
-            
+            if (!CanGatherOfferingNow())
+            {
+                return;
+            }
+
             if (!TryDetermineOffering(tempOfferingType, tempOfferingSize, tempOfferer, this, out tempDeterminedOfferings, out billRecipe))
             {
                 Cthulhu.Utility.DebugReport("Failed to determine offering");
                 return;
             }
-            
+
             switch (currentOfferingState)
             {
                 case OfferingState.finished:
@@ -985,12 +1211,36 @@ namespace CultOfCthulhu
         private bool CanGatherOfferingNow()
         {
 
-            if (tempOfferingType == CultUtility.SacrificeType.none) return RejectMessage("No offering type selected");
-            if (tempOfferingSize == CultUtility.OfferingSize.none) return RejectMessage("No offering amount selected");
-            if (tempOfferer == null) return RejectMessage("No offerer selected");
-            if (tempOfferer.Drafted) return RejectMessage("Offerer is drafted.");
-            if (tempOfferer.Dead || tempOfferer.Downed) return RejectMessage("Select an able-bodied offerer.", tempOfferer);
-            if (tempCurrentOfferingDeity == null) return RejectMessage("No cosmic entity selected. Entities can be discovered at the forbidden knowledge center.");
+            if (tempOfferingType == CultUtility.SacrificeType.none)
+            {
+                return RejectMessage("No offering type selected");
+            }
+
+            if (tempOfferingSize == CultUtility.OfferingSize.none)
+            {
+                return RejectMessage("No offering amount selected");
+            }
+
+            if (tempOfferer == null)
+            {
+                return RejectMessage("No offerer selected");
+            }
+
+            if (tempOfferer.Drafted)
+            {
+                return RejectMessage("Offerer is drafted.");
+            }
+
+            if (tempOfferer.Dead || tempOfferer.Downed)
+            {
+                return RejectMessage("Select an able-bodied offerer.", tempOfferer);
+            }
+
+            if (tempCurrentOfferingDeity == null)
+            {
+                return RejectMessage("No cosmic entity selected. Entities can be discovered at the forbidden knowledge center.");
+            }
+
             return !tempOfferer.CanReserve(this)
                 ? RejectMessage("The altar is reserved by something else.")
                 : !Position.GetThingList(Map).OfType<Corpse>().Any() || RejectMessage("The altar needs to be cleared first.");
@@ -1050,7 +1300,11 @@ namespace CultOfCthulhu
                 foreach (var t in listeners)
                 {
                     pawn = t;
-                    if (pawn.Faction != Faction.OfPlayer) continue;
+                    if (pawn.Faction != Faction.OfPlayer)
+                    {
+                        continue;
+                    }
+
                     if (pawn.CurJob.def == CultsDefOf.Cults_HoldSacrifice ||
                         pawn.CurJob.def == CultsDefOf.Cults_AttendSacrifice ||
                         pawn.CurJob.def == CultsDefOf.Cults_ReflectOnResult ||
@@ -1058,7 +1312,7 @@ namespace CultOfCthulhu
                     {
                         pawn.jobs.StopAll();
                     }
-                }   
+                }
             }
             ChangeState(State.notinuse);
             Messages.Message("Cancelling sacrifice.", MessageTypeDefOf.NegativeEvent);
@@ -1071,8 +1325,11 @@ namespace CultOfCthulhu
                 return;
             }
 
-            if (!CanGatherSacrificeNow()) return;
-            
+            if (!CanGatherSacrificeNow())
+            {
+                return;
+            }
+
             switch (currentSacrificeState)
             {
                 case SacrificeState.finished:
@@ -1095,47 +1352,86 @@ namespace CultOfCthulhu
         private bool CanGatherSacrificeNow()
         {
 
-            if (tempSacrifice == null) return RejectMessage("No prisoner to sacrifice selected.");
-            if (tempExecutioner == null) return RejectMessage("No executioner selected");
-            if (tempExecutioner.Drafted) return RejectMessage("The executioner is drafted.");
-            if (tempCurrentSacrificeDeity == null) return RejectMessage("No cosmic entity selected");
-            if (MapComponent_SacrificeTracker.Get(Map).lastSacrificeType != CultUtility.SacrificeType.animal && tempCurrentSpell == null) return RejectMessage("No spell selected. Tip: Earn favor to unlock spells.");
-            if (tempSacrifice.Dead) return RejectMessage("The sacrifice is already dead", tempSacrifice);
-            if (tempExecutioner.Dead || tempExecutioner.Downed) return RejectMessage("Select an able-bodied executioner");
-            if (!tempExecutioner.CanReserve(tempSacrifice)) return RejectMessage("The executioner can't reserve the sacrifice.");
-            if (!tempExecutioner.CanReserve(this)) return RejectMessage("The altar is reserved by something else");
+            if (tempSacrifice == null)
+            {
+                return RejectMessage("No prisoner to sacrifice selected.");
+            }
+
+            if (tempExecutioner == null)
+            {
+                return RejectMessage("No executioner selected");
+            }
+
+            if (tempExecutioner.Drafted)
+            {
+                return RejectMessage("The executioner is drafted.");
+            }
+
+            if (tempCurrentSacrificeDeity == null)
+            {
+                return RejectMessage("No cosmic entity selected");
+            }
+
+            if (MapComponent_SacrificeTracker.Get(Map).lastSacrificeType != CultUtility.SacrificeType.animal && tempCurrentSpell == null)
+            {
+                return RejectMessage("No spell selected. Tip: Earn favor to unlock spells.");
+            }
+
+            if (tempSacrifice.Dead)
+            {
+                return RejectMessage("The sacrifice is already dead", tempSacrifice);
+            }
+
+            if (tempExecutioner.Dead || tempExecutioner.Downed)
+            {
+                return RejectMessage("Select an able-bodied executioner");
+            }
+
+            if (!tempExecutioner.CanReserve(tempSacrifice))
+            {
+                return RejectMessage("The executioner can't reserve the sacrifice.");
+            }
+
+            if (!tempExecutioner.CanReserve(this))
+            {
+                return RejectMessage("The altar is reserved by something else");
+            }
+
             if (Position.GetThingList(Map).OfType<Corpse>().Any())
             {
                 return RejectMessage("The altar needs to be cleared first.");
             }
             return MapComponent_SacrificeTracker.Get(Map).lastSacrificeType != CultUtility.SacrificeType.human
-|| tempCurrentSpell.Worker is SpellWorker worker && worker.CanSummonNow(Map);
+|| (tempCurrentSpell.Worker is SpellWorker worker && worker.CanSummonNow(Map));
         }
         private void StartSacrifice()
         {
             //Check for missing actors
-            if (!PreStartSacrificeReady()) return;
-            
+            if (!PreStartSacrificeReady())
+            {
+                return;
+            }
+
             //Reset results
             MapComponent_SacrificeTracker.Get(Map).lastResult = CultUtility.SacrificeResult.none;
 
             //Send a message about the gathering
             if (Map?.info?.parent is Settlement factionBase)
             {
-                Messages.Message("SacrificeGathering".Translate(factionBase.Label), TargetInfo.Invalid, MessageTypeDefOf.NeutralEvent);   
+                Messages.Message("SacrificeGathering".Translate(factionBase.Label), TargetInfo.Invalid, MessageTypeDefOf.NeutralEvent);
             }
 
             //Change the state
             ChangeState(State.sacrificing, SacrificeState.started);
-            
+
             //Create a new "bill" with all the variables from the sacrifice form
             sacrificeData = new Bill_Sacrifice(tempSacrifice, tempExecutioner, tempCurrentSacrificeDeity, tempCurrentSpell);
             Cthulhu.Utility.DebugReport("Force Sacrifice called");
 
             //Give the sacrifice job
-            var job = new Job(CultsDefOf.Cults_HoldSacrifice, tempSacrifice, this) {count = 1};
+            var job = new Job(CultsDefOf.Cults_HoldSacrifice, tempSacrifice, this) { count = 1 };
             tempExecutioner.jobs.TryTakeOrderedJob(job);
-            
+
             //Set the congregation
             sacrificeData.Congregation = GetSacrificeGroup();
             Cthulhu.Utility.DebugReport("Sacrifice state set to gathering");
@@ -1155,7 +1451,11 @@ namespace CultOfCthulhu
                 tempExecutioner = null;
                 return false;
             }
-            if (Cthulhu.Utility.IsActorAvailable(tempSacrifice, true)) return true;
+            if (Cthulhu.Utility.IsActorAvailable(tempSacrifice, true))
+            {
+                return true;
+            }
+
             CultUtility.AbortCongregation(this, "The sacrifice, " + tempSacrifice.LabelShort + " is unavaialable.");
             tempSacrifice = null;
             return false;
@@ -1168,7 +1468,7 @@ namespace CultOfCthulhu
             {
                 if (availableWorshippers == null || availableWorshippers.Count == 0)
                 {
-                    availableWorshippers = 
+                    availableWorshippers =
                         new HashSet<Pawn>(Map.mapPawns.AllPawnsSpawned.FindAll(y => y is Pawn x &&
                            x.RaceProps.Humanlike &&
                            !x.IsPrisoner &&
@@ -1194,15 +1494,26 @@ namespace CultOfCthulhu
             }
         }
 
-        public static List<Pawn> GetSacrificeGroup(Building_SacrificialAltar altar) => altar.GetSacrificeGroup();
+        public static List<Pawn> GetSacrificeGroup(Building_SacrificialAltar altar)
+        {
+            return altar.GetSacrificeGroup();
+        }
 
         public List<Pawn> GetSacrificeGroup()
         {
             var room = this.GetRoom();
 
             var pawns = new List<Pawn>();
-            if (room.Role == RoomRoleDefOf.PrisonBarracks || room.Role == RoomRoleDefOf.PrisonCell) return pawns;
-            if (AvailableWorshippers == null || AvailableWorshippers.Count <= 0) return pawns;
+            if (room.Role == RoomRoleDefOf.PrisonBarracks || room.Role == RoomRoleDefOf.PrisonCell)
+            {
+                return pawns;
+            }
+
+            if (AvailableWorshippers == null || AvailableWorshippers.Count <= 0)
+            {
+                return pawns;
+            }
+
             foreach (var p in AvailableWorshippers)
             {
                 CultUtility.GiveAttendSacrificeJob(this, p);
@@ -1283,11 +1594,19 @@ namespace CultOfCthulhu
                 for (var i = 0; i < list.Count; i++)
                 {
                     var thing = list[i];
-                    if (!BaseValidator(thing)) continue;
+                    if (!BaseValidator(thing))
+                    {
+                        continue;
+                    }
+
                     Cthulhu.Utility.DebugReport(thing.ToString());
                     newRelevantThings.Add(thing);
                 }
-                if (newRelevantThings.Count <= 0) return false;
+                if (newRelevantThings.Count <= 0)
+                {
+                    return false;
+                }
+
                 int comparison(Thing t1, Thing t2)
                 {
                     float lengthHorizontalSquared = (t1.Position - pawn.Position).LengthHorizontalSquared;
@@ -1303,31 +1622,47 @@ namespace CultOfCthulhu
                     var num = ingredientCount.GetBaseCount();
                     foreach (var thing in relevantThings)
                     {
-                        if (!ingredientCount.filter.Allows(thing)) continue;
+                        if (!ingredientCount.filter.Allows(thing))
+                        {
+                            continue;
+                        }
+
                         Cthulhu.Utility.DebugReport(thing.ToString());
                         var num2 = recipe.IngredientValueGetter.ValuePerUnitOf(thing.def);
                         var num3 = Mathf.Min(Mathf.CeilToInt(num / num2), thing.stackCount);
                         ThingCountUtility.AddToList(chosen, thing, num3);
-                        num -= (float) num3 * num2;
+                        num -= (float)num3 * num2;
                         if (num <= 0.0001f)
+                        {
                             break;
+                        }
                     }
                     if (num > 0.0001f)
+                    {
                         flag = false;
+                    }
                 }
-                if (!flag) return false;
+                if (!flag)
+                {
+                    return false;
+                }
+
                 foundAll = true;
                 return true;
             }
 
             var traverseParams = TraverseParms.For(pawn);
-            bool entryCondition(Region from, Region r) => r.Allows(traverseParams, false);
+            bool entryCondition(Region from, Region r)
+            {
+                return r.Allows(traverseParams, false);
+            }
+
             RegionTraverser.BreadthFirstTraverse(validRegionAt, entryCondition, RegionProcessor, 99999);
             return foundAll;
         }
-        public bool TryDetermineOffering(CultUtility.SacrificeType type, CultUtility.OfferingSize size, Pawn pawn, 
+        public bool TryDetermineOffering(CultUtility.SacrificeType type, CultUtility.OfferingSize size, Pawn pawn,
             Building_SacrificialAltar altar, out List<ThingCount> result, out RecipeDef resultRecipe)
-        
+
         {
             var list = new List<ThingCount>();
             var recipeDefName = "OfferingOf";
@@ -1381,7 +1716,10 @@ namespace CultOfCthulhu
 
         #endregion Misc
 
-        public bool CurrentlyUsableForBills() => true;
+        public bool CurrentlyUsableForBills()
+        {
+            return true;
+        }
     }
 
 

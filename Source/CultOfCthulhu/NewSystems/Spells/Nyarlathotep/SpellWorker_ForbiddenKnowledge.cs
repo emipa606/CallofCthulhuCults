@@ -55,9 +55,11 @@ namespace CultOfCthulhu
 
         public override bool CanSummonNow(Map map)
         {
-            bool flag = false;
+            var flag = false;
             if (ResearchStation(map) != null && ResearchProject() != null)
+            {
                 flag = true;
+            }
 
             if (ResearchStation(map) == null)
             {
@@ -95,12 +97,12 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
 
             //Set up variables
-            float researchFinishedValue = ResearchProject().baseCost;
+            var researchFinishedValue = ResearchProject().baseCost;
             _ = Find.ResearchManager.GetProgress(ResearchProject());
-            float researchAddedProgress = 0f;
+            var researchAddedProgress = 0f;
             
             researchAddedProgress += (researchFinishedValue + 1) / 2 *99;
 

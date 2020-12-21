@@ -38,14 +38,14 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
             //Find a drop spot
             if (!CultUtility.TryFindDropCell(map.Center, map, 999999, out IntVec3 intVec))
             {
                 return false;
             }
             //Spawn 1 Womb Between Worlds
-            Building_WombBetweenWorlds thing = (Building_WombBetweenWorlds)ThingMaker.MakeThing(CultsDefOf.Cults_WombBetweenWorlds, null);
+            var thing = (Building_WombBetweenWorlds)ThingMaker.MakeThing(CultsDefOf.Cults_WombBetweenWorlds, null);
             thing.SetFaction(Faction.OfPlayer);
             GenPlace.TryPlaceThing(thing, intVec.RandomAdjacentCell8Way(), map, ThingPlaceMode.Near);
 

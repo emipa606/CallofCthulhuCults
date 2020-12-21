@@ -52,7 +52,7 @@ namespace CultOfCthulhu
             List<Map> affectedMaps = AffectedMaps;
             if (firstTick)
             {
-                for (int i = 0; i < affectedMaps.Count; i++)
+                for (var i = 0; i < affectedMaps.Count; i++)
                 {
                     foreach (Pawn pawn in affectedMaps[i].mapPawns.FreeColonistsAndPrisoners)
                     {
@@ -65,7 +65,7 @@ namespace CultOfCthulhu
                 firstTick = false;
             }
 
-            for (int i = 0; i < affectedMaps.Count; i++)
+            for (var i = 0; i < affectedMaps.Count; i++)
             {
                 foreach (Pawn pawn in affectedMaps[i].mapPawns.FreeColonistsAndPrisoners)
                 {
@@ -117,8 +117,15 @@ namespace CultOfCthulhu
             get
             {
                 string temp;
-                if (Find.WorldGrid.LongLatOf(Find.CurrentMap.Tile).y >= 74) temp = " " + "Borealis".Translate();
-                else temp = " " + "Australis".Translate();
+                if (Find.WorldGrid.LongLatOf(Find.CurrentMap.Tile).y >= 74)
+                {
+                    temp = " " + "Borealis".Translate();
+                }
+                else
+                {
+                    temp = " " + "Australis".Translate();
+                }
+
                 return def.label + temp;
             }
         }

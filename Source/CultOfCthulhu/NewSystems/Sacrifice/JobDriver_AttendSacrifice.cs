@@ -35,19 +35,17 @@ namespace CultOfCthulhu
 
         private Pawn setExecutioner = null;
 
-        protected Building_SacrificialAltar Altar
-        {
-            get
-            {
-                return (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
-            }
-        }
+        protected Building_SacrificialAltar Altar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
 
         protected Pawn ExecutionerPawn
         {
             get
             {
-                if (setExecutioner != null) return setExecutioner;
+                if (setExecutioner != null)
+                {
+                    return setExecutioner;
+                }
+
                 if (Altar.SacrificeData.Executioner != null) { setExecutioner = Altar.SacrificeData.Executioner; return Altar.SacrificeData.Executioner; }
                 else
                 {
@@ -128,7 +126,11 @@ namespace CultOfCthulhu
             {
                 pawn.GainComfortFromCellIfPossible();
                 pawn.rotationTracker.FaceCell(TargetB.Cell);
-                if (report == "") report = "Cults_AttendingSacrifice".Translate();
+                if (report == "")
+                {
+                    report = "Cults_AttendingSacrifice".Translate();
+                }
+
                 if (ExecutionerPawn != null)
                 {
                     if (ExecutionerPawn.CurJob != null)
@@ -154,15 +156,12 @@ namespace CultOfCthulhu
             };
 
             //Toil 3 Reflect on worship
-            Toil reflectingTime = new Toil
+            var reflectingTime = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.reflectDuration
             };
-            reflectingTime.AddPreTickAction(() =>
-            {
-                report = "Cults_ReflectingOnSacrifice".Translate();
-            });
+            reflectingTime.AddPreTickAction(() => report = "Cults_ReflectingOnSacrifice".Translate());
             yield return reflectingTime;
 
             //Toil 3 Reset the altar and clear variables.
@@ -202,12 +201,16 @@ namespace CultOfCthulhu
                 if (TargetC.Cell.GetEdifice(pawn.Map) != null)
                 {
                     if (pawn.Map.reservationManager.ReservedBy(TargetC.Cell.GetEdifice(pawn.Map), pawn))
+                    {
                         pawn.ClearAllReservations(); // this.pawn.Map.reservationManager.Release(this.TargetC.Cell.GetEdifice(this.pawn.Map), pawn);
+                    }
                 }
                 else
                 {
                     if (pawn.Map.reservationManager.ReservedBy(TargetC.Cell.GetEdifice(pawn.Map), pawn))
+                    {
                         pawn.ClearAllReservations();  //this.pawn.Map.reservationManager.Release(this.job.targetC.Cell, this.pawn);
+                    }
                 }
             });
         }

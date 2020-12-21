@@ -27,10 +27,13 @@ namespace CultOfCthulhu
         
     }
 
-    //Characters start fully sane.
-        public override void SetInitialLevel() => CurLevelPercentage = 1.0f;
+        //Characters start fully sane.
+        public override void SetInitialLevel()
+        {
+            CurLevelPercentage = 1.0f;
+        }
         #endregion
-    
+
         //Social interactions / Strange circumstances use this method to adjust sanity.
         public void AdjustSanity(float amt)
         {

@@ -17,15 +17,15 @@ namespace CultOfCthulhu
         }
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
 
-            float colonistCount = (float)map.mapPawns.FreeColonistsSpawned.Count<Pawn>();
-            float sleeperPercent = 0.8f;
-            float math = colonistCount * sleeperPercent;
-            int numberToSleep = Mathf.CeilToInt(Mathf.Clamp(math, 1, colonistCount));
+            var colonistCount = (float)map.mapPawns.FreeColonistsSpawned.Count<Pawn>();
+            var sleeperPercent = 0.8f;
+            var math = colonistCount * sleeperPercent;
+            var numberToSleep = Mathf.CeilToInt(Mathf.Clamp(math, 1, colonistCount));
 
-            List<Pawn> sleepers = new List<Pawn>(map.mapPawns.FreeColonistsSpawned.InRandomOrder<Pawn>());
-            for (int i = 0; i < numberToSleep; i++)
+            var sleepers = new List<Pawn>(map.mapPawns.FreeColonistsSpawned.InRandomOrder<Pawn>());
+            for (var i = 0; i < numberToSleep; i++)
             {
                  sleepers[i].mindState.mentalStateHandler.TryStartMentalState(CultsDefOf.Cults_DeepSleepCarcosa, "Sacrifice".Translate(), false, true);
             }

@@ -27,7 +27,7 @@ namespace CultOfCthulhu
             {
                 yield break;
             }
-            Command_Action command_Action = new Command_Action
+            var command_Action = new Command_Action
             {
                 action = delegate
                 {
@@ -60,7 +60,7 @@ namespace CultOfCthulhu
         private static Designator_Build FindDesignator(BuildableDef buildable)
         {
             List<DesignationCategoryDef> allDefsListForReading = DefDatabase<DesignationCategoryDef>.AllDefsListForReading;
-            for (int i = 0; i < allDefsListForReading.Count; i++)
+            for (var i = 0; i < allDefsListForReading.Count; i++)
             {
                 foreach (Designator current in allDefsListForReading[i].ResolvedAllowedDesignators)
                 {

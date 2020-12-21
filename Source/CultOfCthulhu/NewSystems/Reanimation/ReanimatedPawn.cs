@@ -49,11 +49,11 @@ namespace CultOfCthulhu
             health.PreApplyDamage(dinfo, out absorbed);
             if (!Destroyed && (dinfo.Def == DamageDefOf.Cut || dinfo.Def == DamageDefOf.Stab))
             {
-                float num = 0f;
-                float num2 = 0f;
+                var num = 0f;
+                var num2 = 0f;
                 if (dinfo.Instigator != null && dinfo.Instigator is Pawn)
                 {
-                    Pawn pawn = dinfo.Instigator as Pawn;
+                    var pawn = dinfo.Instigator as Pawn;
                     if (pawn.skills != null)
                     {
                         SkillRecord expr_9B = pawn.skills.GetSkill(SkillDefOf.Melee);
@@ -162,7 +162,7 @@ namespace CultOfCthulhu
                 }
                 if (Downed || health.Downed || health.InPainShock)
                 {
-                    DamageInfo damageInfo = new DamageInfo(DamageDefOf.Blunt, 9999, 1f, -1f, this, null, null);
+                    var damageInfo = new DamageInfo(DamageDefOf.Blunt, 9999, 1f, -1f, this, null, null);
                     damageInfo.SetHitPart(health.hediffSet.GetBrain());
                     //damageInfo.SetPart(new BodyPartDamageInfo(this.health.hediffSet.GetBrain(), false, HediffDefOf.Cut));
                     TakeDamage(damageInfo);

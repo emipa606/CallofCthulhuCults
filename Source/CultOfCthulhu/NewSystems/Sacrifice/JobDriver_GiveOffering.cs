@@ -28,24 +28,12 @@ namespace CultOfCthulhu
 
         public int ticksSpentDoingRecipeWork;
 
-        public IBillGiver BillGiver
-        {
-            get
-            {
-                return !(pawn.jobs.curJob.GetTarget(TargetIndex.A).Thing is IBillGiver billGiver)
+        public IBillGiver BillGiver => !(pawn.jobs.curJob.GetTarget(TargetIndex.A).Thing is IBillGiver billGiver)
                     ? throw new InvalidOperationException("DoBill on non-Billgiver.")
                     : billGiver;
-            }
-        }
-        public Building_SacrificialAltar DropAltar
-        {
-            get
-            {
-                return !(pawn.jobs.curJob.GetTarget(TargetIndex.A).Thing is Building_SacrificialAltar result)
+        public Building_SacrificialAltar DropAltar => !(pawn.jobs.curJob.GetTarget(TargetIndex.A).Thing is Building_SacrificialAltar result)
                     ? throw new InvalidOperationException("Altar is missing.")
                     : result;
-            }
-        }
 
         public override string GetReport()
         {
@@ -137,7 +125,7 @@ namespace CultOfCthulhu
             yield return Toils_Jump.JumpIfHaveTargetInQueue(TargetIndex.B, toil2);
             yield return toil;
             //yield return ToilLogMessage("Pass 13");
-            Toil chantingTime = new Toil
+            var chantingTime = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.ritualDuration
@@ -148,7 +136,9 @@ namespace CultOfCthulhu
             chantingTime.initAction = delegate
             {
                 if (deitySymbol != null)
+                {
                     MoteMaker.MakeInteractionBubble(pawn, null, ThingDefOf.Mote_Speech, deitySymbol);
+                }
             };
             yield return chantingTime;
             //yield return ToilLogMessage("Pass 14");
@@ -246,7 +236,7 @@ namespace CultOfCthulhu
 
         private static Toil JumpToCollectNextIntoHandsForBill(Toil gotoGetTargetToil, TargetIndex ind)
         {
-            Toil toil = new Toil();
+            var toil = new Toil();
             toil.initAction = delegate
             {
                 Pawn actor = toil.actor;
@@ -265,7 +255,7 @@ namespace CultOfCthulhu
                 {
                     return;
                 }
-                for (int i = 0; i < targetQueue.Count; i++)
+                for (var i = 0; i < targetQueue.Count; i++)
                 {
                     if (GenAI.CanUseItemForWork(actor, targetQueue[i].Thing))
                     {
@@ -273,8 +263,8 @@ namespace CultOfCthulhu
                         {
                             if ((actor.Position - targetQueue[i].Thing.Position).LengthHorizontalSquared <= 64f)
                             {
-                                int num = (actor.carryTracker.CarriedThing != null) ? actor.carryTracker.CarriedThing.stackCount : 0;
-                                int num2 = curJob.countQueue[i];
+                                var num = (actor.carryTracker.CarriedThing != null) ? actor.carryTracker.CarriedThing.stackCount : 0;
+                                var num2 = curJob.countQueue[i];
                                 num2 = Mathf.Min(num2, targetQueue[i].Thing.def.stackLimit - num);
                                 num2 = Mathf.Min(num2, actor.carryTracker.AvailableStackSpace(targetQueue[i].Thing.def));
                                 if (num2 > 0)
@@ -284,7 +274,7 @@ namespace CultOfCthulhu
                                     List<int> countQueue;
                                     List<int> expr_1B2 = countQueue = curJob.countQueue;
                                     int num3;
-                                    int expr_1B6 = num3 = i;
+                                    var expr_1B6 = num3 = i;
                                     num3 = countQueue[num3];
                                     expr_1B2[expr_1B6] = num3 - num2;
                                     if (curJob.countQueue[i] == 0)

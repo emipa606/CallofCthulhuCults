@@ -40,7 +40,11 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (setPreacher != null) return setPreacher;
+                if (setPreacher != null)
+                {
+                    return setPreacher;
+                }
+
                 if (Altar.preacher != null) { setPreacher = Altar.preacher; return Altar.preacher; }
                 else
                 {
@@ -91,7 +95,7 @@ namespace CultOfCthulhu
             }
             yield return gotoPreacher;
 
-            Toil altarToil = new Toil
+            var altarToil = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.ritualDuration

@@ -9,9 +9,9 @@ namespace CultOfCthulhu
     {
         public override float GetScore(Room room)
         {
-            int num = 0;
+            var num = 0;
             List<Thing> allContainedThings = room.ContainedAndAdjacentThings;
-            for (int i = 0; i < allContainedThings.Count; i++)
+            for (var i = 0; i < allContainedThings.Count; i++)
             {
                 Thing thing = allContainedThings[i];
                 if (thing.def.category == ThingCategory.Building && 

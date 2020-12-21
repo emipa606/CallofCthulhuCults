@@ -10,14 +10,14 @@ namespace CultOfCthulhu
 {
     public class CosmicEntityDef : ThingDef
     {
-#pragma warning disable IDE0044 // Add readonly modifier
         private readonly string symbol;
-#pragma warning restore IDE0044 // Add readonly modifier
         private readonly string version = "0";
-        private readonly string portrait = "";
-        private readonly string titles = "";
-        private readonly string domains = "";
-        private readonly string descriptionLong = "";
+#pragma warning disable IDE0032 // Use auto property
+        private readonly string portrait = string.Empty;
+        private readonly string titles = string.Empty;
+        private readonly string domains = string.Empty;
+        private readonly string descriptionLong = string.Empty;
+#pragma warning restore IDE0032 // Use auto property
 
         public List<IncidentDef> tier1SpellDefs = new List<IncidentDef>();
         public List<IncidentDef> tier2SpellDefs = new List<IncidentDef>();
@@ -51,12 +51,6 @@ namespace CultOfCthulhu
             }
         }
 
-        public int Version
-        {
-            get
-            {
-                return Int32.TryParse(version, out int x) ? x : 0;
-            }
-        }
+        public int Version => int.TryParse(version, out var x) ? x : 0;
     }
 }

@@ -20,60 +20,24 @@ namespace CultOfCthulhu
 
         private static readonly Texture2D LaunchCommandTex = ContentFinder<Texture2D>.Get("UI/Commands/LaunchShip", true);
 
-        public bool LoadingInProgressOrReadyToLaunch
-        {
-            get
-            {
-                return Transporter.LoadingInProgressOrReadyToLaunch;
-            }
-        }
+        public bool LoadingInProgressOrReadyToLaunch => Transporter.LoadingInProgressOrReadyToLaunch;
 
-        public bool AnythingLeftToLoad
-        {
-            get
-            {
-                return Transporter.AnythingLeftToLoad;
-            }
-        }
+        public bool AnythingLeftToLoad => Transporter.AnythingLeftToLoad;
 
-        public Thing FirstThingLeftToLoad
-        {
-            get
-            {
-                return Transporter.FirstThingLeftToLoad;
-            }
-        }
+        public Thing FirstThingLeftToLoad => Transporter.FirstThingLeftToLoad;
 
-        public List<CompTransporterPawn> TransportersInGroup
-        {
-            get
-            {
-                return Transporter.TransportersInGroup(parent.Map);
-            }
-        }
+        public List<CompTransporterPawn> TransportersInGroup => Transporter.TransportersInGroup(parent.Map);
 
-        public bool AnyInGroupHasAnythingLeftToLoad
-        {
-            get
-            {
-                return Transporter.AnyInGroupHasAnythingLeftToLoad;
-            }
-        }
+        public bool AnyInGroupHasAnythingLeftToLoad => Transporter.AnyInGroupHasAnythingLeftToLoad;
 
-        public Thing FirstThingLeftToLoadInGroup
-        {
-            get
-            {
-                return Transporter.FirstThingLeftToLoadInGroup;
-            }
-        }
+        public Thing FirstThingLeftToLoadInGroup => Transporter.FirstThingLeftToLoadInGroup;
 
         public bool AnyInGroupIsUnderRoof
         {
             get
             {
                 List<CompTransporterPawn> transportersInGroup = TransportersInGroup;
-                for (int i = 0; i < transportersInGroup.Count; i++)
+                for (var i = 0; i < transportersInGroup.Count; i++)
                 {
                     if (transportersInGroup[i].parent.Position.Roofed(parent.Map))
                     {
@@ -100,7 +64,7 @@ namespace CultOfCthulhu
         {
             get
             {
-                PawnFlyerDef result = parent.def as PawnFlyerDef;
+                var result = parent.def as PawnFlyerDef;
                 if (result == null)
                 {
                     Log.Error("PawnFlyerDef is null");
@@ -108,14 +72,8 @@ namespace CultOfCthulhu
                 return result;
             }
         }
-        
-        public int MaxLaunchDistance
-        {
-            get
-            {
-                return !LoadingInProgressOrReadyToLaunch ? 0 : PawnFlyerDef.flyableDistance;
-            }
-        }
+
+        public int MaxLaunchDistance => !LoadingInProgressOrReadyToLaunch ? 0 : PawnFlyerDef.flyableDistance;
 
         [DebuggerHidden]
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
@@ -128,7 +86,7 @@ namespace CultOfCthulhu
             }
             if (LoadingInProgressOrReadyToLaunch)
             {
-                Command_Action command_Action = new Command_Action
+                var command_Action = new Command_Action
                 {
                     defaultLabel = "CommandLaunchGroup".Translate(),
                     defaultDesc = "CommandLaunchGroupDesc".Translate(),
@@ -156,7 +114,7 @@ namespace CultOfCthulhu
             else
             {
 
-                Command_Action command_Action = new Command_Action
+                var command_Action = new Command_Action
                 {
                     defaultLabel = "DEBUG",
                     defaultDesc = "CommandLaunchGroupDesc".Translate(),
@@ -200,7 +158,7 @@ namespace CultOfCthulhu
         {
             CameraJumper.TryJump(CameraJumper.GetWorldTarget(parent));
             Find.WorldSelector.ClearSelection();
-            int tile = parent.Map.Tile;
+            var tile = parent.Map.Tile;
             Find.WorldTargeter.BeginTargeting(new Func<GlobalTargetInfo, bool>(ChoseWorldTarget), true, TargeterMouseAttachment, true, delegate
             {
                 GenDraw.DrawWorldRadiusRing(tile, MaxLaunchDistance);
@@ -210,7 +168,7 @@ namespace CultOfCthulhu
                 {
                     return null;
                 }
-                int num = Find.WorldGrid.TraversalDistanceBetween(tile, target.Tile);
+                var num = Find.WorldGrid.TraversalDistanceBetween(tile, target.Tile);
                 if (num <= MaxLaunchDistance)
                 {
                     return null;
@@ -233,7 +191,7 @@ namespace CultOfCthulhu
                 Messages.Message("MessageTransportPodsDestinationIsInvalid".Translate(), MessageTypeDefOf.RejectInput);
                 return false;
             }
-            int num = Find.WorldGrid.TraversalDistanceBetween(parent.Map.Tile, target.Tile);
+            var num = Find.WorldGrid.TraversalDistanceBetween(parent.Map.Tile, target.Tile);
             if (num > MaxLaunchDistance)
             {
                 //Messages.Message("MessageTransportPodsDestinationIsTooFar".Translate(new object[]
@@ -271,7 +229,7 @@ namespace CultOfCthulhu
             if (target.WorldObject is Settlement && target.WorldObject.Faction != Faction.OfPlayer)
             {
                 Find.WorldTargeter.closeWorldTabWhenFinished = false;
-                List<FloatMenuOption> list = new List<FloatMenuOption>();
+                var list = new List<FloatMenuOption>();
                 if (!target.WorldObject.Faction.HostileTo(Faction.OfPlayer))
                 {
                     list.Add(new FloatMenuOption("VisitFactionBase".Translate(
@@ -337,20 +295,20 @@ namespace CultOfCthulhu
                 return;
             }
             Map map = parent.Map;
-            int num = Find.WorldGrid.TraversalDistanceBetween(map.Tile, target.Tile);
+            var num = Find.WorldGrid.TraversalDistanceBetween(map.Tile, target.Tile);
             if (num > MaxLaunchDistance)
             {
                 Cthulhu.Utility.DebugReport("TryLaunch Failed #2");
                 return;
             }
             Transporter.TryRemoveLord(map);
-            int groupID = Transporter.groupID;
-            for (int i = 0; i < transportersInGroup.Count; i++)
+            var groupID = Transporter.groupID;
+            for (var i = 0; i < transportersInGroup.Count; i++)
             {
                 Cthulhu.Utility.DebugReport("Transporter Outspawn Attempt");
                 CompTransporterPawn compTransporter = transportersInGroup[i];
                 Cthulhu.Utility.DebugReport("Transporter Outspawn " + compTransporter.parent.Label);
-                PawnFlyersLeaving pawnFlyerLeaving = (PawnFlyersLeaving)ThingMaker.MakeThing(PawnFlyerDef.leavingDef, null);
+                var pawnFlyerLeaving = (PawnFlyersLeaving)ThingMaker.MakeThing(PawnFlyerDef.leavingDef, null);
                 pawnFlyerLeaving.groupID = groupID;
                 pawnFlyerLeaving.pawnFlyer = parent as PawnFlyer;
                 pawnFlyerLeaving.destinationTile = target.Tile;

@@ -112,9 +112,9 @@ namespace CultOfCthulhu
         #region Reports
         public string GenerateFailureString()
         {
-            StringBuilder s = new StringBuilder();
-            int ran = Rand.Range(1, 40);
-            string message = "SacrificeFailMessage" + ran.ToString();
+            var s = new StringBuilder();
+            var ran = Rand.Range(1, 40);
+            var message = "SacrificeFailMessage" + ran.ToString();
             string messageObject = message.Translate(lastUsedAltar.SacrificeData.Executioner);
             s.Append(messageObject);
             return s.ToString();
@@ -122,7 +122,7 @@ namespace CultOfCthulhu
 
         public void GenerateSacrificeMessage()
         {
-            StringBuilder s = new StringBuilder();
+            var s = new StringBuilder();
             LetterDef letterDef = LetterDefOf.ThreatSmall;
             s.Append("SacrificeIntro".Translate());
             s.Append(" " + lastUsedAltar.SacrificeData.Entity.Label);
@@ -138,9 +138,21 @@ namespace CultOfCthulhu
                 //Was the executioner a family member?
                 if (HSMwasFamily)
                 {
-                    if (lastUsedAltar.SacrificeData.Executioner == null) Log.Error("Executioner null");
-                    if (lastRelation == null) Log.Error("Null relation");
-                    if (lastSacrificeName == null) Log.Error("Null name");
+                    if (lastUsedAltar.SacrificeData.Executioner == null)
+                    {
+                        Log.Error("Executioner null");
+                    }
+
+                    if (lastRelation == null)
+                    {
+                        Log.Error("Null relation");
+                    }
+
+                    if (lastSacrificeName == null)
+                    {
+                        Log.Error("Null name");
+                    }
+
                     string familyString = "HumanSacrificeWasFamily".Translate(
                             lastUsedAltar.SacrificeData.Executioner.LabelShort,
                             lastUsedAltar.SacrificeData.Executioner.gender.GetPossessive(),
@@ -151,7 +163,10 @@ namespace CultOfCthulhu
                 }
 
                 if (lastResult != CultUtility.SacrificeResult.success)
+                {
                     s.Append(GenerateFailureString());
+                }
+
                 if ((int)lastResult <= 3 && (int)lastResult > 1)
                 {
                     s.Append(" " + lastSideEffect.letterText);
@@ -162,7 +177,7 @@ namespace CultOfCthulhu
                 }
                 if (lastResult == CultUtility.SacrificeResult.mixedsuccess)
                 {
-                    List<string> buts = new List<string> {
+                    var buts = new List<string> {
                     "Cults_butsOne".Translate(),
                     "Cults_butsTwo".Translate(),
                     "Cults_butsThree".Translate(),
@@ -171,7 +186,10 @@ namespace CultOfCthulhu
                     s.Append(". " + buts.RandomElement<string>() + ", ");
                 }
                 if ((int)lastResult > 2)
+                {
                     s.Append(lastUsedAltar.SacrificeData.Executioner.ToString() + " " + lastUsedAltar.SacrificeData.Spell.letterText + ".");
+                }
+
                 s.Append(" " + "Cults_ritualWas".Translate());
 
                 switch (lastResult)
@@ -199,7 +217,11 @@ namespace CultOfCthulhu
             else if (lastUsedAltar.SacrificeData.Type == CultUtility.SacrificeType.animal)
             {
                 s.Append(" " + "AnimalSacrificeReason".Translate() + ".");
-                if (ASMwasPet) s.Append(" " + "AnimalSacrificeWasPet".Translate() + lastUsedAltar.SacrificeData.Entity.Label + ".");
+                if (ASMwasPet)
+                {
+                    s.Append(" " + "AnimalSacrificeWasPet".Translate() + lastUsedAltar.SacrificeData.Entity.Label + ".");
+                }
+
                 if (ASMwasBonded)
                 {
                     string bondString = "AnimalSacrificeWasBonded".Translate(

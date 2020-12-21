@@ -25,13 +25,7 @@ namespace CultOfCthulhu
 {
     public class ITab_Worship : ITab
     {
-        protected Building_SacrificialAltar SelAltar
-        {
-            get
-            {
-                return (Building_SacrificialAltar)SelThing;
-            }
-        }
+        protected Building_SacrificialAltar SelAltar => (Building_SacrificialAltar)SelThing;
 
         public ITab_Worship()
         {

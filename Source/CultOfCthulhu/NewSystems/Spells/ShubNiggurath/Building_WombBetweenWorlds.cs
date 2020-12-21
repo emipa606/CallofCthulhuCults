@@ -41,8 +41,8 @@ namespace CultOfCthulhu
             get
             {
                 FilterOutUnspawnedPawns();
-                float num = 0f;
-                for (int i = 0; i < spawnedPawns.Count; i++)
+                var num = 0f;
+                for (var i = 0; i < spawnedPawns.Count; i++)
                 {
                     num += spawnedPawns[i].kindDef.combatPower;
                 }
@@ -99,7 +99,7 @@ namespace CultOfCthulhu
                 {
                     if (SpawnedPawnsPoints < MaxSpawnedPawnsPoints)
                     {
-                        bool flag = TrySpawnPawn(out Pawn pawn, Map);
+                        var flag = TrySpawnPawn(out Pawn pawn, Map);
                         if (flag && pawn.caller != null)
                         {
                             pawn.caller.DoCall();
@@ -163,9 +163,9 @@ namespace CultOfCthulhu
 
         public override string GetInspectString()
         {
-            StringBuilder s = new StringBuilder();
+            var s = new StringBuilder();
             s.Append(base.GetInspectString());
-            string text = String.Empty;
+            var text = string.Empty;
 
             if (CanSpawnPawns())
             {
@@ -186,7 +186,7 @@ namespace CultOfCthulhu
 
         private void CalculateNextPawnSpawnTick()
         {
-            float num = GenMath.LerpDouble(0f, 5f, 1f, 0.5f, (float)spawnedPawns.Count);
+            var num = GenMath.LerpDouble(0f, 5f, 1f, 0.5f, (float)spawnedPawns.Count);
             nextPawnSpawnTick = Find.TickManager.TicksGame + (int)(PawnSpawnIntervalDays.RandomInRange * 60000f / (num * Find.Storyteller.difficulty.enemyReproductionRateFactor));
             //this.nextPawnSpawnTick = Find.TickManager.TicksGame + (int)(Building_WombBetweenWorlds.PawnSpawnIntervalDays.RandomInRange * 60000f);
         }
@@ -203,7 +203,7 @@ namespace CultOfCthulhu
             try
             {
                 IntVec3 pos = Position;
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                 {
                     pos += GenAdj.CardinalDirections[2];
                 }

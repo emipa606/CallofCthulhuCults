@@ -12,13 +12,7 @@ namespace CultOfCthulhu
     public class JobDriver_TiedDown : JobDriver_Wait
     {
 
-        protected Building_SacrificialAltar DropAltar
-        {
-            get
-            {
-                return (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
-            }
-        }
+        protected Building_SacrificialAltar DropAltar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
 
 
         protected override IEnumerable<Toil> MakeNewToils()

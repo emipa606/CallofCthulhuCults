@@ -42,19 +42,27 @@ namespace CultOfCthulhu
             //Disabling auto-worship is not a hard thing.
             if (value == false)
             {
-                if (type == ChangeWorshipType.EveningWorship) OptionEvening = false;
-                if (type == ChangeWorshipType.MorningWorship) OptionMorning = false;
+                if (type == ChangeWorshipType.EveningWorship)
+                {
+                    OptionEvening = false;
+                }
+
+                if (type == ChangeWorshipType.MorningWorship)
+                {
+                    OptionMorning = false;
+                }
+
                 return;
             }
 
-            bool canChange = true;
+            var canChange = true;
             //Check if another altar exists.
             foreach (Building bld in Map.listerBuildings.allBuildingsColonist)
             {
                 //Check all other altars
                 if (bld is Building_SacrificialAltar)
                 {
-                    Building_SacrificialAltar altar2 = bld as Building_SacrificialAltar;
+                    var altar2 = bld as Building_SacrificialAltar;
                     //You want to enable evening worship here?
                     if (type == ChangeWorshipType.EveningWorship)
                     {
@@ -91,8 +99,8 @@ namespace CultOfCthulhu
         {
             Pawn pawn = null;
             List<Pawn> listeners = Map.mapPawns.AllPawnsSpawned.FindAll(x => x.RaceProps.intelligence == Intelligence.Humanlike);
-            bool[] flag = new bool[listeners.Count];
-            for (int i = 0; i < listeners.Count; i++)
+            var flag = new bool[listeners.Count];
+            for (var i = 0; i < listeners.Count; i++)
             {
                 pawn = listeners[i];
                 if (pawn.Faction == Faction.OfPlayer)
@@ -151,7 +159,11 @@ namespace CultOfCthulhu
                         if (IsSacrificing())
                         {
                             string timeOfDay = "Cults_Morning".Translate();
-                            if (Cthulhu.Utility.IsEvening(Map)) timeOfDay = "Cults_Evening".Translate();
+                            if (Cthulhu.Utility.IsEvening(Map))
+                            {
+                                timeOfDay = "Cults_Evening".Translate();
+                            }
+
                             Messages.Message("Cults_MorningEveningSermonInterrupted".Translate(timeOfDay), MessageTypeDefOf.RejectInput);
                         }
                         StartToWorship(forced);
@@ -168,14 +180,37 @@ namespace CultOfCthulhu
 
         private bool CanGatherToWorshipNow()
         {
-            if (tempPreacher == null) return RejectMessage("Cults_NoPreacher".Translate());
-            if (tempCurrentWorshipDeity == null) return RejectMessage("Cults_NoCosmicEntity".Translate());
-            if (tempPreacher.Drafted) return RejectMessage("Cults_NoPreacherDrafted".Translate());
-            if (tempPreacher.Dead || tempPreacher.Downed) return RejectMessage("Cults_SelectAblebodiedPreacher".Translate(), tempPreacher);
-            if (!tempPreacher.CanReserve(this)) return RejectMessage("Cults_AltarIsReserved".Translate());
+            if (tempPreacher == null)
+            {
+                return RejectMessage("Cults_NoPreacher".Translate());
+            }
+
+            if (tempCurrentWorshipDeity == null)
+            {
+                return RejectMessage("Cults_NoCosmicEntity".Translate());
+            }
+
+            if (tempPreacher.Drafted)
+            {
+                return RejectMessage("Cults_NoPreacherDrafted".Translate());
+            }
+
+            if (tempPreacher.Dead || tempPreacher.Downed)
+            {
+                return RejectMessage("Cults_SelectAblebodiedPreacher".Translate(), tempPreacher);
+            }
+
+            if (!tempPreacher.CanReserve(this))
+            {
+                return RejectMessage("Cults_AltarIsReserved".Translate());
+            }
+
             foreach (var thing in Position.GetThingList(Map))
             {
-                if (thing is Corpse) return RejectMessage("Cults_AltarNeedsToBeCleared".Translate());
+                if (thing is Corpse)
+                {
+                    return RejectMessage("Cults_AltarNeedsToBeCleared".Translate());
+                }
             }
             return true;
         }
@@ -198,7 +233,7 @@ namespace CultOfCthulhu
                 return;
             }
 
-            Settlement factionBase = (Settlement)Map.info.parent;
+            var factionBase = (Settlement)Map.info.parent;
 
             Messages.Message("WorshipGathering".Translate(factionBase.Label), TargetInfo.Invalid, MessageTypeDefOf.NeutralEvent);
             ChangeState(State.worshipping, WorshipState.started);
@@ -206,7 +241,7 @@ namespace CultOfCthulhu
             //Map.GetComponent<MapComponent_SacrificeTracker>().lastResult = CultUtility.SacrificeResult.none;
 
             Cthulhu.Utility.DebugReport("Force worship called");
-            Job job = new Job(CultsDefOf.Cults_HoldWorship, this)
+            var job = new Job(CultsDefOf.Cults_HoldWorship, this)
             {
                 playerForced = forced
             };
@@ -228,14 +263,20 @@ namespace CultOfCthulhu
             _ = this.GetRoom();
 
             if (AvailableWorshippers != null && AvailableWorshippers.Count > 0)
+            {
                 foreach (Pawn p in AvailableWorshippers)
+                {
                     if (CultUtility.ShouldAttendWorship(p, this))
+                    {
                         CultUtility.GiveAttendWorshipJob(this, p);
+                    }
+                }
+            }
         }
 
         public static bool ShouldAttendWorship(Pawn p, Pawn preacher)
         {
-            int num = 100; //Forced for testing purposes
+            var num = 100; //Forced for testing purposes
 
             if (p.CurJob.def == CultsDefOf.Cults_AttendWorship)
             {

@@ -23,13 +23,7 @@ namespace CultOfCthulhu
         protected float ticksToNextRepair;
 
 
-        protected Building_SacrificialAltar Altar
-        {
-            get
-            {
-                return (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
-            }
-        }
+        protected Building_SacrificialAltar Altar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
 
         [DebuggerHidden]
         protected override IEnumerable<Toil> MakeNewToils()
@@ -41,7 +35,7 @@ namespace CultOfCthulhu
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
 
             //Toil 2: Begin pruning.
-            Toil toil = new Toil
+            var toil = new Toil
             {
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = remainingDuration
@@ -56,7 +50,7 @@ namespace CultOfCthulhu
                 Pawn actor = pawn;
                 actor.skills.Learn(SkillDefOf.Construction, 0.5f, false);
                 actor.skills.Learn(SkillDefOf.Plants, 0.5f, false);
-                float statValue = actor.GetStatValue(StatDefOf.ConstructionSpeed, true);
+                var statValue = actor.GetStatValue(StatDefOf.ConstructionSpeed, true);
                 ticksToNextRepair -= statValue;
                 if (ticksToNextRepair <= 0f)
                 {

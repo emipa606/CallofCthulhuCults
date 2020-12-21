@@ -20,9 +20,9 @@ namespace CultOfCthulhu
             }
             else
             {
-                bool rootFogged = root.Fogged(map);
-                int num = firstTryWithRadius;
-                for (int i = 0; i < 3; i++)
+                var rootFogged = root.Fogged(map);
+                var num = firstTryWithRadius;
+                for (var i = 0; i < 3; i++)
                 {
                     if (CellFinder.TryFindRandomReachableCellNear(root, map, (float)num, TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Deadly, false), (IntVec3 c) => c.Standable(map) && (rootFogged || !c.Fogged(map)) && c.GetFirstPawn(map) == null, null, out result, 999999))
                     {
@@ -47,7 +47,7 @@ namespace CultOfCthulhu
         
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
             //Create a spawn point for our nightmare Tree
             if (!Cthulhu.Utility.TryFindSpawnCell(CultsDefOf.Cults_MonolithNightmare, map.Center, map, 60, out IntVec3 intVec))
             {
@@ -56,7 +56,7 @@ namespace CultOfCthulhu
                 return false;
             }
             //Spawn in the nightmare tree.
-            Plant thing = (Plant)ThingMaker.MakeThing(CultsDefOf.Cults_PlantTreeNightmare, null);
+            var thing = (Plant)ThingMaker.MakeThing(CultsDefOf.Cults_PlantTreeNightmare, null);
             thing.Growth = 1f;
             GenSpawn.Spawn(thing, intVec.RandomAdjacentCell8Way(), map);
             //GenPlace.TryPlaceThing(thing, intVec.RandomAdjacentCell8Way(), map, ThingPlaceMode.Near);

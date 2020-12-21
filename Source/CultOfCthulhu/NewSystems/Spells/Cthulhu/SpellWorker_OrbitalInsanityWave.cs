@@ -32,12 +32,15 @@ namespace CultOfCthulhu
         public List<Thing> ThingsToAdd(ThingDef def, int count)
         {
 
-            List<Thing> tempList = new List<Thing>();
-            if (count == 0) return tempList;
-
-            for (int i = 0; i <= count; i++)
+            var tempList = new List<Thing>();
+            if (count == 0)
             {
-                ThingWithComps thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, null);
+                return tempList;
+            }
+
+            for (var i = 0; i <= count; i++)
+            {
+                var thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, null);
                 tempList.Add(thingWithComps);
             }
             return tempList;
@@ -57,9 +60,9 @@ namespace CultOfCthulhu
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
 
-            Map map = parms.target as Map;
+            var map = parms.target as Map;
             float chance = Rand.Range(1, 100);
-            List<Thing> container = new List<Thing>();
+            var container = new List<Thing>();
             string label = "LetterLabelRefugeePodCrash".Translate();
             string text = "RefugeePodCrash".Translate();
 
@@ -117,9 +120,9 @@ namespace CultOfCthulhu
                 container.AddRange(ThingsToAdd(ThingDefOf.MedicineUltratech, Rand.Range(1, 3))); //Original 30-50
                 AddThingsToContainerByTag(container, "BodyPartOrImplant", Rand.Range(-8, 2)); //Original 0~5
                 AddThingsToContainerByTag(container, "Drugs", Rand.Range(-2, 2)); //Original 0~5
-                int randomInRange = Rand.Range(3, 6); //Orig 4~8 guns
+                var randomInRange = Rand.Range(3, 6); //Orig 4~8 guns
                 //Weapons Ranged
-                for (int i = 0; i < randomInRange; i++)
+                for (var i = 0; i < randomInRange; i++)
                 {
                     if (!(from t in DefDatabase<ThingDef>.AllDefs
                           where t.IsRangedWeapon && t.tradeability != Tradeability.None && t.techLevel <= TechLevel.Archotech && t.BaseMarketValue <= 500
@@ -134,12 +137,12 @@ namespace CultOfCthulhu
                                  where st.IsStuff && st.stuffProps.CanMake(def)
                                  select st).RandomElementByWeight((ThingDef st) => st.stuffProps.commonality);
                     }
-                    ThingWithComps thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, stuff);
+                    var thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, stuff);
                     container.Add(thingWithComps);
                 }
                 //Weapons Melee
                 randomInRange = Rand.Range(1, 3); //Orig 3~5 guns
-                for (int i = 0; i < randomInRange; i++)
+                for (var i = 0; i < randomInRange; i++)
                 {
                     if (!(from t in DefDatabase<ThingDef>.AllDefs
                           where t.IsRangedWeapon && t.tradeability != Tradeability.None && t.techLevel <= TechLevel.Archotech
@@ -154,12 +157,12 @@ namespace CultOfCthulhu
                                  where st.IsStuff && st.stuffProps.CanMake(def)
                                  select st).RandomElementByWeight((ThingDef st) => st.stuffProps.commonality);
                     }
-                    ThingWithComps thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, stuff);
+                    var thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, stuff);
                     container.Add(thingWithComps);
                 }
                 //Armor
                 randomInRange = Rand.Range(1, 2); //Orig 2~4 armor
-                for (int i = 0; i < randomInRange; i++)
+                for (var i = 0; i < randomInRange; i++)
                 {
                     if (!(from t in DefDatabase<ThingDef>.AllDefs
                           where t.IsApparel && t.tradeability != Tradeability.None && t.techLevel <= TechLevel.Archotech && (t.GetStatValueAbstract(StatDefOf.ArmorRating_Blunt, null) > 0.15f || t.GetStatValueAbstract(StatDefOf.ArmorRating_Sharp, null) > 0.15f)
@@ -174,13 +177,13 @@ namespace CultOfCthulhu
                                  where st.IsStuff && st.stuffProps.CanMake(def)
                                  select st).RandomElementByWeight((ThingDef st) => st.stuffProps.commonality);
                     }
-                    ThingWithComps thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, stuff);
+                    var thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, stuff);
                     container.Add(thingWithComps);
                 }
 
                     //Clothes
                     randomInRange = Rand.Range(1, 2); //Orig 4~8 clothes
-                for (int i = 0; i < randomInRange; i++)
+                for (var i = 0; i < randomInRange; i++)
                 {
                     if (!(from t in DefDatabase<ThingDef>.AllDefs
                           where t.IsApparel && t.tradeability != Tradeability.None && t.techLevel <= TechLevel.Archotech
@@ -195,7 +198,7 @@ namespace CultOfCthulhu
                                  where st.IsStuff && st.stuffProps.CanMake(def)
                                  select st).RandomElementByWeight((ThingDef st) => st.stuffProps.commonality);
                     }
-                    ThingWithComps thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, stuff);
+                    var thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, stuff);
                     container.Add(thingWithComps);
                 }
             }
@@ -280,7 +283,7 @@ namespace CultOfCthulhu
             //PawnRelationUtility.TryAppendRelationsWithColonistsInfo(ref text, ref label, pawn);
 
             Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.PositiveEvent, new TargetInfo(intVec, map), null);
-            ActiveDropPodInfo adpInfo = new ActiveDropPodInfo();
+            var adpInfo = new ActiveDropPodInfo();
             foreach (Thing thing in container)
             {
                 adpInfo.innerContainer.TryAdd(thing);
@@ -292,8 +295,12 @@ namespace CultOfCthulhu
 
         public void AddThingsToContainerByTag(List<Thing> container, string tag, int counter)
         {
-            if (counter <= 0) return;
-            for (int i = 0; i < counter; i++)
+            if (counter <= 0)
+            {
+                return;
+            }
+
+            for (var i = 0; i < counter; i++)
             {
                 if (!(from t in DefDatabase<ThingDef>.AllDefs
                       where t.tradeTags != null && t.tradeTags.Contains(tag)
@@ -308,7 +315,7 @@ namespace CultOfCthulhu
                              where st.IsStuff && st.stuffProps.CanMake(def)
                              select st).RandomElementByWeight((ThingDef st) => st.stuffProps.commonality);
                 }
-                ThingWithComps thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, stuff);
+                var thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, stuff);
                 container.Add(thingWithComps);
             }
         }

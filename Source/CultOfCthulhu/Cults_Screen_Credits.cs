@@ -33,45 +33,15 @@ namespace CultOfCthulhu
 
         public float creationRealtime = -1f;
 
-        public override Vector2 InitialSize
-        {
-            get
-            {
-                return new Vector2((float)Screen.width, (float)Screen.height);
-            }
-        }
+        public override Vector2 InitialSize => new Vector2((float)Screen.width, (float)Screen.height);
 
-        protected override float Margin
-        {
-            get
-            {
-                return 0f;
-            }
-        }
+        protected override float Margin => 0f;
 
-        private float ViewWidth
-        {
-            get
-            {
-                return 800f;
-            }
-        }
+        private float ViewWidth => 800f;
 
-        private float ViewHeight
-        {
-            get
-            {
-                return creds.Sum((CreditsEntry c) => c.DrawHeight(ViewWidth)) + 200f;
-            }
-        }
+        private float ViewHeight => creds.Sum((CreditsEntry c) => c.DrawHeight(ViewWidth)) + 200f;
 
-        private float MaxScrollPosition
-        {
-            get
-            {
-                return ViewHeight - 400f;
-            }
-        }
+        private float MaxScrollPosition => ViewHeight - 400f;
 
         private float AutoScrollRate
         {
@@ -79,7 +49,7 @@ namespace CultOfCthulhu
             {
                 if (wonGame)
                 {
-                    float num = SongDefOf.EndCreditsSong.clip.length + 5f - 6f;
+                    var num = SongDefOf.EndCreditsSong.clip.length + 5f - 6f;
                     return MaxScrollPosition / num;
                 }
                 return 30f;
@@ -158,7 +128,10 @@ namespace CultOfCthulhu
             creds.Insert(51, new CreditRecord_Role("PatreonSupporter".Translate(), "Geth"));
             creds.Add(new CreditRecord_Space(100f));
             creds.Add(new CreditRecord_Text("ThanksForPlaying".Translate(), TextAnchor.UpperCenter));
-            if (DelayBooster != 0f) MessageDelay = DelayBooster;
+            if (DelayBooster != 0f)
+            {
+                MessageDelay = DelayBooster;
+            }
         }
 
         public override void PreOpen()
@@ -195,26 +168,26 @@ namespace CultOfCthulhu
 
         public override void DoWindowContents(Rect inRect)
         {
-            Rect rect = new Rect(0f, 0f, (float)Screen.width, (float)Screen.height);
+            var rect = new Rect(0f, 0f, (float)Screen.width, (float)Screen.height);
             GUI.DrawTexture(rect, BaseContent.BlackTex);
-            Rect position = new Rect(rect);
+            var position = new Rect(rect);
             position.yMin += 30f;
             position.yMax -= 30f;
             position.xMin = rect.center.x - 400f;
             position.width = 800f;
-            float viewWidth = ViewWidth;
-            float viewHeight = ViewHeight;
+            var viewWidth = ViewWidth;
+            var viewHeight = ViewHeight;
             scrollPosition = Mathf.Clamp(scrollPosition, 0f, MaxScrollPosition);
             GUI.BeginGroup(position);
-            Rect position2 = new Rect(0f, 0f, viewWidth, viewHeight);
+            var position2 = new Rect(0f, 0f, viewWidth, viewHeight);
             position2.y -= scrollPosition;
             GUI.BeginGroup(position2);
             Text.Font = GameFont.Medium;
-            float num = 0f;
+            var num = 0f;
             foreach (CreditsEntry current in creds)
             {
-                float num2 = current.DrawHeight(position2.width);
-                Rect rect2 = new Rect(0f, num, position2.width, num2);
+                var num2 = current.DrawHeight(position2.width);
+                var rect2 = new Rect(0f, num, position2.width, num2);
                 current.Draw(rect2);
                 num += num2;
             }

@@ -45,7 +45,11 @@ namespace CultOfCthulhu
                     {
                         if (IsPsionic)
                         {
-                            if (!firstTick) PostInitializeTick();
+                            if (!firstTick)
+                            {
+                                PostInitializeTick();
+                            }
+
                             base.CompTick();
                         }
                     }
@@ -63,7 +67,10 @@ namespace CultOfCthulhu
                     {
                         if (AbilityUser.health.hediffSet != null)
                         {
-                            if (AbilityUser.health.hediffSet.HasHediff(CultsDefOf.Cults_PsionicBrain)) return true;
+                            if (AbilityUser.health.hediffSet.HasHediff(CultsDefOf.Cults_PsionicBrain))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }

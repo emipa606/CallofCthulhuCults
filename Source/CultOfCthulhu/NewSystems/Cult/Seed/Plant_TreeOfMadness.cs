@@ -39,7 +39,7 @@ namespace CultOfCthulhu
                 setup = true;
                 if (!def.building.soundAmbient.NullOrUndefined() && sustainerAmbient == null)
                 {
-                    SoundInfo info = SoundInfo.InMap(this, MaintenanceType.None);
+                    var info = SoundInfo.InMap(this, MaintenanceType.None);
                     sustainerAmbient = def.building.soundAmbient.TrySpawnSustainer(info);
                 }
 
@@ -48,7 +48,11 @@ namespace CultOfCthulhu
 
         public void DoTickWork()
         {
-            if (isQuiet) return;
+            if (isQuiet)
+            {
+                return;
+            }
+
             ticksUntilQuiet--;
             if (ticksUntilQuiet <= 0)
             {
@@ -75,12 +79,21 @@ namespace CultOfCthulhu
                 thought_MemoryObservation = (Thought_MemoryObservation)ThoughtMaker.MakeThought(DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareTree"));
                 thought_MemoryObservation.Target = this;
                 Pawn Dave = thought_MemoryObservation.pawn;
-                if (Dave == null) return null;
-                if (!Dave.IsColonist) return thought_MemoryObservation;
+                if (Dave == null)
+                {
+                    return null;
+                }
+
+                if (!Dave.IsColonist)
+                {
+                    return thought_MemoryObservation;
+                }
                 else
                 {
                     if (Dave.needs.TryGetNeed<Need_CultMindedness>().CurLevel > 0.7)
+                    {
                         thought_MemoryObservation = (Thought_MemoryObservation)ThoughtMaker.MakeThought(DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareTreeCultist"));
+                    }
                 }
                 return thought_MemoryObservation;
             }
@@ -104,7 +117,7 @@ namespace CultOfCthulhu
                 {
                     void action0()
                     {
-                        Job job = new Job(CultsDefOf.Cults_Investigate, myPawn, this)
+                        var job = new Job(CultsDefOf.Cults_Investigate, myPawn, this)
                         {
                             playerForced = true
                         };
@@ -126,7 +139,7 @@ namespace CultOfCthulhu
             }
             else if (!def.building.soundAmbient.NullOrUndefined() && sustainerAmbient == null)
             {
-                 SoundInfo info = SoundInfo.InMap(this, MaintenanceType.None);
+                 var info = SoundInfo.InMap(this, MaintenanceType.None);
                     sustainerAmbient = new Sustainer(def.building.soundAmbient, info);
 
 
@@ -146,7 +159,7 @@ namespace CultOfCthulhu
                 yield return current;
             }
 
-            Command_Toggle toggleDef = new Command_Toggle
+            var toggleDef = new Command_Toggle
             {
                 hotKey = KeyBindingDefOf.Command_TogglePower,
                 icon = ContentFinder<Texture2D>.Get("UI/Icons/Commands/Mute", true),

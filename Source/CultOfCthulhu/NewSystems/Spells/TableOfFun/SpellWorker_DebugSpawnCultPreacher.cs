@@ -34,8 +34,8 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            Map map = parms.target as Map;
-            for (int i = 0; i < 2; i++)
+            var map = parms.target as Map;
+            for (var i = 0; i < 2; i++)
             {
                 if (!CultUtility.TrySpawnWalkInCultist(map, CultUtility.CultistType.Preacher, false))
                 {

@@ -14,7 +14,7 @@ namespace CultOfCthulhu
         public float weight { get; set; }
 
 
-        public FunSpell(String newName, float newWeight)
+        public FunSpell(string newName, float newWeight)
         {
             defName = newName;
             weight = newWeight;
