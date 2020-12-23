@@ -71,6 +71,9 @@ namespace CultOfCthulhu
         public bool OptionEvening = false;
         private bool didEveningRitual = false;
         public List<int> seasonSchedule = new List<int>(new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+
+        public static int morningStart = 0;
+        public static int eveningStart = 12;
         public int morningHour = 9;
         public int eveningHour = 18;
 
@@ -140,15 +143,21 @@ namespace CultOfCthulhu
                     return false;
                 }
                 var currentHour = GenLocalDate.HourInteger(Map);
-                if (!didMorningRitual && (typeOfSermons == 1 || typeOfSermons == 3) && currentHour == morningHour)
+                if(didMorningRitual && currentHour >= eveningStart)
+                {
+                    didMorningRitual = false;
+                }
+                if (didEveningRitual && currentHour < eveningStart)
                 {
                     didEveningRitual = false;
+                }
+                if (!didMorningRitual && (typeOfSermons == 1 || typeOfSermons == 3) && currentHour == morningHour)
+                {
                     didMorningRitual = true;
                     return true;
                 }
                 if (!didEveningRitual && (typeOfSermons == 2 || typeOfSermons == 3) && currentHour == eveningHour)
                 {
-                    didMorningRitual = false;
                     didEveningRitual = true;
                     return true;
                 }
