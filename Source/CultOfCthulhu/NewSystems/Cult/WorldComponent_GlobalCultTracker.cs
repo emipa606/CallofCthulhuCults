@@ -177,6 +177,8 @@ namespace CultOfCthulhu
                 return;
             }
 
+
+
             //Add the anti-cultist to the list.
             antiCultists.Add(antiCultist);
             //If the cult already exists, show a message to initiate the pawn into the inquisitor faction.

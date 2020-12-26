@@ -169,7 +169,7 @@ namespace CultOfCthulhu
             }
 
             ticksToCheckCultists = Find.TickManager.TicksGame + 500;
-            
+
             var spawnedColonyMembers = new List<Pawn>(map.mapPawns.FreeColonistsAndPrisonersSpawned);
             Cult playerCult = CultTracker.Get.PlayerCult;
             if (spawnedColonyMembers == null || spawnedColonyMembers.Count == 0)
@@ -179,10 +179,20 @@ namespace CultOfCthulhu
 
             foreach (Pawn colonist in spawnedColonyMembers)
             {
+                if (!colonist.RaceProps.Humanlike ||
+                    colonist.IsPrisoner ||
+                    colonist.RaceProps.intelligence != Intelligence.Humanlike ||
+                    colonist.Dead)
+                {
+                    playerCult.RemoveMember(colonist);
+                    CultTracker.Get.RemoveInquisitor(colonist);
+                    continue;
+                }
+
                 if (colonist.needs.TryGetNeed<Need_CultMindedness>() is Need_CultMindedness cultMind)
                 {
                     //Cult-Mindedness Above 70%? You will join the cult.
-                    if (cultMind.CurLevelPercentage > 0.7)
+                    if (cultMind.CurLevelPercentage > CultLevel.Cultist)
                     {
                         if (playerCult == null)
                         {
@@ -192,8 +202,8 @@ namespace CultOfCthulhu
                         playerCult.SetMember(colonist);
                     }
                     //Otherwise, you will be removed from the cult.
-                    else if (cultMind.CurInstantLevelPercentage > 0.3 &&
-                        cultMind.CurInstantLevelPercentage < 0.7)
+                    else if (cultMind.CurInstantLevelPercentage > CultLevel.AntiCultist &&
+                        cultMind.CurInstantLevelPercentage < CultLevel.Cultist)
                     {
                         if (playerCult != null)
                         {
@@ -202,21 +212,11 @@ namespace CultOfCthulhu
                         }
                     }
                     //Those with cult mindedness below 30% will be inquisitors.
-                    else if (cultMind.CurInstantLevelPercentage < 0.3)
+                    else if (cultMind.CurInstantLevelPercentage < CultLevel.AntiCultist)
                     {
                         CultTracker.Get.SetInquisitor(colonist);
                     }
                 }
-                if (colonist.Dead)
-                {
-                    playerCult.RemoveMember(colonist);
-                    //Log.Messag("9b");
-
-                    CultTracker.Get.RemoveInquisitor(colonist);
-                    continue;
-                }
-                //Log.Messag("10");
-
             }
         }
 

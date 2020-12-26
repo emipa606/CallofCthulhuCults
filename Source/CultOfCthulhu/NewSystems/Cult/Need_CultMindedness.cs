@@ -15,11 +15,11 @@ namespace CultOfCthulhu
         
         public const float BaseGainPerTickRate = 150f;
         public const float BaseFallPerTick = 1E-05f;
-        public const float ThreshVeryLow = 0.1f;
-        public const float ThreshLow = 0.3f;
-        public const float ThreshSatisfied = 0.5f;
-        public const float ThreshHigh = 0.7f;
-        public const float ThreshVeryHigh = 0.9f;
+        public const float ThreshVeryLow = CultLevel.PureAntiCultist;
+        public const float ThreshLow = CultLevel.AntiCultist;
+        public const float ThreshSatisfied = CultLevel.Middling;
+        public const float ThreshHigh = CultLevel.Cultist;
+        public const float ThreshVeryHigh = CultLevel.PureCultist;
 
         private bool baseSet = false;
         public int ticksUntilBaseSet = 500;
