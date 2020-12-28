@@ -184,7 +184,10 @@ namespace CultOfCthulhu
                     colonist.RaceProps.intelligence != Intelligence.Humanlike ||
                     colonist.Dead)
                 {
-                    playerCult.RemoveMember(colonist);
+                    if (playerCult != null)
+                    {
+                        playerCult.RemoveMember(colonist);
+                    }
                     CultTracker.Get.RemoveInquisitor(colonist);
                     continue;
                 }
