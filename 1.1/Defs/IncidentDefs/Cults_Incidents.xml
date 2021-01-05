@@ -24,8 +24,10 @@
     <conditionClass>CultOfCthulhu.gameCondition_StarsAreWrong</conditionClass>
     <label>stars are wrong</label>
     <description>Unbound to the proper order of the cosmos, the stars themselves seem to sting our eyes with a hateful scorn. Sacrifices are discouraged during this period.</description>
+    <letterText>Unbound to the proper order of the cosmos, the stars themselves seem to sting our eyes with a hateful scorn. Sacrifices are discouraged during this period.</letterText>
     <endMessage>The stars as we know them have returned</endMessage>
     <canBePermanent>true</canBePermanent>
+    <letterDef>NegativeEvent</letterDef>
   </gameConditionDef>
   <IncidentDef>
     <defName>CultIncident_StarsAreRight</defName>
@@ -52,6 +54,10 @@
     <label>stars are right</label>
     <description>The planets of the system have auspiciously aligned. Plants and animals will flourish and cult sacrifices will receive bonuses.</description>
     <endMessage>Celestial bodies are no longer in alignment.</endMessage>
+    <canBePermanent>true</canBePermanent>
+    <letterText>The planets of the system have auspiciously aligned. Plants and animals will flourish and cult sacrifices will receive bonuses.</letterText>
+    <endMessage>Celestial bodies are no longer in alignment.</endMessage>
+    <letterDef>PositiveEvent</letterDef>
     <canBePermanent>true</canBePermanent>
   </gameConditionDef>
   <!-- Cult Seed Incidents -->
