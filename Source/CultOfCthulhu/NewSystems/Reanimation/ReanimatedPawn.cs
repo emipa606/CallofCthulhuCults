@@ -1,29 +1,28 @@
-﻿using RimWorld;
-using System;
-using UnityEngine;
-using Verse.AI;
+﻿using System;
+using RimWorld;
 using Verse;
+using Verse.AI;
+using Random = UnityEngine.Random;
 
 namespace CultOfCthulhu
 {
     /// <summary>
-    /// Originally ZombePawn from JustinC
+    ///     Originally ZombePawn from JustinC
     /// </summary>
     public class ReanimatedPawn : Pawn
     {
-        public bool setZombie = false;
-    
         public bool isRaiding = true;
 
-        public bool wasColonist;
-
         public float notRaidingAttackRange = 15f;
+        public bool setZombie;
+
+        public bool wasColonist;
 
         public ReanimatedPawn()
         {
             Init();
         }
-        
+
 
         private void Init()
         {
@@ -37,7 +36,7 @@ namespace CultOfCthulhu
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look<bool>(ref wasColonist, "wasColonist", false, false);
+            Scribe_Values.Look(ref wasColonist, "wasColonist");
             //if (Scribe.mode == LoadSaveMode.LoadingVars)
             //{
             //    Cthulhu.Utility.GiveZombieSkinEffect(this);
@@ -56,18 +55,20 @@ namespace CultOfCthulhu
                     var pawn = dinfo.Instigator as Pawn;
                     if (pawn.skills != null)
                     {
-                        SkillRecord expr_9B = pawn.skills.GetSkill(SkillDefOf.Melee);
-                        num = (float)(expr_9B.Level * 2);
-                        num2 = (float)expr_9B.Level / 20f * 3f;
+                        var expr_9B = pawn.skills.GetSkill(SkillDefOf.Melee);
+                        num = expr_9B.Level * 2;
+                        num2 = expr_9B.Level / 20f * 3f;
                     }
-                    if (UnityEngine.Random.Range(0f, 100f) < 20f + num)
+
+                    if (Random.Range(0f, 100f) < 20f + num)
                     {
                         dinfo.SetAmount(999);
                         dinfo.SetHitPart(health.hediffSet.GetBrain());
                         dinfo.Def.Worker.Apply(dinfo, this);
                         return;
                     }
-                    dinfo.SetAmount((int)((float)dinfo.Amount * (1f + num2)));
+
+                    dinfo.SetAmount((int) (dinfo.Amount * (1f + num2)));
                 }
             }
         }
@@ -78,7 +79,7 @@ namespace CultOfCthulhu
             {
                 if (DebugSettings.noAnimals && RaceProps.Animal)
                 {
-                    Destroy(0);
+                    Destroy();
                 }
                 else if (!Downed)
                 {
@@ -86,10 +87,12 @@ namespace CultOfCthulhu
                     {
                         TickRare();
                     }
+
                     if (Spawned)
                     {
                         pather.PatherTick();
                     }
+
                     Drawer.DrawTrackerTick();
                     health.HealthTick();
                     records.RecordsTick();
@@ -97,72 +100,88 @@ namespace CultOfCthulhu
                     {
                         stances.StanceTrackerTick();
                     }
+
                     if (Spawned)
                     {
                         verbTracker.VerbsTick();
                     }
+
                     if (Spawned)
                     {
                         natives.NativeVerbsTick();
                     }
+
                     if (equipment != null)
                     {
                         equipment.EquipmentTrackerTick();
                     }
+
                     if (apparel != null)
                     {
                         apparel.ApparelTrackerTick();
                     }
+
                     if (Spawned)
                     {
                         jobs.JobTrackerTick();
                     }
+
                     if (!Dead)
                     {
                         carryTracker.CarryHandsTick();
                     }
+
                     if (skills != null)
                     {
                         skills.SkillsTick();
                     }
+
                     if (inventory != null)
                     {
                         inventory.InventoryTrackerTick();
                     }
                 }
+
                 if (needs != null && needs.food != null && needs.food.CurLevel <= 0.95f)
                 {
                     needs.food.CurLevel = 1f;
                 }
+
                 if (needs != null && needs.joy != null && needs.joy.CurLevel <= 0.95f)
                 {
                     needs.joy.CurLevel = 1f;
                 }
+
                 if (needs != null && needs.beauty != null && needs.beauty.CurLevel <= 0.95f)
                 {
                     needs.beauty.CurLevel = 1f;
                 }
+
                 if (needs != null && needs.comfort != null && needs.comfort.CurLevel <= 0.95f)
                 {
                     needs.comfort.CurLevel = 1f;
                 }
+
                 if (needs != null && needs.rest != null && needs.rest.CurLevel <= 0.95f)
                 {
                     needs.rest.CurLevel = 1f;
                 }
+
                 if (needs != null && needs.mood != null && needs.mood.CurLevel <= 0.45f)
                 {
                     needs.mood.CurLevel = 0.5f;
                 }
+
                 if (!setZombie)
                 {
                     mindState.mentalStateHandler.neverFleeIndividual = true;
                     setZombie = ReanimatedPawnUtility.Zombify(this);
                     //ZombieMod_Utility.SetZombieName(this);
                 }
+
                 if (Downed || health.Downed || health.InPainShock)
                 {
-                    var damageInfo = new DamageInfo(DamageDefOf.Blunt, 9999, 1f, -1f, this, null, null);
+                    var damageInfo = new DamageInfo(DamageDefOf.Blunt, 9999, 1f, -1f, this);
                     damageInfo.SetHitPart(health.hediffSet.GetBrain());
                     //damageInfo.SetPart(new BodyPartDamageInfo(this.health.hediffSet.GetBrain(), false, HediffDefOf.Cut));
                     TakeDamage(damageInfo);

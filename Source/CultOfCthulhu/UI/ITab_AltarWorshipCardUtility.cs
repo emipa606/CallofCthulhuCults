@@ -1,27 +1,28 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using CallOfCthulhu;
+using HarmonyLib;
+using RimWorld;
+using UnityEngine;
+using Verse;
+using Verse.Sound;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
-using CultOfCthulhu;
-using HarmonyLib;
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+// RimWorld specific functions for world creation
 
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
@@ -42,7 +43,7 @@ namespace CultOfCthulhu
 
                 //Headings
                 _ = new Rect(rect);
-                Rect rect1 = rect.ContractedBy(14f);
+                var rect1 = rect.ContractedBy(14f);
                 rect1.height = 30f;
 
                 //Unnamed Temple
@@ -65,17 +66,20 @@ namespace CultOfCthulhu
                 {
                     Widgets.DrawHighlight(rect2);
                 }
+
                 if (Mouse.IsOver(rect2) && Event.current.type == EventType.MouseDown)
                 {
                     Find.WindowStack.Add(new Dialog_RenameCult(altar.Map));
                 }
+
                 Widgets.DrawLineHorizontal(rect2.x - 10, rect2.yMax, rect.width - 15f);
                 //---------------------------------------------------------------------
 
-                var rectMain = new Rect(0 + 15f, 0 + 30f, TempleCardSize.x, ITab_AltarSacrificesCardUtility.ButtonSize * 1.15f);
+                var rectMain = new Rect(0 + 15f, 0 + 30f, TempleCardSize.x,
+                    ITab_AltarSacrificesCardUtility.ButtonSize * 1.15f);
 
                 //Deity -> Cthulhu
-                Rect rect4 = rectMain;
+                var rect4 = rectMain;
                 rect4.yMin = rectMain.yMax + 5f;
                 rect4.y = rectMain.yMax + 20f;
                 rect4.x += 5f;
@@ -84,17 +88,18 @@ namespace CultOfCthulhu
                 Widgets.Label(rect4, "Deity".Translate() + ": ");
                 rect4.xMin = rect4.center.x;
                 var label4 = DeityLabel(altar);
-                if (Widgets.ButtonText(rect4, label4, true, false, true))
+                if (Widgets.ButtonText(rect4, label4, true, false))
                 {
                     OpenDeitySelectMenu(altar);
                 }
+
                 TooltipHandler.TipRegion(rect4, "DeityDesc".Translate());
 
                 //Cthulhu - He who waits dreaming.
                 ITab_AltarCardUtility.DrawDeity(altar.tempCurrentWorshipDeity, rect4, null, -30f);
 
                 //Preacher
-                Rect rect5 = rect4;
+                var rect5 = rect4;
                 rect5.y += ITab_AltarSacrificesCardUtility.ButtonSize + 15f;
                 //rect5.y = rect4.yMax + 30f;
                 rect5.x -= rect4.x - 5;
@@ -103,13 +108,14 @@ namespace CultOfCthulhu
                 Widgets.Label(rect5, "Preacher".Translate() + ": ");
                 rect5.xMin = rect5.center.x;
                 var label2 = PreacherLabel(altar);
-                if (Widgets.ButtonText(rect5, label2, true, false, true))
+                if (Widgets.ButtonText(rect5, label2, true, false))
                 {
                     OpenPreacherSelectMenu(altar);
                 }
+
                 TooltipHandler.TipRegion(rect5, "PreacherDesc".Translate());
 
-                Rect rect6 = rect5;
+                var rect6 = rect5;
                 rect6.y += ITab_AltarSacrificesCardUtility.ButtonSize + ITab_AltarSacrificesCardUtility.SpacingOffset;
                 rect6.height = ITab_AltarSacrificesCardUtility.ButtonSize * 2;
                 rect6.width = ITab_AltarSacrificesCardUtility.ColumnSize;
@@ -117,7 +123,6 @@ namespace CultOfCthulhu
                 rect6.x += 15f;
                 if (altar.tempCurrentWorshipDeity != null)
                 {
-
                     Widgets.Label(rect6.BottomHalf(), "Cults_SeasonDays".Translate());
 
                     Text.Font = GameFont.Tiny;
@@ -156,11 +161,12 @@ namespace CultOfCthulhu
                                 altar.seasonSchedule[day] = (altar.seasonSchedule[day] % 4) + 1;
                                 SoundDefOf.Designate_DragStandard_Changed.PlayOneShotOnCamera();
                                 //p.timetable.SetAssignment(hour, this.selectedAssignment);
-
                             }
                         }
+
                         num += hourWidth;
                     }
+
                     num2 += 60f;
                     var rect11 = new Rect(15f, num2 + 3, hourWidth / 2, hourWidth / 2);
                     rect11 = rect11.ContractedBy(1f);
@@ -193,14 +199,15 @@ namespace CultOfCthulhu
 
                     var dist = 5f;
                     var button3 = new Rect(rect6.x + dist, rect6.y + 215f, 140f, 30f);
-                    var morningHour = altar.morningHour.ToString() + ":00h";
-                    if (Widgets.ButtonText(button3, "Cults_MorningSermonStart".Translate() + morningHour, true, false, true))
+                    var morningHour = altar.morningHour + ":00h";
+                    if (Widgets.ButtonText(button3, "Cults_MorningSermonStart".Translate() + morningHour, true, false))
                     {
                         listHours(altar, true);
                     }
+
                     var button4 = new Rect(rect6.x + dist + 150f, rect6.y + 215f, 140f, 30f);
-                    var eveningHour = altar.eveningHour.ToString() + ":00h";
-                    if (Widgets.ButtonText(button4, "Cults_EveningSermonStart".Translate() + eveningHour, true, false, true))
+                    var eveningHour = altar.eveningHour + ":00h";
+                    if (Widgets.ButtonText(button4, "Cults_EveningSermonStart".Translate() + eveningHour, true, false))
                     {
                         listHours(altar, false);
                     }
@@ -224,7 +231,6 @@ namespace CultOfCthulhu
 
                 //TooltipHandler.TipRegion(rect6, "MorningSermonsDesc".Translate());
                 //TooltipHandler.TipRegion(rect7, "EveningSermonsDesc".Translate());
-
             }
             else
             {
@@ -243,15 +249,15 @@ namespace CultOfCthulhu
         public static void listHours(Building_SacrificialAltar altar, bool morning)
         {
             var list = new List<FloatMenuOption>();
-            var availableHours = new List<int>(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
+            var availableHours = new List<int>(new[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
             if (!morning)
             {
-                availableHours = new List<int>(new int[] { 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 });
+                availableHours = new List<int>(new[] {12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23});
             }
 
             foreach (var i in availableHours)
             {
-                list.Add(new FloatMenuOption(i.ToString() + ":00h", delegate
+                list.Add(new FloatMenuOption(i + ":00h", delegate
                 {
                     if (morning)
                     {
@@ -261,7 +267,7 @@ namespace CultOfCthulhu
                     {
                         altar.eveningHour = i;
                     }
-                }, MenuOptionPriority.Default, null, null, 0f, null, null));
+                }));
             }
 
 
@@ -275,10 +281,8 @@ namespace CultOfCthulhu
                 altar.tempPreacher = CultUtility.DetermineBestPreacher(altar.Map);
                 return altar.tempPreacher == null ? "None" : altar.tempPreacher.Name.ToStringShort;
             }
-            else
-            {
-                return altar.tempPreacher.Name.ToStringShort;
-            }
+
+            return altar.tempPreacher.Name.ToStringShort;
         }
 
         private static string DeityLabel(Building_SacrificialAltar altar)
@@ -292,40 +296,36 @@ namespace CultOfCthulhu
             {
                 return "None";
             }
-            else
-            {
-                var stringBuilder = new StringBuilder();
-                stringBuilder.Append(altar.tempCurrentWorshipDeity.def.description);
-                return stringBuilder.ToString();
-            }
+
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append(altar.tempCurrentWorshipDeity.def.description);
+            return stringBuilder.ToString();
         }
 
         public static void OpenPreacherSelectMenu(Building_SacrificialAltar altar)
         {
             var list = new List<FloatMenuOption>
             {
-                new FloatMenuOption("(" + "Auto".Translate() + ")", delegate
-                {
-                    altar.tempPreacher = CultUtility.DetermineBestPreacher(altar.Map);
-                }, MenuOptionPriority.Default, null, null, 0f, null)
+                new FloatMenuOption("(" + "Auto".Translate() + ")",
+                    delegate { altar.tempPreacher = CultUtility.DetermineBestPreacher(altar.Map); })
             };
 
-            foreach (Pawn current in CultTracker.Get.PlayerCult.MembersAt(altar.Map))
+            foreach (var current in CultTracker.Get.PlayerCult.MembersAt(altar.Map))
             {
                 if (current.health.capacities.CapableOf(PawnCapacityDefOf.Talking) &&
                     current.health.capacities.CapableOf(PawnCapacityDefOf.Moving))
                 {
                     Action action;
-                    Pawn localCol = current;
+                    var localCol = current;
                     action = delegate
                     {
-
                         //Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
                         altar.tempPreacher = localCol;
                     };
-                    list.Add(new FloatMenuOption(localCol.LabelShort, action, MenuOptionPriority.Default, null, null, 0f, null));
+                    list.Add(new FloatMenuOption(localCol.LabelShort, action));
                 }
             }
+
             Find.WindowStack.Add(new FloatMenu(list));
         }
 
@@ -336,12 +336,12 @@ namespace CultOfCthulhu
             {
                 new FloatMenuOption("(" + "NoneLower".Translate() + ")", delegate
                 {
-                //Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
-                altar.tempCurrentWorshipDeity = null;
-                }, MenuOptionPriority.Default, null, null, 0f, null)
+                    //Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
+                    altar.tempCurrentWorshipDeity = null;
+                })
             };
 
-            foreach (CosmicEntity current in DeityTracker.Get.DeityCache.Keys)
+            foreach (var current in DeityTracker.Get.DeityCache.Keys)
             {
                 if (!current.discovered)
                 {
@@ -349,28 +349,30 @@ namespace CultOfCthulhu
                 }
 
                 Action action;
-                CosmicEntity localDeity = current;
+                var localDeity = current;
                 action = delegate
                 {
-
                     //Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
                     altar.tempCurrentWorshipDeity = localDeity;
                     //altar.tempCurrentSpell = null;
                 };
+
                 bool extraPartOnGUI(Rect rect)
                 {
                     return DeityInfoCardButton(rect.x + 5f, rect.y + ((rect.height - 24f) / 2f), current);
                 }
 
-                list.Add(new FloatMenuOption(localDeity.LabelCap, action, MenuOptionPriority.Default, null, null, 29f, extraPartOnGUI));
+                list.Add(new FloatMenuOption(localDeity.LabelCap, action, MenuOptionPriority.Default, null, null, 29f,
+                    extraPartOnGUI));
             }
+
             Find.WindowStack.Add(new FloatMenu(list));
         }
 
         public static bool DeityInfoCardButton(float x, float y, CosmicEntity entity)
         {
             bool result;
-            if ((bool)AccessTools.Method(type: typeof(Widgets), name: "InfoCardButtonWorker").Invoke(obj: null, parameters: new object[] { x, y }))
+            if ((bool) AccessTools.Method(typeof(Widgets), "InfoCardButtonWorker").Invoke(null, new object[] {x, y}))
             {
                 Find.WindowStack.Add(new Dialog_CosmicEntityInfoBox(entity));
                 result = true;
@@ -379,8 +381,8 @@ namespace CultOfCthulhu
             {
                 result = false;
             }
+
             return result;
         }
-
     }
 }

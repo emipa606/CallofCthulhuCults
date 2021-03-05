@@ -398,8 +398,8 @@ namespace CultOfCthulhu
             Scribe_Values.Look<bool>(ref OptionEvening, "OptionEvening");
             Scribe_Values.Look<bool>(ref didMorningRitual, "didMorningRitual");
             Scribe_Values.Look<bool>(ref didEveningRitual, "didEveningRitual");
-            Scribe_Values.Look<int>(ref this.morningHour, "morningHour", 9, false);
-            Scribe_Values.Look<int>(ref this.eveningHour, "eveningHour", 18, false);
+            Scribe_Values.Look<int>(ref this.morningHour, "morningHour", 9);
+            Scribe_Values.Look<int>(ref this.eveningHour, "eveningHour", 18);
             Scribe_Collections.Look<int>(ref this.seasonSchedule, "seasonSchedule", LookMode.Value, false);
             //Misc
             Scribe_Values.Look<bool>(ref toBePrunedAndRepaired, "tobePrunedAndRepaired");

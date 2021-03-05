@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Verse;
-using Verse.AI.Group;
+﻿using Cthulhu;
 using RimWorld;
-using RimWorld.Planet;
-using System.Text;
+using Verse;
 
 namespace CultOfCthulhu
 {
@@ -15,16 +10,16 @@ namespace CultOfCthulhu
         {
             var map = parms.target as Map;
             //Find a drop spot
-            if (!CultUtility.TryFindDropCell(map.Center, map, 70, out IntVec3 intVec))
+            if (!CultUtility.TryFindDropCell(map.Center, map, 70, out var intVec))
             {
                 return false;
             }
+
             parms.spawnCenter = intVec;
-            Cthulhu.Utility.SpawnPawnsOfCountAt(CultsDefOf.Cults_FormlessSpawn, intVec, map, 1, Faction.OfPlayer);
+            Utility.SpawnPawnsOfCountAt(CultsDefOf.Cults_FormlessSpawn, intVec, map, 1, Faction.OfPlayer);
 
             map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = intVec;
             return true;
         }
-
     }
 }

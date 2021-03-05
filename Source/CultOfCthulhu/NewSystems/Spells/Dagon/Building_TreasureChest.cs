@@ -1,30 +1,79 @@
-﻿using RimWorld;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-//using System.Diagnostics;
+using RimWorld;
 using Verse;
+
+//using System.Diagnostics;
 
 namespace CultOfCthulhu
 {
     public class Building_TreasureChest : Building, IOpenable, IThingHolder, IStoreSettingsParent
     {
+        protected bool contentsKnown;
         protected ThingOwner innerContainer;
+
+        protected bool SpawnedStorage;
 
         protected StorageSettings storageSettings;
 
-        protected bool contentsKnown;
-
-        protected bool SpawnedStorage = false;
+        public Building_TreasureChest()
+        {
+            innerContainer = new ThingOwner<Thing>(this, false);
+        }
 
         public bool HasAnyContents => innerContainer.Count > 0;
 
+        public Thing ContainedThing => innerContainer.Count != 0 ? innerContainer[0] : null;
+
+        public bool CanOpen => HasAnyContents;
+
+        public virtual void Open()
+        {
+            if (!HasAnyContents)
+            {
+                return;
+            }
+
+            EjectContents();
+        }
+
+        public bool StorageTabVisible => false;
+
+        //public virtual IThingHolder ParentHolder
+        //{
+        //    get
+        //    {
+        //        return base.ParentHolder;
+        //    }
+        //}
+
+        public StorageSettings GetStoreSettings()
+        {
+            return storageSettings;
+        }
+
+        public StorageSettings GetParentStoreSettings()
+        {
+            return def.building.fixedStorageSettings;
+        }
+
+        public ThingOwner GetDirectlyHeldThings()
+        {
+            return innerContainer;
+        }
+
+        public void GetChildHolders(List<IThingHolder> outChildren)
+        {
+            ThingOwnerUtility.AppendThingHoldersFromThings(outChildren, GetDirectlyHeldThings());
+        }
+
         public override IEnumerable<Gizmo> GetGizmos()
         {
-            foreach (Gizmo g in base.GetGizmos())
+            foreach (var g in base.GetGizmos())
             {
                 yield return g;
             }
+
             //foreach (Gizmo g2 in StorageSettingsClipboard.CopyPasteGizmosFor(this.storageSettings))
             //{
             //    yield return g2;
@@ -40,6 +89,7 @@ namespace CultOfCthulhu
             {
                 storageSettings.CopyFrom(def.building.defaultStorageSettings);
             }
+
             if (SpawnedStorage == false)
             {
                 SpawnedStorage = true;
@@ -47,25 +97,27 @@ namespace CultOfCthulhu
                 {
                     for (var i = 0; i < 5; i++)
                     {
-                        Thing thing1 = ThingMaker.MakeThing(ThingDefOf.Gold, null);
+                        var thing1 = ThingMaker.MakeThing(ThingDefOf.Gold);
                         thing1.stackCount = Rand.Range(20, 40);
                         GetDirectlyHeldThings().TryAdd(thing1);
 
-                        Thing thing2 = ThingMaker.MakeThing(ThingDefOf.Silver, null);
+                        var thing2 = ThingMaker.MakeThing(ThingDefOf.Silver);
                         thing2.stackCount = Rand.Range(40, 60);
                         GetDirectlyHeldThings().TryAdd(thing2);
 
-                        Thing thing3 = ThingMaker.MakeThing(ThingDef.Named("Jade"), null);
+                        var thing3 = ThingMaker.MakeThing(ThingDef.Named("Jade"));
                         thing3.stackCount = Rand.Range(10, 40);
                         GetDirectlyHeldThings().TryAdd(thing3);
                     }
+
                     if (Rand.Value > 0.8f)
                     {
-                        Thing thing4 = ThingMaker.MakeThing(ThingDef.Named("SculptureSmall"), ThingDefOf.Gold);
+                        var thing4 = ThingMaker.MakeThing(ThingDef.Named("SculptureSmall"), ThingDefOf.Gold);
                         thing4.stackCount = 1;
                         GetDirectlyHeldThings().TryAdd(thing4);
                     }
                 }
+
                 if (def == CultsDefOf.Cults_TreasureChest_Relic)
                 {
                     if (Rand.Range(1, 100) > 50)
@@ -84,13 +136,14 @@ namespace CultOfCthulhu
         public ThingWithComps GenerateLegendaryWeapon()
         {
             if (!(from td in DefDatabase<ThingDef>.AllDefs
-                  where HandlesWeaponDefs(td)
-                  select td).TryRandomElement(out ThingDef def))
+                where HandlesWeaponDefs(td)
+                select td).TryRandomElement(out var def))
             {
                 return null;
             }
-            var thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, null);
-            CompQuality compQuality = thingWithComps.TryGetComp<CompQuality>();
+
+            var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(def);
+            var compQuality = thingWithComps.TryGetComp<CompQuality>();
             compQuality.SetQuality(QualityCategory.Legendary, ArtGenerationContext.Outsider);
             return thingWithComps;
         }
@@ -98,21 +151,23 @@ namespace CultOfCthulhu
         //Industrial Level Legendary Weapons
         public bool HandlesWeaponDefs(ThingDef thingDef)
         {
-            return thingDef.IsRangedWeapon && thingDef.tradeability != Tradeability.None && thingDef.techLevel <= TechLevel.Industrial;
+            return thingDef.IsRangedWeapon && thingDef.tradeability != Tradeability.None &&
+                   thingDef.techLevel <= TechLevel.Industrial;
         }
 
         //Same as weapon generation code
         public ThingWithComps GenerateLegendaryArmor()
         {
             if (!(from td in DefDatabase<ThingDef>.AllDefs
-                  where HandlesArmorDefs(td)
-                  select td).TryRandomElement(out ThingDef def))
+                where HandlesArmorDefs(td)
+                select td).TryRandomElement(out var def))
             {
                 return null;
             }
-            var thingWithComps = (ThingWithComps)ThingMaker.MakeThing(def, null);
+
+            var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(def);
             thingWithComps.stackCount = 1;
-            CompQuality compQuality = thingWithComps.TryGetComp<CompQuality>();
+            var compQuality = thingWithComps.TryGetComp<CompQuality>();
             compQuality.SetQuality(QualityCategory.Legendary, ArtGenerationContext.Outsider);
             return thingWithComps;
         }
@@ -120,64 +175,31 @@ namespace CultOfCthulhu
         //Industrial Level Legendary Armor
         private bool HandlesArmorDefs(ThingDef td)
         {
-            return td == ThingDefOf.Apparel_ShieldBelt || (td.tradeability != Tradeability.None && td.techLevel <= TechLevel.Industrial && td.IsApparel && (td.GetStatValueAbstract(StatDefOf.ArmorRating_Blunt, null) > 0.15f || td.GetStatValueAbstract(StatDefOf.ArmorRating_Sharp, null) > 0.15f));
-        }
-
-        public Thing ContainedThing => (innerContainer.Count != 0) ? innerContainer[0] : null;
-
-        public bool CanOpen => HasAnyContents;
-
-        public bool StorageTabVisible => false;
-
-        public Building_TreasureChest()
-        {
-            innerContainer = new ThingOwner<Thing>(this, false, LookMode.Deep);
-        }
-
-        public ThingOwner GetDirectlyHeldThings()
-        {
-            return innerContainer;
-        }
-
-        public void GetChildHolders(List<IThingHolder> outChildren)
-        {
-            ThingOwnerUtility.AppendThingHoldersFromThings(outChildren, GetDirectlyHeldThings());
+            return td == ThingDefOf.Apparel_ShieldBelt || td.tradeability != Tradeability.None &&
+                td.techLevel <= TechLevel.Industrial && td.IsApparel &&
+                (td.GetStatValueAbstract(StatDefOf.ArmorRating_Blunt) > 0.15f ||
+                 td.GetStatValueAbstract(StatDefOf.ArmorRating_Sharp) > 0.15f);
         }
 
         public override void TickRare()
         {
             base.TickRare();
-            innerContainer.ThingOwnerTickRare(true);
+            innerContainer.ThingOwnerTickRare();
         }
 
         public override void Tick()
         {
             base.Tick();
-            innerContainer.ThingOwnerTick(true);
-        }
-
-        public virtual void Open()
-        {
-            if (!HasAnyContents)
-            {
-                return;
-            }
-            EjectContents();
+            innerContainer.ThingOwnerTick();
         }
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Deep.Look<ThingOwner>(ref innerContainer, "innerContainer", new object[]
-            {
-                this
-            });
-            Scribe_Values.Look<bool>(ref contentsKnown, "contentsKnown", false, false);
-            Scribe_Deep.Look<StorageSettings>(ref storageSettings, "storageSettings", new object[]
-                {
-                    this
-                });
-            Scribe_Values.Look<bool>(ref SpawnedStorage, "SpawnedStorage", false);
+            Scribe_Deep.Look(ref innerContainer, "innerContainer", this);
+            Scribe_Values.Look(ref contentsKnown, "contentsKnown");
+            Scribe_Deep.Look(ref storageSettings, "storageSettings", this);
+            Scribe_Values.Look(ref SpawnedStorage, "SpawnedStorage");
         }
 
         public override void SpawnSetup(Map map, bool respawningAfterLoad)
@@ -200,14 +222,16 @@ namespace CultOfCthulhu
                         return true;
                     }
                 }
+
                 return false;
             }
+
             return base.ClaimableBy(fac);
         }
 
         public virtual bool Accepts(Thing thing)
         {
-            return innerContainer.Count < 10 && innerContainer.CanAcceptAnyOf(thing, true);
+            return innerContainer.Count < 10 && innerContainer.CanAcceptAnyOf(thing);
         }
 
         public virtual bool TryAcceptThing(Thing thing, bool allowSpecialEffects = true)
@@ -216,24 +240,28 @@ namespace CultOfCthulhu
             {
                 return false;
             }
+
             bool flag;
             if (thing.holdingOwner != null)
             {
-                thing.holdingOwner.TryTransferToContainer(thing, innerContainer, thing.stackCount, true);
+                thing.holdingOwner.TryTransferToContainer(thing, innerContainer, thing.stackCount);
                 flag = true;
             }
             else
             {
-                flag = innerContainer.TryAdd(thing, true);
+                flag = innerContainer.TryAdd(thing);
             }
+
             if (flag)
             {
                 if (thing.Faction != null && thing.Faction.IsPlayer)
                 {
                     contentsKnown = true;
                 }
+
                 return true;
             }
+
             return false;
         }
 
@@ -244,21 +272,24 @@ namespace CultOfCthulhu
                 if (mode != DestroyMode.Deconstruct)
                 {
                     var list = new List<Pawn>();
-                    foreach (Thing current in (IEnumerable<Thing>)innerContainer)
+                    foreach (var current in innerContainer)
                     {
                         if (current is Pawn pawn)
                         {
                             list.Add(pawn);
                         }
                     }
-                    foreach (Pawn current2 in list)
+
+                    foreach (var current2 in list)
                     {
                         HealthUtility.DamageUntilDowned(current2);
                     }
                 }
+
                 EjectContents();
             }
-            innerContainer.ClearAndDestroyContents(DestroyMode.Vanish);
+
+            innerContainer.ClearAndDestroyContents();
             base.Destroy(mode);
         }
 
@@ -280,29 +311,13 @@ namespace CultOfCthulhu
             {
                 str = innerContainer.ContentsString;
             }
+
             if (!text.NullOrEmpty())
             {
                 text += "\n";
             }
+
             return text + "CasketContains".Translate() + ": " + str;
-        }
-
-        //public virtual IThingHolder ParentHolder
-        //{
-        //    get
-        //    {
-        //        return base.ParentHolder;
-        //    }
-        //}
-
-        public StorageSettings GetStoreSettings()
-        {
-            return storageSettings;
-        }
-
-        public StorageSettings GetParentStoreSettings()
-        {
-            return def.building.fixedStorageSettings;
         }
     }
 }

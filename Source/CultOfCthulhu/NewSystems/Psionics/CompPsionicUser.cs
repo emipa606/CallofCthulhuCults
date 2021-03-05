@@ -1,16 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using RimWorld;
+﻿using AbilityUser;
 using Verse;
-using AbilityUser;
 
 namespace CultOfCthulhu
 {
-    public class CompPsionicUser : AbilityUser.CompAbilityUser
+    public class CompPsionicUser : CompAbilityUser
     {
-        public bool firstTick = false;
+        public bool firstTick;
+
+        public bool IsPsionic
+        {
+            get
+            {
+                if (AbilityUser != null)
+                {
+                    if (AbilityUser.health != null)
+                    {
+                        if (AbilityUser.health.hediffSet != null)
+                        {
+                            if (AbilityUser.health.hediffSet.HasHediff(CultsDefOf.Cults_PsionicBrain))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                return false;
+            }
+        }
 
         public override bool TryTransformPawn()
         {
@@ -54,27 +71,6 @@ namespace CultOfCthulhu
                         }
                     }
                 }
-            }
-        }
-
-        public bool IsPsionic
-        {
-            get
-            {
-                if (AbilityUser != null)
-                {
-                    if (AbilityUser.health != null)
-                    {
-                        if (AbilityUser.health.hediffSet != null)
-                        {
-                            if (AbilityUser.health.hediffSet.HasHediff(CultsDefOf.Cults_PsionicBrain))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                return false;
             }
         }
     }

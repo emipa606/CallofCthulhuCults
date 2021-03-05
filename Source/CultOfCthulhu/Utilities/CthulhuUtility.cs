@@ -1,25 +1,28 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
+
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using RimWorld;
+using UnityEngine;
+using Verse;
+using Verse.AI;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
-using System.Reflection;
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+// RimWorld specific functions for world creation
+
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 /// <summary>
@@ -31,6 +34,7 @@ namespace Cthulhu
     public static class ModProps
     {
         public static string main = "Cthulhu";
+
         public static string mod = "Cults";
         //public static string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
     }
@@ -46,15 +50,26 @@ namespace Cthulhu
 
     public static class Utility
     {
-        public enum SanLossSev { None = 0, Hidden, Initial, Minor, Major, Extreme };
+        public enum SanLossSev
+        {
+            None = 0,
+            Hidden,
+            Initial,
+            Minor,
+            Major,
+            Extreme
+        }
+
         public const string SanityLossDef = "ROM_SanityLoss";
         public const string AltSanityLossDef = "Cults_SanityLoss";
 
-        public static bool modCheck = false;
-        public static bool loadedCosmicHorrors = false;
-        public static bool loadedIndustrialAge = false;
-        public static bool loadedCults = false;
-        public static bool loadedFactions = false;
+        public static bool modCheck;
+        public static bool loadedCosmicHorrors;
+        public static bool loadedIndustrialAge;
+        public static bool loadedCults;
+        public static bool loadedFactions;
+
+        public static string Prefix => ModProps.main + " :: " + ModProps.mod + " :: ";
 
 
         public static bool IsMorning(Map map)
@@ -76,13 +91,14 @@ namespace Cthulhu
         {
             //Call of Cthulhu - Cosmic Horrors
             T result = default;
-            foreach (Mod ResolvedMod in LoadedModManager.ModHandles)
+            foreach (var ResolvedMod in LoadedModManager.ModHandles)
             {
                 if (ResolvedMod.Content.Name == s)
                 {
                     result = ResolvedMod as T;
                 }
             }
+
             return result;
         }
 
@@ -101,6 +117,7 @@ namespace Cthulhu
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -172,7 +189,7 @@ namespace Cthulhu
                 return ResultFalseWithReport(s);
             }
 
-            s.Append("ActorAvailble: Passed downed check & downedAllowed = " + downedAllowed.ToString());
+            s.Append("ActorAvailble: Passed downed check & downedAllowed = " + downedAllowed);
             s.AppendLine();
             if (preacher.Drafted)
             {
@@ -207,9 +224,9 @@ namespace Cthulhu
             return false;
         }
 
-        static public Pawn GenerateNewPawnFromSource(ThingDef newDef, Pawn sourcePawn)
+        public static Pawn GenerateNewPawnFromSource(ThingDef newDef, Pawn sourcePawn)
         {
-            var pawn = (Pawn)ThingMaker.MakeThing(newDef);
+            var pawn = (Pawn) ThingMaker.MakeThing(newDef);
             //Cthulhu.Utility.DebugReport("Declare a new thing");
             pawn.Name = sourcePawn.Name;
             //Cthulhu.Utility.DebugReport("The name!");
@@ -236,10 +253,12 @@ namespace Cthulhu
                 pawn.apparel = new Pawn_ApparelTracker(pawn);
                 pawn.inventory = new Pawn_InventoryTracker(pawn);
             }
+
             if (pawn.RaceProps.intelligence <= Intelligence.ToolUser)
             {
                 pawn.caller = new Pawn_CallTracker(pawn);
             }
+
             pawn.gender = sourcePawn.gender;
             pawn.needs.SetInitialLevels();
             GenerateRandomAge(pawn, sourcePawn.Map);
@@ -248,12 +267,12 @@ namespace Cthulhu
             return pawn;
         }
 
-        static public void CopyPawnRecords(Pawn pawn, Pawn newPawn)
+        public static void CopyPawnRecords(Pawn pawn, Pawn newPawn)
         {
             //Who has a relationship with this pet?
             Pawn pawnMaster = null;
-            Map map = pawn.Map;
-            foreach (Pawn current in map.mapPawns.AllPawns)
+            var map = pawn.Map;
+            foreach (var current in map.mapPawns.AllPawns)
             {
                 if (current.relations.DirectRelationExists(PawnRelationDefOf.Bond, pawn))
                 {
@@ -268,24 +287,25 @@ namespace Cthulhu
                 pawnMaster.relations.AddDirectRelation(PawnRelationDefOf.Bond, newPawn);
                 //Train that stuff!
 
-                var oldMap = (DefMap<TrainableDef, int>)typeof(Pawn_TrainingTracker).GetField("steps", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(pawn.training);
-                var newMap = (DefMap<TrainableDef, int>)typeof(Pawn_TrainingTracker).GetField("steps", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(newPawn.training);
+                var oldMap = (DefMap<TrainableDef, int>) typeof(Pawn_TrainingTracker)
+                    .GetField("steps", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(pawn.training);
+                var newMap = (DefMap<TrainableDef, int>) typeof(Pawn_TrainingTracker)
+                    .GetField("steps", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(newPawn.training);
 
-                foreach (TrainableDef def in DefDatabase<TrainableDef>.AllDefs)
+                foreach (var def in DefDatabase<TrainableDef>.AllDefs)
                 {
                     newMap[def] = oldMap[def];
                 }
             }
 
 
-            foreach (Hediff hediff in pawn.health.hediffSet.hediffs)
+            foreach (var hediff in pawn.health.hediffSet.hediffs)
             {
                 newPawn.health.AddHediff(hediff);
             }
-
         }
 
-        static public void GenerateRandomAge(Pawn pawn, Map map)
+        public static void GenerateRandomAge(Pawn pawn, Map map)
         {
             var num = 0;
             int num2;
@@ -305,15 +325,17 @@ namespace Cthulhu
                     {
                         goto IL_84;
                     }
+
                     num2 = Rand.Range(1, 10);
                 }
+
                 num++;
                 if (num > 100)
                 {
                     goto IL_95;
                 }
-            }
-            while (num2 > pawn.kindDef.maxGenerationAge || num2 < pawn.kindDef.minGenerationAge);
+            } while (num2 > pawn.kindDef.maxGenerationAge || num2 < pawn.kindDef.minGenerationAge);
+
             goto IL_A5;
             IL_84:
             Log.Warning("Didn't get age for " + pawn);
@@ -321,7 +343,7 @@ namespace Cthulhu
             IL_95:
             Log.Error("Tried 100 times to generate age for " + pawn);
             IL_A5:
-            pawn.ageTracker.AgeBiologicalTicks = (long)(num2 * 3600000f) + Rand.Range(0, 3600000);
+            pawn.ageTracker.AgeBiologicalTicks = (long) (num2 * 3600000f) + Rand.Range(0, 3600000);
             int num3;
             if (Rand.Value < pawn.kindDef.backstoryCryptosleepCommonality)
             {
@@ -344,6 +366,7 @@ namespace Cthulhu
             {
                 num3 = 0;
             }
+
             var num5 = GenTicks.TicksAbs - pawn.ageTracker.AgeBiologicalTicks;
             num5 -= num3 * 3600000L;
             pawn.ageTracker.BirthAbsTicks = num5;
@@ -355,7 +378,7 @@ namespace Cthulhu
 
 
         /// <summary>
-        /// A very complicated method for finding a proper place for objects to spawn in Cthulhu Utility.
+        ///     A very complicated method for finding a proper place for objects to spawn in Cthulhu Utility.
         /// </summary>
         /// <param name="def"></param>
         /// <param name="nearLoc"></param>
@@ -365,58 +388,62 @@ namespace Cthulhu
         /// <returns></returns>
         public static bool TryFindSpawnCell(ThingDef def, IntVec3 nearLoc, Map map, int maxDist, out IntVec3 pos)
         {
-            return CellFinder.TryFindRandomCellNear(nearLoc, map, maxDist, delegate (IntVec3 x)
-{
+            return CellFinder.TryFindRandomCellNear(nearLoc, map, maxDist, delegate(IntVec3 x)
+            {
                 ///Check if the entire area is safe based on the size of the object definition.
-                foreach (IntVec3 current in GenAdj.OccupiedRect(x, Rot4.North, new IntVec2(def.size.x, def.size.z)))
-{
-if (!current.InBounds(map) || current.Fogged(map) || !current.Standable(map) || current.Roofed(map))
-{
-return false;
-}
-if (!current.SupportsStructureType(map, def.terrainAffordanceNeeded))
-{
-return false;
-}
+                foreach (var current in GenAdj.OccupiedRect(x, Rot4.North, new IntVec2(def.size.x, def.size.z)))
+                {
+                    if (!current.InBounds(map) || current.Fogged(map) || !current.Standable(map) || current.Roofed(map))
+                    {
+                        return false;
+                    }
+
+                    if (!current.SupportsStructureType(map, def.terrainAffordanceNeeded))
+                    {
+                        return false;
+                    }
 
                     ///
                     //  If it has an interaction cell, check to see if it can be reached by colonists.
                     //
                     var intCanBeReached = true;
-if (def.interactionCellOffset != IntVec3.Zero)
-{
-foreach (Pawn colonist in map.mapPawns.FreeColonistsSpawned)
-{
-if (!colonist.CanReach(current + def.interactionCellOffset, PathEndMode.ClosestTouch, Danger.Deadly))
-{
-intCanBeReached = false;
-}
-}
-}
-if (!intCanBeReached)
-{
-return false;
-}
+                    if (def.interactionCellOffset != IntVec3.Zero)
+                    {
+                        foreach (var colonist in map.mapPawns.FreeColonistsSpawned)
+                        {
+                            if (!colonist.CanReach(current + def.interactionCellOffset, PathEndMode.ClosestTouch,
+                                Danger.Deadly))
+                            {
+                                intCanBeReached = false;
+                            }
+                        }
+                    }
+
+                    if (!intCanBeReached)
+                    {
+                        return false;
+                    }
                     //
 
                     //Don't wipe existing objets...
-                    List<Thing> thingList = current.GetThingList(map);
-for (var i = 0; i < thingList.Count; i++)
-{
-Thing thing = thingList[i];
-if (thing.def.category != ThingCategory.Plant && GenSpawn.SpawningWipes(def, thing.def))
-{
-return false;
-}
-}
-}
-return true;
-}, out pos);
+                    var thingList = current.GetThingList(map);
+                    for (var i = 0; i < thingList.Count; i++)
+                    {
+                        var thing = thingList[i];
+                        if (thing.def.category != ThingCategory.Plant && GenSpawn.SpawningWipes(def, thing.def))
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }, out pos);
         }
 
         public static BodyPartRecord GetMouth(HediffSet set)
         {
-            foreach (BodyPartRecord current in set.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined))
+            foreach (var current in set.GetNotMissingParts())
             {
                 for (var i = 0; i < current.def.tags.Count; i++)
                 {
@@ -426,11 +453,13 @@ return true;
                     }
                 }
             }
+
             return null;
         }
+
         public static BodyPartRecord GetEar(HediffSet set)
         {
-            foreach (BodyPartRecord current in set.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined))
+            foreach (var current in set.GetNotMissingParts())
             {
                 for (var i = 0; i < current.def.tags.Count; i++)
                 {
@@ -440,12 +469,13 @@ return true;
                     }
                 }
             }
+
             return null;
         }
 
         public static BodyPartRecord GetNose(HediffSet set)
         {
-            foreach (BodyPartRecord current in set.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined))
+            foreach (var current in set.GetNotMissingParts())
             {
                 for (var i = 0; i < current.def.tags.Count; i++)
                 {
@@ -455,12 +485,13 @@ return true;
                     }
                 }
             }
+
             return null;
         }
 
         public static BodyPartRecord GetEye(HediffSet set)
         {
-            foreach (BodyPartRecord current in set.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined))
+            foreach (var current in set.GetNotMissingParts())
             {
                 for (var i = 0; i < current.def.tags.Count; i++)
                 {
@@ -470,12 +501,13 @@ return true;
                     }
                 }
             }
+
             return null;
         }
 
         public static BodyPartRecord GetHeart(HediffSet set)
         {
-            foreach (BodyPartRecord current in set.GetNotMissingParts(BodyPartHeight.Undefined, BodyPartDepth.Undefined))
+            foreach (var current in set.GetNotMissingParts())
             {
                 for (var i = 0; i < current.def.tags.Count; i++)
                 {
@@ -485,6 +517,7 @@ return true;
                     }
                 }
             }
+
             return null;
         }
 
@@ -493,7 +526,7 @@ return true;
         {
             while (count > 0)
             {
-                Thing thing = ThingMaker.MakeThing(of, null);
+                var thing = ThingMaker.MakeThing(of);
 
                 thing.stackCount = Math.Min(count, of.stackLimit);
                 GenPlace.TryPlaceThing(thing, target.Cell, target.Map, ThingPlaceMode.Near);
@@ -501,26 +534,28 @@ return true;
             }
         }
 
-        public static void SpawnPawnsOfCountAt(PawnKindDef kindDef, IntVec3 at, Map map, int count, out Pawn returnable, Faction fac = null, bool berserk = false, bool target = false)
+        public static void SpawnPawnsOfCountAt(PawnKindDef kindDef, IntVec3 at, Map map, int count, out Pawn returnable,
+            Faction fac = null, bool berserk = false, bool target = false)
         {
             Pawn result = null;
             for (var i = 1; i <= count; i++)
             {
                 if ((from cell in GenAdj.CellsAdjacent8Way(new TargetInfo(at, map))
-                     where at.Walkable(map)
-                     select cell).TryRandomElement(out at))
+                    where at.Walkable(map)
+                    select cell).TryRandomElement(out at))
                 {
-                    Pawn pawn = PawnGenerator.GeneratePawn(kindDef, fac);
+                    var pawn = PawnGenerator.GeneratePawn(kindDef, fac);
                     if (result == null)
                     {
                         result = pawn;
                     }
 
-                    if (GenPlace.TryPlaceThing(pawn, at, map, ThingPlaceMode.Near, null))
+                    if (GenPlace.TryPlaceThing(pawn, at, map, ThingPlaceMode.Near))
                     {
                         //if (target) Map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = at;
                         //continue;
                     }
+
                     //Find.WorldPawns.PassToWorld(pawn, PawnDiscardDecideMode.Discard);
                     if (berserk)
                     {
@@ -528,24 +563,26 @@ return true;
                     }
                 }
             }
+
             returnable = result;
         }
 
-        public static void SpawnPawnsOfCountAt(PawnKindDef kindDef, IntVec3 at, Map map, int count, Faction fac = null, bool berserk = false, bool target = false)
+        public static void SpawnPawnsOfCountAt(PawnKindDef kindDef, IntVec3 at, Map map, int count, Faction fac = null,
+            bool berserk = false, bool target = false)
         {
             for (var i = 1; i <= count; i++)
             {
                 if ((from cell in GenAdj.CellsAdjacent8Way(new TargetInfo(at, map))
-                     where at.Walkable(map)
-                     select cell).TryRandomElement(out at))
+                    where at.Walkable(map)
+                    select cell).TryRandomElement(out at))
                 {
-
-                    Pawn pawn = PawnGenerator.GeneratePawn(kindDef, fac);
-                    if (GenPlace.TryPlaceThing(pawn, at, map, ThingPlaceMode.Near, null))
+                    var pawn = PawnGenerator.GeneratePawn(kindDef, fac);
+                    if (GenPlace.TryPlaceThing(pawn, at, map, ThingPlaceMode.Near))
                     {
                         //if (target) Map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = at;
                         //continue;
                     }
+
                     //Find.WorldPawns.PassToWorld(pawn, PawnDiscardDecideMode.Discard);
                     if (berserk)
                     {
@@ -559,43 +596,64 @@ return true;
         {
             loc = IntVec3.Invalid;
             _ = pew.Map;
-            Rot4 currentDirection = pew.Rotation;
+            var currentDirection = pew.Rotation;
 
-            IntVec3 CellNorth = pew.Position + GenAdj.CardinalDirections[Rot4.North.AsInt];
-            IntVec3 CellSouth = pew.Position + GenAdj.CardinalDirections[Rot4.South.AsInt];
-            IntVec3 CellEast = pew.Position + GenAdj.CardinalDirections[Rot4.East.AsInt];
-            IntVec3 CellWest = pew.Position + GenAdj.CardinalDirections[Rot4.West.AsInt];
+            var CellNorth = pew.Position + GenAdj.CardinalDirections[Rot4.North.AsInt];
+            var CellSouth = pew.Position + GenAdj.CardinalDirections[Rot4.South.AsInt];
+            var CellEast = pew.Position + GenAdj.CardinalDirections[Rot4.East.AsInt];
+            var CellWest = pew.Position + GenAdj.CardinalDirections[Rot4.West.AsInt];
 
             if (claimer.CanReserve(pew.Position)) //!map.reservationManager.IsReserved(pew.Position, Faction.OfPlayer))
-                { loc = pew.Position; return true; }
+            {
+                loc = pew.Position;
+                return true;
+            }
 
             if (currentDirection == Rot4.North ||
                 currentDirection == Rot4.South)
             {
-                if (claimer.CanReserve(CellWest))// !map.reservationManager.IsReserved(CellWest, Faction.OfPlayer)) 
-                { loc = CellWest; return true; }
-                if (claimer.CanReserve(CellEast))//!map.reservationManager.IsReserved(CellEast, Faction.OfPlayer)) 
-                { loc = CellEast; return true; }
+                if (claimer.CanReserve(CellWest)) // !map.reservationManager.IsReserved(CellWest, Faction.OfPlayer)) 
+                {
+                    loc = CellWest;
+                    return true;
+                }
+
+                if (claimer.CanReserve(CellEast)) //!map.reservationManager.IsReserved(CellEast, Faction.OfPlayer)) 
+                {
+                    loc = CellEast;
+                    return true;
+                }
             }
+
             if (currentDirection == Rot4.East ||
                 currentDirection == Rot4.West)
             {
-                if (claimer.CanReserve(CellNorth))//!map.reservationManager.IsReserved(CellNorth, Faction.OfPlayer)) 
-                { loc = CellNorth; return true; }
-                if (claimer.CanReserve(CellSouth))//!map.reservationManager.IsReserved(CellSouth, Faction.OfPlayer)) 
-                { loc = CellSouth; return true; }
+                if (claimer.CanReserve(CellNorth)) //!map.reservationManager.IsReserved(CellNorth, Faction.OfPlayer)) 
+                {
+                    loc = CellNorth;
+                    return true;
+                }
+
+                if (claimer.CanReserve(CellSouth)) //!map.reservationManager.IsReserved(CellSouth, Faction.OfPlayer)) 
+                {
+                    loc = CellSouth;
+                    return true;
+                }
             }
+
             //map.reservationManager.Reserve(claimer, pew);
             return false;
         }
 
 
-        public static void ChangeResearchProgress(ResearchProjectDef projectDef, float progressValue, bool deselectCurrentResearch = false)
+        public static void ChangeResearchProgress(ResearchProjectDef projectDef, float progressValue,
+            bool deselectCurrentResearch = false)
         {
-            FieldInfo researchProgressInfo = typeof(ResearchManager).GetField("progress", BindingFlags.Instance | BindingFlags.NonPublic);
+            var researchProgressInfo =
+                typeof(ResearchManager).GetField("progress", BindingFlags.Instance | BindingFlags.NonPublic);
             var researchProgress = researchProgressInfo.GetValue(Find.ResearchManager);
-            PropertyInfo itemPropertyInfo = researchProgress.GetType().GetProperty("Item");
-            itemPropertyInfo.SetValue(researchProgress, progressValue, new[] { projectDef });
+            var itemPropertyInfo = researchProgress.GetType().GetProperty("Item");
+            itemPropertyInfo.SetValue(researchProgress, progressValue, new[] {projectDef});
             if (deselectCurrentResearch)
             {
                 Find.ResearchManager.currentProj = null;
@@ -613,19 +671,17 @@ return true;
                 sanityLossDef = SanityLossDef;
             }
 
-            Hediff pawnSanityHediff = pawn.health.hediffSet.GetFirstHediffOfDef(DefDatabase<HediffDef>.GetNamed(sanityLossDef));
+            var pawnSanityHediff =
+                pawn.health.hediffSet.GetFirstHediffOfDef(DefDatabase<HediffDef>.GetNamed(sanityLossDef));
             return pawnSanityHediff != null ? pawnSanityHediff.Severity : 0f;
         }
 
 
         public static void ApplyTaleDef(string defName, Map map)
         {
-            Pawn randomPawn = map.mapPawns.FreeColonists.RandomElement<Pawn>();
+            var randomPawn = map.mapPawns.FreeColonists.RandomElement();
             var taleToAdd = TaleDef.Named(defName);
-            TaleRecorder.RecordTale(taleToAdd, new object[]
-                    {
-                        randomPawn,
-                    });
+            TaleRecorder.RecordTale(taleToAdd, randomPawn);
         }
 
         public static void ApplyTaleDef(string defName, Pawn pawn)
@@ -633,25 +689,23 @@ return true;
             var taleToAdd = TaleDef.Named(defName);
             if ((pawn.IsColonist || pawn.HostFaction == Faction.OfPlayer) && taleToAdd != null)
             {
-                TaleRecorder.RecordTale(taleToAdd, new object[]
-                {
-                    pawn,
-                });
+                TaleRecorder.RecordTale(taleToAdd, pawn);
             }
         }
 
 
         public static bool HasSanityLoss(Pawn pawn)
         {
-            var sanityLossDef = (!IsCosmicHorrorsLoaded()) ? AltSanityLossDef : SanityLossDef;
-            var pawnSanityHediff = pawn.health.hediffSet.GetFirstHediffOfDef(DefDatabase<HediffDef>.GetNamed(sanityLossDef));
+            var sanityLossDef = !IsCosmicHorrorsLoaded() ? AltSanityLossDef : SanityLossDef;
+            var pawnSanityHediff =
+                pawn.health.hediffSet.GetFirstHediffOfDef(DefDatabase<HediffDef>.GetNamed(sanityLossDef));
 
             return pawnSanityHediff != null;
         }
 
         /// <summary>
-        /// This method handles the application of Sanity Loss in multiple mods.
-        /// It returns true and false depending on if it applies successfully.
+        ///     This method handles the application of Sanity Loss in multiple mods.
+        ///     It returns true and false depending on if it applies successfully.
         /// </summary>
         /// <param name="pawn"></param>
         /// <param name="sanityLoss"></param>
@@ -661,9 +715,10 @@ return true;
             var appliedSuccessfully = false;
             if (pawn != null)
             {
-                var sanityLossDef = (!IsCosmicHorrorsLoaded()) ? AltSanityLossDef : SanityLossDef;
+                var sanityLossDef = !IsCosmicHorrorsLoaded() ? AltSanityLossDef : SanityLossDef;
 
-                var pawnSanityHediff = pawn.health.hediffSet.GetFirstHediffOfDef(DefDatabase<HediffDef>.GetNamedSilentFail(sanityLossDef));
+                var pawnSanityHediff =
+                    pawn.health.hediffSet.GetFirstHediffOfDef(DefDatabase<HediffDef>.GetNamedSilentFail(sanityLossDef));
                 if (pawnSanityHediff != null)
                 {
                     if (pawnSanityHediff.Severity > sanityLossMax)
@@ -679,22 +734,24 @@ return true;
                 }
                 else if (sanityLoss > 0)
                 {
-                    var sanityLossHediff = HediffMaker.MakeHediff(DefDatabase<HediffDef>.GetNamedSilentFail(sanityLossDef), pawn, null);
+                    var sanityLossHediff =
+                        HediffMaker.MakeHediff(DefDatabase<HediffDef>.GetNamedSilentFail(sanityLossDef), pawn);
                     if (sanityLossHediff != null)
                     {
                         sanityLossHediff.Severity = sanityLoss;
-                        pawn.health.AddHediff(sanityLossHediff, null, null);
+                        pawn.health.AddHediff(sanityLossHediff);
                         appliedSuccessfully = true;
                     }
                 }
             }
+
             return appliedSuccessfully;
         }
 
 
         /// <summary>
-        /// This method handles the application of Sanity Loss in multiple mods.
-        /// It returns true and false depending on if it applies successfully.
+        ///     This method handles the application of Sanity Loss in multiple mods.
+        ///     It returns true and false depending on if it applies successfully.
         /// </summary>
         /// <param name="pawn"></param>
         /// <param name="sanityLoss"></param>
@@ -704,14 +761,16 @@ return true;
             var removedSuccessfully = false;
             if (pawn != null)
             {
-                var sanityLossDef = (!IsCosmicHorrorsLoaded()) ? AltSanityLossDef : SanityLossDef;
+                var sanityLossDef = !IsCosmicHorrorsLoaded() ? AltSanityLossDef : SanityLossDef;
 
-                var pawnSanityHediff = pawn.health.hediffSet.GetFirstHediffOfDef(DefDatabase<HediffDef>.GetNamedSilentFail(sanityLossDef));
+                var pawnSanityHediff =
+                    pawn.health.hediffSet.GetFirstHediffOfDef(DefDatabase<HediffDef>.GetNamedSilentFail(sanityLossDef));
                 if (pawnSanityHediff != null)
                 {
                     pawn.health.RemoveHediff(pawnSanityHediff);
                 }
             }
+
             return removedSuccessfully;
         }
 
@@ -728,7 +787,6 @@ return true;
 
         public static bool IsCosmicHorrorsLoaded()
         {
-
             if (!modCheck)
             {
                 ModCheck();
@@ -747,7 +805,6 @@ return true;
 
             return loadedIndustrialAge;
         }
-
 
 
         public static bool IsCultsLoaded()
@@ -769,7 +826,7 @@ return true;
                 {
                     for (var i = 0; i < 100; i++)
                     {
-                        IntVec3 temp = cell.RandomAdjacentCell8Way();
+                        var temp = cell.RandomAdjacentCell8Way();
                         if (temp.Walkable(map))
                         {
                             resultCell = temp;
@@ -778,26 +835,27 @@ return true;
                     }
                 }
             }
+
             resultCell = IntVec3.Invalid;
             return false;
         }
 
         public static void TemporaryGoodwill(Faction faction, bool reset = false)
         {
-            Faction playerFaction = Faction.OfPlayer;
+            var playerFaction = Faction.OfPlayer;
             if (!reset)
             {
                 if (faction.GoodwillWith(playerFaction) == 0f)
                 {
-                    faction.RelationWith(playerFaction, false).goodwill = faction.PlayerGoodwill;
+                    faction.RelationWith(playerFaction).goodwill = faction.PlayerGoodwill;
                 }
 
-                faction.RelationWith(playerFaction, false).goodwill = 100;
+                faction.RelationWith(playerFaction).goodwill = 100;
                 faction.TrySetRelationKind(playerFaction, FactionRelationKind.Neutral);
             }
             else
             {
-                faction.RelationWith(playerFaction, false).goodwill = 0;
+                faction.RelationWith(playerFaction).goodwill = 0;
                 faction.TrySetRelationKind(playerFaction, FactionRelationKind.Hostile);
                 //faction.RelationWith(playerFaction, false).hostile = true;
             }
@@ -808,7 +866,7 @@ return true;
         {
             loadedCosmicHorrors = false;
             loadedIndustrialAge = false;
-            foreach (ModContentPack ResolvedMod in LoadedModManager.RunningMods)
+            foreach (var ResolvedMod in LoadedModManager.RunningMods)
             {
                 if (loadedCosmicHorrors && loadedIndustrialAge && loadedCults)
                 {
@@ -820,27 +878,28 @@ return true;
                     DebugReport("Loaded - Call of Cthulhu - Cosmic Horrors");
                     loadedCosmicHorrors = true;
                 }
+
                 if (ResolvedMod.Name.Contains("Call of Cthulhu - Industrial Age"))
                 {
                     DebugReport("Loaded - Call of Cthulhu - Industrial Age");
                     loadedIndustrialAge = true;
                 }
+
                 if (ResolvedMod.Name.Contains("Call of Cthulhu - Cults"))
                 {
                     DebugReport("Loaded - Call of Cthulhu - Cults");
                     loadedCults = true;
                 }
+
                 if (ResolvedMod.Name.Contains("Call of Cthulhu - Factions"))
                 {
                     DebugReport("Loaded - Call of Cthulhu - Factions");
                     loadedFactions = true;
                 }
             }
-            modCheck = true;
-            return;
-        }
 
-        public static string Prefix => ModProps.main + " :: " + ModProps.mod + " :: ";
+            modCheck = true;
+        }
 
         public static void DebugReport(string x)
         {

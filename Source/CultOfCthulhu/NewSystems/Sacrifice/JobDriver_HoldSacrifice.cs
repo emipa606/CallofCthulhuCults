@@ -2,41 +2,43 @@
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using Cthulhu;
+using RimWorld;
+using Verse;
+using Verse.AI;
+using Verse.AI.Group;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine; // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse; // RimWorld universal objects are here (like 'Building')
-using Verse.AI; // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound; // Needed when you do something with Sound
-using Verse.Noise; // Needed when you do something with Noises
-using RimWorld; // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet; // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
     public class JobDriver_HoldSacrifice : JobDriver
     {
+        private const TargetIndex TakeeIndex = TargetIndex.A;
+        private const TargetIndex AltarIndex = TargetIndex.B;
+
+        protected Pawn Takee => (Pawn) job.GetTarget(TargetIndex.A).Thing;
+
+        protected Building_SacrificialAltar DropAltar => (Building_SacrificialAltar) job.GetTarget(TargetIndex.B).Thing;
+
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
             return true;
         }
-
-        private const TargetIndex TakeeIndex = TargetIndex.A;
-        private const TargetIndex AltarIndex = TargetIndex.B;
-
-        protected Pawn Takee => (Pawn)job.GetTarget(TargetIndex.A).Thing;
-
-        protected Building_SacrificialAltar DropAltar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.B).Thing;
 
         [DebuggerHidden]
         protected override IEnumerable<Toil> MakeNewToils()
@@ -47,7 +49,7 @@ namespace CultOfCthulhu
             this.FailOnDestroyedOrNull(TargetIndex.B);
             this.FailOnAggroMentalState(TargetIndex.A);
 
-            yield return Toils_Reserve.Reserve(TakeeIndex, 1);
+            yield return Toils_Reserve.Reserve(TakeeIndex);
             yield return Toils_Reserve.Reserve(AltarIndex, Building_SacrificialAltar.LyingSlotsCount);
 
             yield return new Toil
@@ -64,7 +66,7 @@ namespace CultOfCthulhu
                 .FailOnDespawnedNullOrForbidden(TargetIndex.A).FailOnDespawnedNullOrForbidden(TargetIndex.B)
                 .FailOn(() => job.def == JobDefOf.Arrest && !Takee.CanBeArrestedBy(pawn))
                 .FailOn(() =>
-                    !pawn.CanReach(DropAltar, PathEndMode.OnCell, Danger.Deadly, false, TraverseMode.ByPawn))
+                    !pawn.CanReach(DropAltar, PathEndMode.OnCell, Danger.Deadly))
                 .FailOnSomeonePhysicallyInteracting(TargetIndex.A);
             yield return new Toil
             {
@@ -73,11 +75,12 @@ namespace CultOfCthulhu
                     if (job.def.makeTargetPrisoner)
                     {
                         var pawn = (Pawn) job.targetA.Thing;
-                        Lord lord = pawn.GetLord();
+                        var lord = pawn.GetLord();
                         if (lord != null)
                         {
                             lord.Notify_PawnAttemptArrested(pawn);
                         }
+
                         GenClamor.DoClamor(pawn, 10f, ClamorDefOf.Harm);
                         if (job.def == JobDefOf.Arrest && !pawn.CheckAcceptArrest(this.pawn))
                         {
@@ -98,8 +101,8 @@ namespace CultOfCthulhu
                 initAction = delegate
                 {
                     //In-case this fails...
-                    IntVec3 position = DropAltar.Position;
-                    pawn.carryTracker.TryDropCarriedThing(position, ThingPlaceMode.Direct, out Thing thing, null);
+                    var position = DropAltar.Position;
+                    pawn.carryTracker.TryDropCarriedThing(position, ThingPlaceMode.Direct, out var thing);
                     if (!DropAltar.Destroyed && DropAltar.AnyUnoccupiedLyingSlot)
                     {
                         Takee.Position = DropAltar.GetLyingSlotPos();
@@ -118,9 +121,9 @@ namespace CultOfCthulhu
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.ritualDuration
             };
-            chantingTime.WithProgressBarToilDelay(TargetIndex.A, false, -0.5f);
+            chantingTime.WithProgressBarToilDelay(TargetIndex.A);
             chantingTime.PlaySustainerOrSound(CultsDefOf.RitualChanting);
-            Texture2D deitySymbol = ((CosmicEntityDef) DropAltar.SacrificeData.Entity.def).Symbol;
+            var deitySymbol = ((CosmicEntityDef) DropAltar.SacrificeData.Entity.def).Symbol;
             chantingTime.initAction = delegate
             {
                 if (deitySymbol != null)
@@ -143,17 +146,14 @@ namespace CultOfCthulhu
                 {
                     //BodyPartDamageInfo value = new BodyPartDamageInfo(this.Takee.health.hediffSet.GetBrain(), false, quiet);
                     Takee.TakeDamage(new DamageInfo(DamageDefOf.ExecutionCut, 99999, 0f, -1f, pawn,
-                        Cthulhu.Utility.GetHeart(Takee.health.hediffSet)));
+                        Utility.GetHeart(Takee.health.hediffSet)));
                     if (!Takee.Dead)
                     {
                         Takee.Kill(null);
                     }
+
                     //ThoughtUtility.GiveThoughtsForPawnExecuted(this.Takee, PawnExecutionKind.GenericHumane);
-                    TaleRecorder.RecordTale(TaleDefOf.ExecutedPrisoner, new object[]
-                    {
-                        pawn,
-                        Takee
-                    });
+                    TaleRecorder.RecordTale(TaleDefOf.ExecutedPrisoner, pawn, Takee);
                     CultUtility.SacrificeExecutionComplete(DropAltar);
                 },
                 defaultCompleteMode = ToilCompleteMode.Instant
@@ -165,10 +165,7 @@ namespace CultOfCthulhu
                 var taleToAdd = TaleDef.Named("HeldSermon");
                 if ((pawn.IsColonist || pawn.HostFaction == Faction.OfPlayer) && taleToAdd != null)
                 {
-                    TaleRecorder.RecordTale(taleToAdd, new object[]
-                    {
-                        pawn,
-                    });
+                    TaleRecorder.RecordTale(taleToAdd, pawn);
                 }
 
                 //When the ritual is finished -- then let's give the thoughts

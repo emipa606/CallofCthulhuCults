@@ -1,15 +1,11 @@
 ﻿using CultOfCthulhu;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Verse;
 using RimWorld;
+using Verse;
 
 namespace BastCult
 {
     /// <summary>
-    /// Inspires all colonists with random inspirations.
+    ///     Inspires all colonists with random inspirations.
     /// </summary>
     public class SpellWorker_Inspiration : SpellWorker
     {
@@ -22,15 +18,17 @@ namespace BastCult
         {
             var map = parms.target as Map;
 
-            List<InspirationDef> inspirations = DefDatabase<InspirationDef>.AllDefsListForReading;
+            var inspirations = DefDatabase<InspirationDef>.AllDefsListForReading;
 
             //Grab all colonists.
-            foreach(Pawn colonist in map.PlayerPawnsForStoryteller)
+            foreach (var colonist in map.PlayerPawnsForStoryteller)
             {
                 //Try twice.
-                if (!colonist.mindState.inspirationHandler.TryStartInspiration(inspirations[Rand.Range(0, inspirations.Count)]))
+                if (!colonist.mindState.inspirationHandler.TryStartInspiration(
+                    inspirations[Rand.Range(0, inspirations.Count)]))
                 {
-                    colonist.mindState.inspirationHandler.TryStartInspiration(inspirations[Rand.Range(0, inspirations.Count)]);
+                    colonist.mindState.inspirationHandler.TryStartInspiration(
+                        inspirations[Rand.Range(0, inspirations.Count)]);
                 }
             }
 

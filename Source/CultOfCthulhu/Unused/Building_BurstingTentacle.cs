@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using RimWorld;
-using Verse;
-using UnityEngine;
+﻿using Verse;
 
 namespace CultOfCthulhu
 {
-    class Building_BurstingTentacle : Building
+    internal class Building_BurstingTentacle : Building
     {
         public const int defaultTicksUntilFlicker = 500;
         public int ticksUntilFlicker = 500;
@@ -24,12 +18,12 @@ namespace CultOfCthulhu
             if (ticksUntilFlicker > 0)
             {
                 ticksUntilFlicker -= 1;
-                return;
             }
             else
             {
                 ticksUntilFlicker = defaultTicksUntilFlicker;
-                Thing newTentacle = (Building_BurstingTentacle)ThingMaker.MakeThing(ThingDef.Named("BurstingTentacle"), null);
+                Thing newTentacle =
+                    (Building_BurstingTentacle) ThingMaker.MakeThing(ThingDef.Named("BurstingTentacle"));
                 GenPlace.TryPlaceThing(newTentacle, Position, Map, ThingPlaceMode.Direct);
             }
         }

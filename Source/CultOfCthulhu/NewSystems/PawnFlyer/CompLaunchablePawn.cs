@@ -16,9 +16,9 @@ namespace CultOfCthulhu
 
         private CompTransporterPawn cachedCompTransporter;
 
-        private static readonly Texture2D TargeterMouseAttachment = ContentFinder<Texture2D>.Get("UI/Overlays/LaunchableMouseAttachment", true);
+        private static readonly Texture2D TargeterMouseAttachment = ContentFinder<Texture2D>.Get("UI/Overlays/LaunchableMouseAttachment");
 
-        private static readonly Texture2D LaunchCommandTex = ContentFinder<Texture2D>.Get("UI/Commands/LaunchShip", true);
+        private static readonly Texture2D LaunchCommandTex = ContentFinder<Texture2D>.Get("UI/Commands/LaunchShip");
 
         public bool LoadingInProgressOrReadyToLaunch => Transporter.LoadingInProgressOrReadyToLaunch;
 
@@ -97,7 +97,7 @@ namespace CultOfCthulhu
                         {
                             Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation("ConfirmSendNotCompletelyLoadedPods".Translate(
                                 FirstThingLeftToLoadInGroup.LabelCap
-                            ), new Action(StartChoosingDestination), false, null));
+                            ), new Action(StartChoosingDestination)));
                         }
                         else
                         {
@@ -125,7 +125,7 @@ namespace CultOfCthulhu
                         {
                             Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation("ConfirmSendNotCompletelyLoadedPods".Translate(
                             FirstThingLeftToLoadInGroup.LabelCap
-                            ), new Action(StartChoosingDestination), false, null));
+                            ), new Action(StartChoosingDestination)));
                         }
                         else
                         {
@@ -242,7 +242,7 @@ namespace CultOfCthulhu
                         }
                         TryLaunch(target, PawnsArrivalModeDefOf.EdgeDrop, false);
                         CameraJumper.TryHideWorld();
-                    }, MenuOptionPriority.Default, null, null, 0f, null, null));
+                    }));
                 }
                 list.Add(new FloatMenuOption("DropAtEdge".Translate(), delegate
                 {
@@ -252,7 +252,7 @@ namespace CultOfCthulhu
                     }
                     TryLaunch(target, PawnsArrivalModeDefOf.EdgeDrop, true);
                     CameraJumper.TryHideWorld();
-                }, MenuOptionPriority.Default, null, null, 0f, null, null));
+                }));
                 list.Add(new FloatMenuOption("DropInCenter".Translate(), delegate
                 {
                     if (!LoadingInProgressOrReadyToLaunch)
@@ -261,7 +261,7 @@ namespace CultOfCthulhu
                     }
                     TryLaunch(target, PawnsArrivalModeDefOf.CenterDrop, true);
                     CameraJumper.TryHideWorld();
-                }, MenuOptionPriority.Default, null, null, 0f, null, null));
+                }));
                 Find.WindowStack.Add(new FloatMenu(list));
                 return true;
             }
@@ -308,7 +308,7 @@ namespace CultOfCthulhu
                 Cthulhu.Utility.DebugReport("Transporter Outspawn Attempt");
                 CompTransporterPawn compTransporter = transportersInGroup[i];
                 Cthulhu.Utility.DebugReport("Transporter Outspawn " + compTransporter.parent.Label);
-                var pawnFlyerLeaving = (PawnFlyersLeaving)ThingMaker.MakeThing(PawnFlyerDef.leavingDef, null);
+                var pawnFlyerLeaving = (PawnFlyersLeaving)ThingMaker.MakeThing(PawnFlyerDef.leavingDef);
                 pawnFlyerLeaving.groupID = groupID;
                 pawnFlyerLeaving.pawnFlyer = parent as PawnFlyer;
                 pawnFlyerLeaving.destinationTile = target.Tile;

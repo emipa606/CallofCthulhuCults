@@ -1,35 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using UnityEngine;
-using Verse;
-using Verse.AI;
 using RimWorld;
+using UnityEngine;
+using Verse.AI;
 
 namespace CultOfCthulhu
 {
     public class JobDriver_PruneAndRepair : JobDriver
     {
-        public override bool TryMakePreToilReservations(bool errorOnFailed)
-        {
-            return true;
-        }
-        public static int remainingDuration = 20000; // 6 in-game hours
-
         private const float WarmupTicks = 80f;
 
         private const float TicksBetweenRepairs = 16f;
+        public static int remainingDuration = 20000; // 6 in-game hours
 
         protected float ticksToNextRepair;
 
 
-        protected Building_SacrificialAltar Altar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
+        protected Building_SacrificialAltar Altar => (Building_SacrificialAltar) job.GetTarget(TargetIndex.A).Thing;
+
+        public override bool TryMakePreToilReservations(bool errorOnFailed)
+        {
+            return true;
+        }
 
         [DebuggerHidden]
         protected override IEnumerable<Toil> MakeNewToils()
         {
             this.FailOnDespawnedNullOrForbidden(TargetIndex.A);
-            yield return Toils_Reserve.Reserve(TargetIndex.A, 1);
+            yield return Toils_Reserve.Reserve(TargetIndex.A);
 
             //Toil 1: Go to the pruning site.
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch);
@@ -40,17 +38,14 @@ namespace CultOfCthulhu
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = remainingDuration
             };
-            toil.WithProgressBarToilDelay(TargetIndex.A, false, -0.5f);
-            toil.initAction = delegate
-            {
-                ticksToNextRepair = 80f;
-            };
+            toil.WithProgressBarToilDelay(TargetIndex.A);
+            toil.initAction = delegate { ticksToNextRepair = 80f; };
             toil.tickAction = delegate
             {
-                Pawn actor = pawn;
-                actor.skills.Learn(SkillDefOf.Construction, 0.5f, false);
-                actor.skills.Learn(SkillDefOf.Plants, 0.5f, false);
-                var statValue = actor.GetStatValue(StatDefOf.ConstructionSpeed, true);
+                var actor = pawn;
+                actor.skills.Learn(SkillDefOf.Construction, 0.5f);
+                actor.skills.Learn(SkillDefOf.Plants, 0.5f);
+                var statValue = actor.GetStatValue(StatDefOf.ConstructionSpeed);
                 ticksToNextRepair -= statValue;
                 if (ticksToNextRepair <= 0f)
                 {
@@ -75,15 +70,9 @@ namespace CultOfCthulhu
             //Toil 4: Transform the altar once again.
             yield return new Toil
             {
-                initAction = delegate
-                {
-                    PruneResult(); 
-                },
+                initAction = delegate { PruneResult(); },
                 defaultCompleteMode = ToilCompleteMode.Instant
             };
-
-
-            yield break;
         }
 
         public void PruneResult()

@@ -1,39 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using RimWorld;
+using UnityEngine;
 using Verse;
 using Verse.Sound;
 
 namespace CultOfCthulhu
 {
-    class ThingWithComps_CultGrimoire : ThingWithComps
+    internal class ThingWithComps_CultGrimoire : ThingWithComps
     {
         public override IEnumerable<Gizmo> GetGizmos()
         {
-            foreach (Gizmo g in base.GetGizmos())
+            foreach (var g in base.GetGizmos())
             {
                 yield return g;
             }
-            ThingDef buildable = CultsDefOf.Cults_ForbiddenKnowledgeCenter; //ThingDef.Named("ForbiddenKnowledgeCenter");
-            Designator_Build des = FindDesignator(buildable);
-            ThingDef stuff = ThingDefOf.WoodLog;
+
+            var buildable = CultsDefOf.Cults_ForbiddenKnowledgeCenter; //ThingDef.Named("ForbiddenKnowledgeCenter");
+            var des = FindDesignator(buildable);
+            var stuff = ThingDefOf.WoodLog;
             if (des == null)
             {
                 yield break;
             }
+
             if (!des.Visible)
             {
                 yield break;
             }
+
             var command_Action = new Command_Action
             {
                 action = delegate
                 {
                     SoundDefOf.ThingSelected.PlayOneShotOnCamera();
-                //des.SetStuffDef(stuff);
-                des.ProcessInput(new UnityEngine.Event());
+                    //des.SetStuffDef(stuff);
+                    des.ProcessInput(new Event());
                     Find.DesignatorManager.Select(des);
                 },
                 defaultLabel = "CommandBuildFKC".Translate(),
@@ -51,18 +52,18 @@ namespace CultOfCthulhu
             {
                 command_Action.defaultIconColor = buildable.uiIconColor;
             }
+
             command_Action.hotKey = KeyBindingDefOf.Misc11;
             yield return command_Action;
-            yield break;
         }
 
 
         private static Designator_Build FindDesignator(BuildableDef buildable)
         {
-            List<DesignationCategoryDef> allDefsListForReading = DefDatabase<DesignationCategoryDef>.AllDefsListForReading;
+            var allDefsListForReading = DefDatabase<DesignationCategoryDef>.AllDefsListForReading;
             for (var i = 0; i < allDefsListForReading.Count; i++)
             {
-                foreach (Designator current in allDefsListForReading[i].ResolvedAllowedDesignators)
+                foreach (var current in allDefsListForReading[i].ResolvedAllowedDesignators)
                 {
                     if (current is Designator_Build designator_Build && designator_Build.PlacingDef == buildable)
                     {
@@ -70,8 +71,8 @@ namespace CultOfCthulhu
                     }
                 }
             }
+
             return null;
         }
     }
 }
-

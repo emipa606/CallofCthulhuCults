@@ -1,9 +1,6 @@
-﻿using System;
+﻿using RimWorld;
 using Verse;
 using Verse.AI;
-using RimWorld;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CultOfCthulhu
 {
@@ -24,23 +21,20 @@ namespace CultOfCthulhu
             {
                 return false;
             }
-            if (!pawn.CanReserveAndReach(t, PathEndMode.ClosestTouch, Danger.Deadly, 1))
+
+            if (!pawn.CanReserveAndReach(t, PathEndMode.ClosestTouch, Danger.Deadly))
             {
                 return false;
             }
 
-            CompTransporterPawn transporter = t.TryGetComp<CompTransporterPawn>();
+            var transporter = t.TryGetComp<CompTransporterPawn>();
             return transporter != null && LoadTransportersPawnJobUtility.HasJobOnTransporter(pawn, transporter);
         }
 
         public override Job JobOnThing(Pawn pawn, Thing t, bool forced = false)
         {
-            CompTransporterPawn transporter = t.TryGetComp<CompTransporterPawn>();
+            var transporter = t.TryGetComp<CompTransporterPawn>();
             return t == null ? null : LoadTransportersPawnJobUtility.JobOnTransporter(pawn, transporter);
         }
-
-
     }
-
-
 }

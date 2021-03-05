@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using RimWorld;
 using Verse;
 using Verse.AI;
-using RimWorld;
-using System.Linq;
 
 namespace CultOfCthulhu
 {
@@ -26,7 +23,8 @@ namespace CultOfCthulhu
         //    return MysteriousObjects(pawn);
         //}
 
-        public override ThingRequest PotentialWorkThingRequest => ThingRequest.ForDef(CultsDefOf.Cults_MonolithNightmare);
+        public override ThingRequest PotentialWorkThingRequest =>
+            ThingRequest.ForDef(CultsDefOf.Cults_MonolithNightmare);
 
         //public override bool ShouldSkip(Pawn pawn)
         //{
@@ -39,7 +37,6 @@ namespace CultOfCthulhu
         {
             if (t == null)
             {
-
                 return false;
             }
 
@@ -50,10 +47,10 @@ namespace CultOfCthulhu
             }
 
             //Log.Message("1");
-            
+
             //Log.Message("2");
 
-            MapComponent_LocalCultTracker cultTracker = pawn.MapHeld.GetComponent<MapComponent_LocalCultTracker>();
+            var cultTracker = pawn.MapHeld.GetComponent<MapComponent_LocalCultTracker>();
             if (cultTracker != null && cultTracker.CurrentSeedState > CultSeedState.NeedSeeing)
             {
                 return false;
@@ -82,7 +79,7 @@ namespace CultOfCthulhu
 
             if (!pawn.CanReserveAndReach(t, PathEndMode.ClosestTouch, Danger.None))
             {
-                return false;// pawn.Map.reservationManager.IsReserved(t, pawn.Faction)) return false;
+                return false; // pawn.Map.reservationManager.IsReserved(t, pawn.Faction)) return false;
             }
             //Log.Message("6");
 

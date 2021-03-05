@@ -2,24 +2,22 @@
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using Cthulhu;
+using RimWorld;
+using Verse;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine; // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse; // RimWorld universal objects are here (like 'Building')
-using Verse.AI; // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound; // Needed when you do something with Sound
-using Verse.Noise; // Needed when you do something with Noises
-using RimWorld; // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet; // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 
@@ -29,7 +27,7 @@ namespace CultOfCthulhu
     {
         public override bool CanSummonNow(Map map)
         {
-            if (!Cthulhu.Utility.IsCosmicHorrorsLoaded())
+            if (!Utility.IsCosmicHorrorsLoaded())
             {
                 Messages.Message("Note: Cosmic Horrors mod isn't loaded. Megaspiders will be summoned instead.",
                     MessageTypeDefOf.NeutralEvent);
@@ -43,20 +41,21 @@ namespace CultOfCthulhu
         {
             var map = parms.target as Map;
             //Spawn a Dark Young
-            if (Cthulhu.Utility.IsCosmicHorrorsLoaded())
+            if (Utility.IsCosmicHorrorsLoaded())
             {
-                Cthulhu.Utility.SpawnPawnsOfCountAt(DefDatabase<PawnKindDef>.GetNamed("ROM_StarVampire"),
+                Utility.SpawnPawnsOfCountAt(DefDatabase<PawnKindDef>.GetNamed("ROM_StarVampire"),
                     altar(map).Position, map, 1,
                     Find.World.factionManager.FirstFactionOfDef(FactionDefOf.AncientsHostile));
             }
             else
             {
-                Cthulhu.Utility.SpawnPawnsOfCountAt(PawnKindDefOf.Megaspider, altar(map).Position, map,
+                Utility.SpawnPawnsOfCountAt(PawnKindDefOf.Megaspider, altar(map).Position, map,
                     Rand.Range(1, 2), Find.FactionManager.FirstFactionOfDef(FactionDefOf.AncientsHostile), true);
             }
+
             Messages.Message("A star vampire is unleashed.", MessageTypeDefOf.ThreatBig);
 
-            Cthulhu.Utility.ApplyTaleDef("Cults_SpellStarVampireVisit", map);
+            Utility.ApplyTaleDef("Cults_SpellStarVampireVisit", map);
 
             return true;
         }

@@ -43,10 +43,10 @@ namespace CultOfCthulhu
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look<float>(ref workLeft, "workLeft", 0f, false);
+            Scribe_Values.Look<float>(ref workLeft, "workLeft");
             Scribe_Collections.Look(ref offerings, "offerings", LookMode.Reference);
-            Scribe_Values.Look<int>(ref billStartTick, "billStartTick", 0, false);
-            Scribe_Values.Look<int>(ref ticksSpentDoingRecipeWork, "ticksSpentDoingRecipeWork", 0, false);
+            Scribe_Values.Look<int>(ref billStartTick, "billStartTick");
+            Scribe_Values.Look<int>(ref ticksSpentDoingRecipeWork, "ticksSpentDoingRecipeWork");
         }
 
         [DebuggerHidden]
@@ -78,9 +78,9 @@ namespace CultOfCthulhu
 
             Toil toil = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.InteractionCell);
             yield return new Toil {initAction = delegate {offerings = new List<Thing>();}};
-            yield return Toils_Reserve.Reserve(TargetIndex.A, 1);
+            yield return Toils_Reserve.Reserve(TargetIndex.A);
             //yield return new Toil {initAction = delegate {Log.Message("Pass 2");}};
-            yield return Toils_Reserve.ReserveQueue(TargetIndex.B, 1);
+            yield return Toils_Reserve.ReserveQueue(TargetIndex.B);
             //yield return new Toil {initAction = delegate {Log.Message("Pass 3");}};
             yield return new Toil
             {
@@ -104,7 +104,7 @@ namespace CultOfCthulhu
             Toil toil3 = Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.ClosestTouch).FailOnDespawnedNullOrForbidden(TargetIndex.B).FailOnSomeonePhysicallyInteracting(TargetIndex.B);
             yield return toil3;
             //yield return new Toil {initAction = delegate {Log.Message("Pass 7");}};
-            yield return Toils_Haul.StartCarryThing(TargetIndex.B, true, false);
+            yield return Toils_Haul.StartCarryThing(TargetIndex.B, true);
             //yield return new Toil {initAction = delegate {Log.Message("Pass 8");}};
             yield return JumpToCollectNextIntoHandsForBill(toil3, TargetIndex.B);
             //yield return new Toil {initAction = delegate {Log.Message("Pass 9");}};
@@ -130,7 +130,7 @@ namespace CultOfCthulhu
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.ritualDuration
             };
-            chantingTime.WithProgressBarToilDelay(TargetIndex.A, false, -0.5f);
+            chantingTime.WithProgressBarToilDelay(TargetIndex.A);
             chantingTime.PlaySustainerOrSound(CultsDefOf.RitualChanting);
             Texture2D deitySymbol = ((CosmicEntityDef)DropAltar.currentOfferingDeity.def).Symbol;
             chantingTime.initAction = delegate

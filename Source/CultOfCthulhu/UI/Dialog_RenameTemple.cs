@@ -1,8 +1,4 @@
-﻿using System;
-using RimWorld;
-using Verse;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Verse;
 
 namespace CultOfCthulhu
 {
@@ -18,15 +14,16 @@ namespace CultOfCthulhu
             curName = altar.RoomName;
             map = altar.Map;
         }
-        
+
         protected override AcceptanceReport NameIsValid(string name)
         {
-            AcceptanceReport result = base.NameIsValid(name);
+            var result = base.NameIsValid(name);
             if (!result.Accepted)
             {
                 return result;
             }
-            return name.Length == 0 || name.Length > 27 ? "NameIsInvalid".Translate() : (AcceptanceReport)true;
+
+            return name.Length == 0 || name.Length > 27 ? "NameIsInvalid".Translate() : (AcceptanceReport) true;
         }
 
         protected override void SetName(string name)

@@ -1,60 +1,78 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+
+using RimWorld;
+using UnityEngine;
+using Verse;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
     public class GameCondition_AuroraEffect : GameCondition
     {
-        private readonly int LerpTicks = 200;
         private static ColorInt colorInt = new ColorInt(0, 141, 153); //Green
         private static ColorInt colorInt2 = new ColorInt(141, 0, 153); //Purple
         private static ColorInt transition = new ColorInt(0, 141, 153); //Green
-
-        private float Red = 141f;
-        private float Green = 0f;
-
-        private bool switchTime = false;
+        private readonly int LerpTicks = 200;
         private readonly int switchTicks = 5000;
-        private int switchCount = 5000;
+
+        private SkyColorSet AuroraSkyColors =
+            new SkyColorSet(transition.ToColor, Color.white, new Color(0.6f, 0.6f, 0.6f), 0.8f);
 
         private bool firstTick = true;
+        private float Green;
 
-        private SkyColorSet AuroraSkyColors = new SkyColorSet(transition.ToColor, Color.white, new Color(0.6f, 0.6f, 0.6f), 0.8f);
+        private float Red = 141f;
+        private int switchCount = 5000;
+
+        private bool switchTime;
+
+        public override string Label
+        {
+            get
+            {
+                string temp;
+                if (Find.WorldGrid.LongLatOf(Find.CurrentMap.Tile).y >= 74)
+                {
+                    temp = " " + "Borealis".Translate();
+                }
+                else
+                {
+                    temp = " " + "Australis".Translate();
+                }
+
+                return def.label + temp;
+            }
+        }
 
         public override float SkyTargetLerpFactor(Map map)
         {
-            return GameConditionUtility.LerpInOutValue((float)TicksPassed, (float)TicksLeft, (float)LerpTicks, 1f);
+            return GameConditionUtility.LerpInOutValue(TicksPassed, TicksLeft, LerpTicks);
         }
 
         public override void GameConditionTick()
         {
             base.GameConditionTick();
-            List<Map> affectedMaps = AffectedMaps;
+            var affectedMaps = AffectedMaps;
             if (firstTick)
             {
                 for (var i = 0; i < affectedMaps.Count; i++)
                 {
-                    foreach (Pawn pawn in affectedMaps[i].mapPawns.FreeColonistsAndPrisoners)
+                    foreach (var pawn in affectedMaps[i].mapPawns.FreeColonistsAndPrisoners)
                     {
                         if (!pawn.Position.Roofed(affectedMaps[i]) && pawn.def.race.IsFlesh)
                         {
@@ -62,30 +80,33 @@ namespace CultOfCthulhu
                         }
                     }
                 }
+
                 firstTick = false;
             }
 
             for (var i = 0; i < affectedMaps.Count; i++)
             {
-                foreach (Pawn pawn in affectedMaps[i].mapPawns.FreeColonistsAndPrisoners)
+                foreach (var pawn in affectedMaps[i].mapPawns.FreeColonistsAndPrisoners)
                 {
-            
                     if (!switchTime)
                     {
                         Red -= 0.03f;
                         Green += 0.03f;
-                        transition.r = (int)Red;
-                        transition.g = (int)Green;
-                        AuroraSkyColors = new SkyColorSet(transition.ToColor, Color.white, new Color(0.6f, 0.6f, 0.6f), 0.8f);
+                        transition.r = (int) Red;
+                        transition.g = (int) Green;
+                        AuroraSkyColors = new SkyColorSet(transition.ToColor, Color.white, new Color(0.6f, 0.6f, 0.6f),
+                            0.8f);
                         SkyTarget(affectedMaps[i]);
                     }
+
                     if (switchTime)
                     {
                         Red += 0.03f;
                         Green -= 0.03f;
-                        transition.r = (int)Red;
-                        transition.g = (int)Green;
-                        AuroraSkyColors = new SkyColorSet(transition.ToColor, Color.white, new Color(0.6f, 0.6f, 0.6f), 0.8f);
+                        transition.r = (int) Red;
+                        transition.g = (int) Green;
+                        AuroraSkyColors = new SkyColorSet(transition.ToColor, Color.white, new Color(0.6f, 0.6f, 0.6f),
+                            0.8f);
                         SkyTarget(affectedMaps[i]);
                     }
 
@@ -112,27 +133,9 @@ namespace CultOfCthulhu
             }
         }
 
-        public override string Label
-        {
-            get
-            {
-                string temp;
-                if (Find.WorldGrid.LongLatOf(Find.CurrentMap.Tile).y >= 74)
-                {
-                    temp = " " + "Borealis".Translate();
-                }
-                else
-                {
-                    temp = " " + "Australis".Translate();
-                }
-
-                return def.label + temp;
-            }
-        }
-
         public override SkyTarget? SkyTarget(Map map)
         {
-            return new SkyTarget?(new SkyTarget(0.85f, AuroraSkyColors, 1f, 1f));
+            return new SkyTarget(0.85f, AuroraSkyColors, 1f, 1f);
         }
     }
 }

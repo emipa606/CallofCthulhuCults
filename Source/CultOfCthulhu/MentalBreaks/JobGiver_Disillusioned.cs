@@ -1,7 +1,5 @@
-﻿using System;
-using Verse;
+﻿using Verse;
 using Verse.AI;
-using RimWorld;
 
 namespace CultOfCthulhu
 {
@@ -14,7 +12,7 @@ namespace CultOfCthulhu
             locomotionUrgency = LocomotionUrgency.Amble;
             wanderDestValidator = WanderRoomUtility.IsValidWanderDest;
         }
-        
+
         protected override IntVec3 GetWanderRoot(Pawn pawn)
         {
             return pawn.ownership.OwnedBed != null ? pawn.ownership.OwnedBed.Position : pawn.Position;

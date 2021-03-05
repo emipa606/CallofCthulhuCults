@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Verse;
-using Verse.AI.Group;
+using Cthulhu;
 using RimWorld;
 using RimWorld.Planet;
-using System.Text;
+using Verse;
+using Verse.AI.Group;
 
 namespace CultOfCthulhu
 {
@@ -24,19 +23,21 @@ namespace CultOfCthulhu
             if (Brood(map) != null)
             {
                 var tempPawns = new List<Pawn>(Brood(map));
-                foreach (Pawn p in tempPawns)
+                foreach (var p in tempPawns)
                 {
                     if (p.Dead)
                     {
                         Brood(map).Remove(p);
                     }
                 }
-                if ((Brood(map).Count + NUMTOSPAWN) > HARDLIMIT)
+
+                if (Brood(map).Count + NUMTOSPAWN > HARDLIMIT)
                 {
                     Messages.Message("DefendTheBroodLimit".Translate(), MessageTypeDefOf.RejectInput);
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -45,11 +46,11 @@ namespace CultOfCthulhu
             //Cthulhu.Utility.DebugReport("CanFire: " + this.def.defName);
             return true;
         }
-        
+
 
         protected List<Pawn> SpawnPawns(IncidentParms parms)
         {
-            var map = (Map)parms.target;
+            var map = (Map) parms.target;
             var list = new List<Pawn>();
 
             var listBugs = new List<PawnKindDef>
@@ -58,15 +59,15 @@ namespace CultOfCthulhu
                 PawnKindDefOf.Spelopede,
                 PawnKindDefOf.Megaspider
             };
-            IEnumerable<PawnKindDef> source = from x in listBugs
-                                              where x.combatPower <= 500f
-                                              select x;
+            var source = from x in listBugs
+                where x.combatPower <= 500f
+                select x;
             var maxPawns = NUMTOSPAWN;
             for (var i = 0; i < maxPawns; i++)
             {
-                if (Cthulhu.Utility.IsCosmicHorrorsLoaded())
+                if (Utility.IsCosmicHorrorsLoaded())
                 {
-                    Pawn pawn = PawnGenerator.GeneratePawn(PawnKindDef.Named("ROM_DeepOne"), parms.faction);
+                    var pawn = PawnGenerator.GeneratePawn(PawnKindDef.Named("ROM_DeepOne"), parms.faction);
                     if (pawn == null)
                     {
                         continue;
@@ -76,38 +77,42 @@ namespace CultOfCthulhu
                 }
                 else
                 {
-                    if (!source.TryRandomElement(out PawnKindDef kindDef))
+                    if (!source.TryRandomElement(out var kindDef))
                     {
                         Log.Error("Unable to get pawnkind for Defend the Brood.");
                         break;
                     }
-                    Pawn pawn = PawnGenerator.GeneratePawn(kindDef, parms.faction);
+
+                    var pawn = PawnGenerator.GeneratePawn(kindDef, parms.faction);
                     if (pawn != null)
                     {
                         list.Add(pawn);
                     }
                 }
             }
-            foreach (Pawn current in list)
+
+            foreach (var current in list)
             {
-                IntVec3 loc = CellFinder.RandomClosewalkCellNear(parms.spawnCenter, (Map)parms.target, 5);
+                var loc = CellFinder.RandomClosewalkCellNear(parms.spawnCenter, (Map) parms.target, 5);
 
 
-                if (GenPlace.TryPlaceThing(current, loc, (Map)parms.target, ThingPlaceMode.Near, null))
+                if (GenPlace.TryPlaceThing(current, loc, (Map) parms.target, ThingPlaceMode.Near))
                 {
                     continue;
                 }
+
                 Find.WorldPawns.PassToWorld(current, PawnDiscardDecideMode.Discard);
 
                 //GenSpawn.Spawn(current, loc, (Map)parms.target);
             }
+
             //PawnRelationUtility.Notify_PawnsSeenByPlayer(list, out "LetterRelatedPawnsNeutralGroup".Translate(), true);
             return list;
         }
 
         protected bool TrySetDeepOneFaction(IncidentParms parms)
         {
-            if (Cthulhu.Utility.IsCosmicHorrorsLoaded())
+            if (Utility.IsCosmicHorrorsLoaded())
             {
                 parms.faction = Find.FactionManager.FirstFactionOfDef(FactionDef.Named("ROM_DeepOne"));
             }
@@ -116,10 +121,11 @@ namespace CultOfCthulhu
                 Messages.Message("UsingInsectoidsInstead".Translate(), MessageTypeDefOf.NegativeEvent);
                 parms.faction = Find.FactionManager.FirstFactionOfDef(FactionDef.Named("ROM_DeepOneAlt"));
             }
+
             return parms.faction != null;
         }
 
-        
+
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             //Log.Message("Building_LandedShip TrySetDeepOneFaction");
@@ -127,24 +133,28 @@ namespace CultOfCthulhu
             {
                 return false;
             }
+
             var map = parms.target as Map;
             //Find a drop spot
-            if (!CultUtility.TryFindDropCell(map.Center, map, 70, out IntVec3 intVec))
+            if (!CultUtility.TryFindDropCell(map.Center, map, 70, out var intVec))
             {
                 return false;
             }
+
             parms.spawnCenter = intVec;
-            List<Pawn> list = SpawnPawns(parms);
+            var list = SpawnPawns(parms);
             if (list.Count == 0)
             {
                 return false;
             }
-            var spotFound = RCellFinder.TryFindRandomSpotJustOutsideColony(list[0], out IntVec3 chillSpot);
+
+            var spotFound = RCellFinder.TryFindRandomSpotJustOutsideColony(list[0], out var chillSpot);
             //LordJob_VisitColony lordJob = new LordJob_VisitColony(parms.faction, chillSpot);
 
             //If they have the sign of dagon, then use it.
-            IntVec3 chillSpot2 = IntVec3.Invalid;
-            Building dagonSign = map.listerBuildings.allBuildingsColonist.FirstOrDefault((Building bld) => bld.def == CultsDefOf.Cults_SignOfDagon);
+            var chillSpot2 = IntVec3.Invalid;
+            var dagonSign =
+                map.listerBuildings.allBuildingsColonist.FirstOrDefault(bld => bld.def == CultsDefOf.Cults_SignOfDagon);
             if (dagonSign != null)
             {
                 chillSpot2 = dagonSign.Position;
@@ -162,7 +172,7 @@ namespace CultOfCthulhu
 
             //Log.Message("SpellWorker_DefendTheBrood LordJob_DefendPoint");
             var lordJob = new LordJob_DefendPoint(chillSpot);
-            Cthulhu.Utility.TemporaryGoodwill(parms.faction, false);
+            Utility.TemporaryGoodwill(parms.faction);
             LordMaker.MakeNewLord(parms.faction, lordJob, map, list);
             //Find.LetterStack.ReceiveLetter("DeepOnesArrive".Translate(), "DeepOnesArriveDesc".Translate(), letterDef.Good, list[0]);
             map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = list[0].Position;
@@ -171,6 +181,5 @@ namespace CultOfCthulhu
 
             return true;
         }
-        
     }
 }

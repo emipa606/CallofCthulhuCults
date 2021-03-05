@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using RimWorld;
 using UnityEngine;
 using Verse;
-using RimWorld;
 
 namespace CultOfCthulhu
 {
@@ -15,63 +14,40 @@ namespace CultOfCthulhu
 
         private const float InitialAutoScrollDelayWonGame = 6f;
 
-        private readonly float MessageDelay = 0f;
-
         private const float AutoScrollDelayAfterManualScroll = 3f;
 
         private const float SongStartDelay = 5f;
 
         private readonly List<CreditsEntry> creds;
 
-        public bool wonGame;
+        private readonly float MessageDelay;
 
-        private float timeUntilAutoScroll;
-
-        private float scrollPosition;
+        private float creationRealtime = -1f;
 
         private bool playedMusic;
 
-        public float creationRealtime = -1f;
+        private float scrollPosition;
 
-        public override Vector2 InitialSize => new Vector2((float)Screen.width, (float)Screen.height);
+        private float timeUntilAutoScroll;
 
-        protected override float Margin => 0f;
-
-        private float ViewWidth => 800f;
-
-        private float ViewHeight => creds.Sum((CreditsEntry c) => c.DrawHeight(ViewWidth)) + 200f;
-
-        private float MaxScrollPosition => ViewHeight - 400f;
-
-        private float AutoScrollRate
-        {
-            get
-            {
-                if (wonGame)
-                {
-                    var num = SongDefOf.EndCreditsSong.clip.length + 5f - 6f;
-                    return MaxScrollPosition / num;
-                }
-                return 30f;
-            }
-        }
+        public bool wonGame;
 
         public Cults_Screen_Credits() : this(string.Empty)
         {
         }
 
-        public Cults_Screen_Credits(string preCreditsMessage, float DelayBooster=0f)
+        public Cults_Screen_Credits(string preCreditsMessage, float DelayBooster = 0f)
         {
             doWindowBackground = false;
             doCloseButton = false;
             doCloseX = false;
             forcePause = true;
-            creds = CreditsAssembler.AllCredits().ToList<CreditsEntry>();
+            creds = CreditsAssembler.AllCredits().ToList();
             creds.Insert(0, new CreditRecord_Space(100f));
             if (!preCreditsMessage.NullOrEmpty())
             {
                 creds.Insert(1, new CreditRecord_Space(100f));
-                creds.Insert(2, new CreditRecord_Text(preCreditsMessage, TextAnchor.UpperLeft));
+                creds.Insert(2, new CreditRecord_Text(preCreditsMessage));
                 creds.Insert(3, new CreditRecord_Space(50f));
             }
 
@@ -105,7 +81,8 @@ namespace CultOfCthulhu
             creds.Insert(30, new CreditRecord_Space(50f));
 
             // Patreon Supporters
-            creds.Insert(31, new CreditRecord_Text("Patreon Supporters (In No Particular Order)", TextAnchor.UpperCenter));
+            creds.Insert(31,
+                new CreditRecord_Text("Patreon Supporters (In No Particular Order)", TextAnchor.UpperCenter));
             creds.Insert(32, new CreditRecord_Space(50f));
             creds.Insert(33, new CreditRecord_Role("PatreonProducer".Translate(), "XboxOneNoob")); //Michael L.
             creds.Insert(34, new CreditRecord_Space(50f));
@@ -134,6 +111,31 @@ namespace CultOfCthulhu
             }
         }
 
+        public override Vector2 InitialSize => new Vector2(Screen.width, Screen.height);
+
+        protected override float Margin => 0f;
+
+        private float ViewWidth => 800f;
+
+        private float ViewHeight => creds.Sum(c => c.DrawHeight(ViewWidth)) + 200f;
+
+        private float MaxScrollPosition => ViewHeight - 400f;
+
+        private float AutoScrollRate
+        {
+            get
+            {
+                if (!wonGame)
+                {
+                    return 30f;
+                }
+
+                var num = SongDefOf.EndCreditsSong.clip.length + 5f - 6f;
+                return MaxScrollPosition / num;
+
+            }
+        }
+
         public override void PreOpen()
         {
             base.PreOpen();
@@ -159,16 +161,19 @@ namespace CultOfCthulhu
             {
                 scrollPosition += AutoScrollRate * Time.deltaTime;
             }
-            if (wonGame && !playedMusic && Time.realtimeSinceStartup > creationRealtime + 5f)
+
+            if (!wonGame || playedMusic || !(Time.realtimeSinceStartup > creationRealtime + 5f))
             {
-                Find.MusicManagerPlay.ForceStartSong(SongDefOf.EndCreditsSong, true);
-                playedMusic = true;
+                return;
             }
+
+            Find.MusicManagerPlay.ForceStartSong(SongDefOf.EndCreditsSong, true);
+            playedMusic = true;
         }
 
         public override void DoWindowContents(Rect inRect)
         {
-            var rect = new Rect(0f, 0f, (float)Screen.width, (float)Screen.height);
+            var rect = new Rect(0f, 0f, Screen.width, Screen.height);
             GUI.DrawTexture(rect, BaseContent.BlackTex);
             var position = new Rect(rect);
             position.yMin += 30f;
@@ -184,13 +189,14 @@ namespace CultOfCthulhu
             GUI.BeginGroup(position2);
             Text.Font = GameFont.Medium;
             var num = 0f;
-            foreach (CreditsEntry current in creds)
+            foreach (var current in creds)
             {
                 var num2 = current.DrawHeight(position2.width);
                 var rect2 = new Rect(0f, num, position2.width, num2);
                 current.Draw(rect2);
                 num += num2;
             }
+
             GUI.EndGroup();
             GUI.EndGroup();
             if (Event.current.type == EventType.ScrollWheel)
@@ -198,19 +204,25 @@ namespace CultOfCthulhu
                 Scroll(Event.current.delta.y * 25f);
                 Event.current.Use();
             }
-            if (Event.current.type == EventType.KeyDown)
+
+            if (Event.current.type != EventType.KeyDown)
             {
-                if (Event.current.keyCode == KeyCode.DownArrow)
-                {
-                    Scroll(250f);
-                    Event.current.Use();
-                }
-                if (Event.current.keyCode == KeyCode.UpArrow)
-                {
-                    Scroll(-250f);
-                    Event.current.Use();
-                }
+                return;
             }
+
+            if (Event.current.keyCode == KeyCode.DownArrow)
+            {
+                Scroll(250f);
+                Event.current.Use();
+            }
+
+            if (Event.current.keyCode != KeyCode.UpArrow)
+            {
+                return;
+            }
+
+            Scroll(-250f);
+            Event.current.Use();
         }
 
         private void Scroll(float offset)

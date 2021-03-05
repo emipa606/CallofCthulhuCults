@@ -1,6 +1,5 @@
-﻿using System;
+﻿using RimWorld;
 using Verse;
-using RimWorld;
 
 namespace CultOfCthulhu
 {
@@ -8,11 +7,12 @@ namespace CultOfCthulhu
     {
         public override void DoEffectOn(Pawn user, Thing target)
         {
-            var pawn = (Pawn)target;
+            var pawn = (Pawn) target;
             if (pawn.Dead)
             {
                 return;
             }
+
             HealthUtility.AdjustSeverity(pawn, HediffDef.Named("Cults_BlackIchor"), 1.0f);
         }
     }

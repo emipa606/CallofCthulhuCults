@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Cthulhu;
 using RimWorld;
 using Verse;
-using Verse.AI;
 
 namespace CultOfCthulhu
 {
-    class IncidentWorker_CultSeed_NightmareTree : IncidentWorker_CultSeed
+    internal class IncidentWorker_CultSeed_NightmareTree : IncidentWorker_CultSeed
     {
-        public static bool TryFindRandomSpawnCellForPawnNear(IntVec3 root, Map map, out IntVec3 result, int firstTryWithRadius = 4)
+        public static bool TryFindRandomSpawnCellForPawnNear(IntVec3 root, Map map, out IntVec3 result,
+            int firstTryWithRadius = 4)
         {
             bool result2;
             if (root.Standable(map) && root.GetFirstPawn(map) == null)
@@ -24,39 +21,48 @@ namespace CultOfCthulhu
                 var num = firstTryWithRadius;
                 for (var i = 0; i < 3; i++)
                 {
-                    if (CellFinder.TryFindRandomReachableCellNear(root, map, (float)num, TraverseParms.For(TraverseMode.NoPassClosedDoors, Danger.Deadly, false), (IntVec3 c) => c.Standable(map) && (rootFogged || !c.Fogged(map)) && c.GetFirstPawn(map) == null, null, out result, 999999))
+                    if (CellFinder.TryFindRandomReachableCellNear(root, map, num,
+                        TraverseParms.For(TraverseMode.NoPassClosedDoors),
+                        c => c.Standable(map) && (rootFogged || !c.Fogged(map)) && c.GetFirstPawn(map) == null, null,
+                        out result))
                     {
                         return true;
                     }
+
                     num *= 2;
                 }
+
                 num = firstTryWithRadius + 1;
-                while (!CellFinder.TryRandomClosewalkCellNear(root, map, num, out result, null))
+                while (!CellFinder.TryRandomClosewalkCellNear(root, map, num, out result))
                 {
                     if (num > map.Size.x / 2 && num > map.Size.z / 2)
                     {
                         result = root;
                         return false;
                     }
+
                     num *= 2;
                 }
+
                 result2 = true;
             }
+
             return result2;
         }
-        
+
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             var map = parms.target as Map;
             //Create a spawn point for our nightmare Tree
-            if (!Cthulhu.Utility.TryFindSpawnCell(CultsDefOf.Cults_MonolithNightmare, map.Center, map, 60, out IntVec3 intVec))
+            if (!Utility.TryFindSpawnCell(CultsDefOf.Cults_MonolithNightmare, map.Center, map, 60, out var intVec))
             {
                 Log.Warning("Failed to find spawn point for nightmare tree.");
 
                 return false;
             }
+
             //Spawn in the nightmare tree.
-            var thing = (Plant)ThingMaker.MakeThing(CultsDefOf.Cults_PlantTreeNightmare, null);
+            var thing = (Plant) ThingMaker.MakeThing(CultsDefOf.Cults_PlantTreeNightmare);
             thing.Growth = 1f;
             GenSpawn.Spawn(thing, intVec.RandomAdjacentCell8Way(), map);
             //GenPlace.TryPlaceThing(thing, intVec.RandomAdjacentCell8Way(), map, ThingPlaceMode.Near);
@@ -75,7 +81,7 @@ namespace CultOfCthulhu
             Find.World.GetComponent<WorldComponent_GlobalCultTracker>().currentSeedState = CultSeedState.NeedSeeing;
             //map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedPawn = researcher;
             //map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedTarget = thing;
-            
+
             return true;
         }
     }

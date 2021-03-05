@@ -1,49 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
+using Cthulhu;
 using RimWorld;
 using Verse;
 using Verse.AI;
 
 namespace CultOfCthulhu
 {
-    class Building_ForbiddenReserachCenter : Building_ResearchBench
+    internal class Building_ForbiddenReserachCenter : Building_ResearchBench
     {
         private const float MaxCultMindedBoost = 0.9f;
         private const float MaxSanityLoss = 0.9f;
         private const float SocialSkillBoost = 75f;
-        private enum WarningLevel : int { None = 0, One = 1, Two = 2, Three = 3, Four = 4 }
-        private bool StartedUse = false;
+        private bool initialTick;
+        private bool StartedUse;
+        private Pawn storedPawn;
         private WarningLevel warningLevel = WarningLevel.None;
-        private Pawn storedPawn = null;
-        private bool initialTick = false;
 
-        public override void ExposeData()
-        {
-            base.ExposeData();
-            Scribe_References.Look<Pawn>(ref storedPawn, "storedPawn", false);
-        }
-
-        public override void SpawnSetup(Map map, bool bla)
-        {
-            base.SpawnSetup(map, bla);
-            DeityTracker.Get.orGenerate();
-        }
-        
-        public Pawn InteractingPawn
+        private Pawn InteractingPawn
         {
             get
             {
                 Pawn pawn = null;
-                foreach (Pawn p in Map.mapPawns.FreeColonistsSpawned)
+                foreach (var p in Map.mapPawns.FreeColonistsSpawned)
                 {
-                    if (p.Position == InteractionCell && p.CurJob.def == JobDefOf.Research)
+                    if (p.Position != InteractionCell || p.CurJob.def != JobDefOf.Research)
                     {
-                        pawn = p;
-                        break;
+                        continue;
                     }
+
+                    pawn = p;
+                    break;
                 }
+
                 if (pawn == null)
                 {
                     StartedUse = false;
@@ -51,6 +39,18 @@ namespace CultOfCthulhu
 
                 return pawn;
             }
+        }
+
+        public override void ExposeData()
+        {
+            base.ExposeData();
+            Scribe_References.Look(ref storedPawn, "storedPawn");
+        }
+
+        public override void SpawnSetup(Map map, bool bla)
+        {
+            base.SpawnSetup(map, bla);
+            DeityTracker.Get.orGenerate();
         }
 
         public override void TickRare()
@@ -61,18 +61,21 @@ namespace CultOfCthulhu
             ResolveNonOccultProjects();
             GiveInteractionSanityLoss();
         }
+
         private void InitialTickHandler()
         {
-            if (!initialTick)
+            if (initialTick)
             {
-                initialTick = true;
-                CultTracker.Get.ExposedToCults = true;
+                return;
             }
+
+            initialTick = true;
+            CultTracker.Get.ExposedToCults = true;
         }
 
         private void ForbiddenChecker()
         {
-            ResearchProjectDef currentProject = Find.ResearchManager.currentProj;
+            var currentProject = Find.ResearchManager.currentProj;
             if (currentProject == null)
             {
                 return;
@@ -96,14 +99,13 @@ namespace CultOfCthulhu
             var result = s.ToString();
             result = result.TrimEndNewlines();
             return result;
-
         }
 
         private void ResolveNonOccultProjects()
         {
             //First, declare our variables.
-            ResearchProjectDef currentProject = Find.ResearchManager.currentProj;
-            Pawn interactingPawn = InteractingPawn;
+            var currentProject = Find.ResearchManager.currentProj;
+            var interactingPawn = InteractingPawn;
             if (currentProject == null)
             {
                 return;
@@ -118,6 +120,7 @@ namespace CultOfCthulhu
             {
                 return;
             }
+
             //Are we using this for the correct project type?
             this.SetForbidden(false);
             if (IsThisCultistResearch(currentProject))
@@ -129,40 +132,44 @@ namespace CultOfCthulhu
             //Uh oh.
             //Let's try and find another research station to research this at.
             Building_ResearchBench bench = null;
-            foreach (Building bld in Map.listerBuildings.allBuildingsColonist)
+            foreach (var bld in Map.listerBuildings.allBuildingsColonist)
             {
-                if (bld != this && bld.def != def)
+                if (bld == this || bld.def == def)
                 {
-                    if (bld is Building_ResearchBench)
-                    {
-                        bench = bld as Building_ResearchBench;
-                    }
+                    continue;
+                }
+
+                if (bld is Building_ResearchBench researchBench)
+                {
+                    bench = researchBench;
                 }
             }
-            
+
             //No building found? Cancel the research projects.
             if (bench == null)
             {
                 CancelResearch("Cannot use the grimoire to research standard research projects.");
                 return;
             }
-            
+
             //We found a research bench! Can we send the researcher there?
             if (!currentProject.CanBeResearchedAt(bench, false))
             {
                 CancelResearch("Cannot research this project at the forbidden center.");
             }
+
             if (!interactingPawn.CanReach(bench, PathEndMode.ClosestTouch, Danger.Deadly))
             {
                 CancelResearch("Cannot research this project at the forbidden center.");
             }
+
             if (!interactingPawn.CanReserve(bench)) //Map.reservationManager.IsReserved(bench, Faction.OfPlayer))
             {
                 this.SetForbidden(true);
                 interactingPawn.jobs.EndCurrentJob(JobCondition.InterruptForced);
                 return;
             }
-            
+
             //Okay, assign a job over there instead of here.
             var J = new Job(JobDefOf.Research, bench);
             Map.reservationManager.ReleaseAllClaimedBy(interactingPawn);
@@ -184,20 +191,21 @@ namespace CultOfCthulhu
 
         private bool IsThisCultistResearch(ResearchProjectDef currentProject)
         {
-            foreach (ResearchProjectDef def in Find.World.GetComponent<WorldComponent_GlobalCultTracker>().cultResearch)
+            foreach (var researchProjectDef in Find.World.GetComponent<WorldComponent_GlobalCultTracker>().cultResearch)
             {
-                if (currentProject == def)
+                if (currentProject == researchProjectDef)
                 {
                     return true;
                 }
             }
+
             return false;
         }
 
         private void GiveInteractionSanityLoss()
         {
-            Pawn temp = InteractingPawn;
-            ResearchProjectDef currentProject = Find.ResearchManager.currentProj;
+            var temp = InteractingPawn;
+            var currentProject = Find.ResearchManager.currentProj;
             var modifier = 0.0040f;
 
             if (temp == null)
@@ -221,45 +229,77 @@ namespace CultOfCthulhu
                 modifier *= 1.2f;
                 temp.skills.Learn(SkillDefOf.Social, SocialSkillBoost);
             }
-            Cthulhu.Utility.ApplySanityLoss(temp, modifier, MaxSanityLoss);
+
+            Utility.ApplySanityLoss(temp, modifier, MaxSanityLoss);
             CultUtility.AffectCultMindedness(temp, modifier, MaxCultMindedBoost);
         }
+
         private void UsageWarning(Pawn temp)
         {
-            var sanityLevel = Cthulhu.Utility.CurrentSanityLoss(temp);
+            var sanityLevel = Utility.CurrentSanityLoss(temp);
             if (storedPawn != temp)
             {
                 storedPawn = temp;
                 warningLevel = WarningLevel.None;
             }
-            SetWarningLevel(sanityLevel);
-            if (!StartedUse)
-            {
-                StartedUse = true;
-                var stringToTranslate = "OccultCenterWarning" + warningLevel.ToString();
-                if (stringToTranslate == "OccultCenterWarningNone")
-                {
-                    return;
-                }
 
-                Messages.Message(stringToTranslate.Translate(
-                    InteractingPawn.Name.ToStringShort,
-                    InteractingPawn.gender.GetPronoun(),
-                    InteractingPawn.gender.GetObjective(),
-                    InteractingPawn.gender.GetPossessive()
-                    ), MessageTypeDefOf.NeutralEvent);
+            SetWarningLevel(sanityLevel);
+            if (StartedUse)
+            {
+                return;
             }
+
+            StartedUse = true;
+            var stringToTranslate = "OccultCenterWarning" + warningLevel;
+            if (stringToTranslate == "OccultCenterWarningNone")
+            {
+                return;
+            }
+
+            Messages.Message(stringToTranslate.Translate(
+                InteractingPawn.Name.ToStringShort,
+                InteractingPawn.gender.GetPronoun(),
+                InteractingPawn.gender.GetObjective(),
+                InteractingPawn.gender.GetPossessive()
+            ), MessageTypeDefOf.NeutralEvent);
         }
+
         private void SetWarningLevel(float sanityLevel)
         {
-            if (((int)warningLevel < 1) && sanityLevel > Cthulhu.SanityLossSeverity.Initial)
-            { StartedUse = false; warningLevel = WarningLevel.One; }
-            if (((int)warningLevel < 2) && sanityLevel > Cthulhu.SanityLossSeverity.Minor)
-            { StartedUse = false; warningLevel = WarningLevel.Two; }
-            if (((int)warningLevel < 3) && sanityLevel > Cthulhu.SanityLossSeverity.Major)
-            { StartedUse = false; warningLevel = WarningLevel.Three; }
-            if (((int)warningLevel < 4) && sanityLevel > Cthulhu.SanityLossSeverity.Severe)
-            { StartedUse = false; warningLevel = WarningLevel.Four; }
+            if ((int) warningLevel < 1 && sanityLevel > SanityLossSeverity.Initial)
+            {
+                StartedUse = false;
+                warningLevel = WarningLevel.One;
+            }
+
+            if ((int) warningLevel < 2 && sanityLevel > SanityLossSeverity.Minor)
+            {
+                StartedUse = false;
+                warningLevel = WarningLevel.Two;
+            }
+
+            if ((int) warningLevel < 3 && sanityLevel > SanityLossSeverity.Major)
+            {
+                StartedUse = false;
+                warningLevel = WarningLevel.Three;
+            }
+
+            if ((int) warningLevel >= 4 || !(sanityLevel > SanityLossSeverity.Severe))
+            {
+                return;
+            }
+
+            StartedUse = false;
+            warningLevel = WarningLevel.Four;
+        }
+
+        private enum WarningLevel
+        {
+            None = 0,
+            One = 1,
+            Two = 2,
+            Three = 3,
+            Four = 4
         }
     }
 }

@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Cthulhu;
 using RimWorld;
-using Verse;
 using RimWorld.Planet;
+using Verse;
 
 namespace CultOfCthulhu
 {
     public class WorldComponent_CosmicDeities : WorldComponent
     {
+        private bool AreDeitiesSpawned;
         public Dictionary<CosmicEntity, int> DeityCache = new Dictionary<CosmicEntity, int>();
-        public bool AreDeitiesSpawned = false;
         public bool WasCultMindednessInitialized = false;
 
         public WorldComponent_CosmicDeities(World world) : base(world)
@@ -27,13 +27,15 @@ namespace CultOfCthulhu
                 DeityCache = new Dictionary<CosmicEntity, int>();
             }
 
-            foreach (CosmicEntity current in DeityCache.Keys)
+            foreach (var current in DeityCache.Keys)
             {
-                if (current == deity)
+                if (current != deity)
                 {
-                    result = current;
-                    return result;
+                    continue;
                 }
+
+                result = current;
+                return result;
             }
 
             DeityCache.Add(deity, deity.Version);
@@ -43,23 +45,26 @@ namespace CultOfCthulhu
 
         public void orGenerate()
         {
-            if (!AreDeitiesSpawned)
+            if (AreDeitiesSpawned)
             {
-                foreach (ThingDef current in DefDatabase<ThingDef>.AllDefs)
-                {
-                    if (current.thingClass == typeof(CosmicEntity))
-                    {
-                        var x = new CosmicEntity(current);
-                        //x.Position = new IntVec3();
-                        //x.SpawnSetup();
-                        GetCache(x);
-                    }
-                }
-                AreDeitiesSpawned = true;
-                //Cthulhu.Utility.DebugReport("Cosmic Deities Spawned");
-
+                return;
             }
-            return;
+
+            foreach (var current in DefDatabase<ThingDef>.AllDefs)
+            {
+                if (current.thingClass != typeof(CosmicEntity))
+                {
+                    continue;
+                }
+
+                var x = new CosmicEntity(current);
+                //x.Position = new IntVec3();
+                //x.SpawnSetup();
+                GetCache(x);
+            }
+
+            AreDeitiesSpawned = true;
+            //Cthulhu.Utility.DebugReport("Cosmic Deities Spawned");
         }
 
         public override void WorldComponentTick()
@@ -69,10 +74,10 @@ namespace CultOfCthulhu
             base.WorldComponentTick();
         }
 
-        public List<CosmicEntity> undiscoveredEntities()
+        private List<CosmicEntity> undiscoveredEntities()
         {
             var result = new List<CosmicEntity>();
-            foreach (CosmicEntity entity in DeityCache.Keys.InRandomOrder<CosmicEntity>())
+            foreach (var entity in DeityCache.Keys.InRandomOrder())
             {
                 if (entity.discovered == false)
                 {
@@ -80,22 +85,22 @@ namespace CultOfCthulhu
                     //Cthulhu.Utility.DebugReport(entity.Label);
                 }
             }
+
             return result;
         }
 
-        public void RevealDeityCheck()
+        private void RevealDeityCheck()
         {
-
             //Cthulhu.Utility.DebugReport("Reveal Deity Check");
             var deityResearch = ResearchProjectDef.Named("Forbidden_Deities");
 
             if (deityResearch.IsFinished && undiscoveredEntities().Count > 0)
             {
-                foreach (CosmicEntity entity in undiscoveredEntities())
+                foreach (var entity in undiscoveredEntities())
                 {
                     entity.discovered = true;
-                    Cthulhu.Utility.DebugReport("Change research should be called.");
-                    Cthulhu.Utility.ChangeResearchProgress(deityResearch, 0f, true);
+                    Utility.DebugReport("Change research should be called.");
+                    Utility.ChangeResearchProgress(deityResearch, 0f, true);
                     var message = "Cults_DiscoveredDeityMessage".Translate(entity.Label);
                     Messages.Message(message, MessageTypeDefOf.PositiveEvent);
 
@@ -104,17 +109,17 @@ namespace CultOfCthulhu
                     s.AppendLine();
                     s.AppendLine(entity.Info());
                     Find.LetterStack.ReceiveLetter("Cults_Discovered".Translate(), s.ToString(),
-                        LetterDefOf.NeutralEvent, null);
+                        LetterDefOf.NeutralEvent);
                     break;
                 }
             }
             else if (undiscoveredEntities().Count == 0)
             {
-                Cthulhu.Utility.ChangeResearchProgress(deityResearch, deityResearch.baseCost);
+                Utility.ChangeResearchProgress(deityResearch, deityResearch.baseCost);
             }
         }
 
-        public void ReloadCosmicEntity(CosmicEntity entity)
+        private void ReloadCosmicEntity(CosmicEntity entity)
         {
             var currentFavor = entity.PlayerFavor;
             var currentDiscovery = entity.discovered;
@@ -128,19 +133,17 @@ namespace CultOfCthulhu
             DeityCache.Add(x, x.Version);
 
             //Destroy deity
-            entity.Destroy(0);
+            entity.Destroy();
             //Cthulhu.Utility.DebugReport("Reloaded " + entity.Label);
-            return;
         }
 
-        public void CheckForUpdates()
+        private void CheckForUpdates()
         {
-
             //Create a temporary dictionary.
             //Load all the current deities into it.
 
             var tempDic = new Dictionary<CosmicEntity, int>();
-            foreach (KeyValuePair<CosmicEntity, int> pair in DeityCache)
+            foreach (var pair in DeityCache)
             {
                 tempDic.Add(pair.Key, pair.Value);
             }
@@ -148,7 +151,7 @@ namespace CultOfCthulhu
             //Now, check to see if the saved "version" matches the new "version" we loaded.
 
             var entitiesToUpdate = new List<CosmicEntity>();
-            foreach (KeyValuePair<CosmicEntity, int> pair in tempDic)
+            foreach (var pair in tempDic)
             {
                 //Version mismatch, let's update!
                 if (pair.Key.Version != pair.Value)
@@ -156,55 +159,58 @@ namespace CultOfCthulhu
                     entitiesToUpdate.Add(pair.Key);
                     //Cthulhu.Utility.DebugReport("To be updated +1");
                 }
+
                 //Cthulhu.Utility.DebugReport("Cycled");
             }
 
 
-            foreach (CosmicEntity entity in entitiesToUpdate)
+            foreach (var entity in entitiesToUpdate)
             {
                 ReloadCosmicEntity(entity);
             }
 
             //Deities are updated, but let's check if there are new deities.
-            foreach (ThingDef current in DefDatabase<ThingDef>.AllDefs)
+            foreach (var current in DefDatabase<ThingDef>.AllDefs)
             {
-                if (current.thingClass == typeof(CosmicEntity))
+                if (current.thingClass != typeof(CosmicEntity))
                 {
-                    var newDeity = new CosmicEntity(current);
-
-                    if (tempDic.Keys.FirstOrDefault((CosmicEntity oldDeity) => oldDeity.def.defName == newDeity.def.defName) != null)
-                    {
-                        continue;
-                    }
-                    newDeity.discovered = false;
-                    GetCache(newDeity);
-                    //RevealDeityCheck();
+                    continue;
                 }
+
+                var newDeity = new CosmicEntity(current);
+
+                if (tempDic.Keys.FirstOrDefault(oldDeity => oldDeity.def.defName == newDeity.def.defName) != null)
+                {
+                    continue;
+                }
+
+                newDeity.discovered = false;
+                GetCache(newDeity);
+                //RevealDeityCheck();
             }
 
             //Clear that dictionary
-            tempDic = null;
-
         }
 
 
         public override void ExposeData()
         {
-            Scribe_Collections.Look<CosmicEntity, int>(ref DeityCache, "Deities", LookMode.Deep, LookMode.Value);
+            Scribe_Collections.Look(ref DeityCache, "Deities", LookMode.Deep, LookMode.Value);
             //Scribe_Collections.Look<CosmicEntity>(ref this.DeityCache, "Deities", LookMode.Deep, new object[0]);
-            Scribe_Values.Look<bool>(ref AreDeitiesSpawned, "AreDeitiesSpawned", false, false);
+            Scribe_Values.Look(ref AreDeitiesSpawned, "AreDeitiesSpawned");
             base.ExposeData();
             if (DeityCache == null)
             {
                 DeityCache = new Dictionary<CosmicEntity, int>();
             }
-            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+
+            if (Scribe.mode != LoadSaveMode.PostLoadInit)
             {
-                orGenerate();
-                CheckForUpdates();
+                return;
             }
 
+            orGenerate();
+            CheckForUpdates();
         }
     }
-
 }

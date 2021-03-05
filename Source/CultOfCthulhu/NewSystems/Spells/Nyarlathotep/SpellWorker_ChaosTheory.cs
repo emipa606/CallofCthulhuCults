@@ -1,26 +1,27 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using Cthulhu;
+using HarmonyLib;
+using RimWorld;
+using Verse;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
-using System.Reflection;
-using HarmonyLib;
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+// RimWorld specific functions for world creation
+
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 
@@ -28,47 +29,48 @@ namespace CultOfCthulhu
 {
     public class SpellWorker_ChaosTheory : SpellWorker
     {
-
         public bool HasIncapableWorkTags(Pawn pawn)
         {
             HarmonyPatches.DebugMessage("HasIncapableWorkTags called");
             return pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Animals)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Artistic)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Caring)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Cleaning)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Cooking)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Crafting)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Firefighting)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Hauling)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Intellectual)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.ManualDumb)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.ManualSkilled)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Mining)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.PlantWork)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Social)
-                || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Violent);
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Artistic)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Caring)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Cleaning)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Cooking)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Crafting)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Firefighting)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Hauling)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Intellectual)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.ManualDumb)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.ManualSkilled)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Mining)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.PlantWork)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Social)
+                   || pawn.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Violent);
         }
 
         public bool HasIncapableSkills(Pawn pawn)
         {
-            HarmonyPatches.DebugMessage($"HasIncapableSkills called");
-            Map map = pawn.Map;
+            HarmonyPatches.DebugMessage("HasIncapableSkills called");
+            var map = pawn.Map;
             //Check if we have level 0 skills
-            List<SkillDef> allDefsListForReading = DefDatabase<SkillDef>.AllDefsListForReading;
-            HarmonyPatches.DebugMessage($"AllDefsForReading");
+            var allDefsListForReading = DefDatabase<SkillDef>.AllDefsListForReading;
+            HarmonyPatches.DebugMessage("AllDefsForReading");
             for (var i = 0; i < allDefsListForReading.Count; i++)
             {
-                SkillDef skillDef = allDefsListForReading[i];
-                SkillRecord skill = TempExecutioner(map).skills.GetSkill(skillDef);
+                var skillDef = allDefsListForReading[i];
+                var skill = TempExecutioner(map).skills.GetSkill(skillDef);
                 if (skill.Level == 0)
                 {
                     return true;
                 }
+
                 if (skill.TotallyDisabled)
                 {
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -87,12 +89,14 @@ namespace CultOfCthulhu
                     Messages.Message("Executioner is already fully capable.", MessageTypeDefOf.RejectInput);
                     return false;
                 }
+
                 return true;
             }
             catch (Exception e)
             {
-                Cthulhu.Utility.DebugReport(e.ToString());
+                Utility.DebugReport(e.ToString());
             }
+
             return true;
         }
 
@@ -100,7 +104,7 @@ namespace CultOfCthulhu
         {
             HarmonyPatches.DebugMessage("Chaos Theory attempted");
             var map = parms.target as Map;
-            Pawn pawn = map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.SacrificeData.Executioner;
+            var pawn = map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.SacrificeData.Executioner;
             HarmonyPatches.DebugMessage("Executioner selected");
             if (HasIncapableWorkTags(pawn))
             {
@@ -108,7 +112,7 @@ namespace CultOfCthulhu
                 HarmonyPatches.DebugMessage("Childhood redo");
                 var fixedChildhood = false;
                 _ = new List<WorkTypeDef>(pawn.story.childhood.DisabledWorkTypes);
-                HarmonyPatches.DebugMessage($"childwork list defined");
+                HarmonyPatches.DebugMessage("childwork list defined");
                 while (fixedChildhood == false)
                 {
                     IEnumerable<WorkTypeDef> childWorkList;
@@ -116,7 +120,11 @@ namespace CultOfCthulhu
                     for (var i = 0; i < 200; i++)
                     {
                         childWorkList = pawn.story.childhood.DisabledWorkTypes;
-                        if (childWorkList.Count<WorkTypeDef>() == 0) { goto FirstLeap; }
+                        if (childWorkList.Count() == 0)
+                        {
+                            goto FirstLeap;
+                        }
+
                         pawn.story.childhood = BackstoryDatabase.RandomBackstory(BackstorySlot.Childhood);
                     }
 
@@ -124,15 +132,21 @@ namespace CultOfCthulhu
                     for (var i = 0; i < 200; i++)
                     {
                         childWorkList = pawn.story.childhood.DisabledWorkTypes;
-                        if (childWorkList.Count<WorkTypeDef>() <= 1) { goto FirstLeap; }
+                        if (childWorkList.Count() <= 1)
+                        {
+                            goto FirstLeap;
+                        }
+
                         pawn.story.childhood = BackstoryDatabase.RandomBackstory(BackstorySlot.Childhood);
                     }
+
                     //Give up
                     fixedChildhood = true;
                 }
-            FirstLeap:
 
-                HarmonyPatches.DebugMessage($"First leap");
+                FirstLeap:
+
+                HarmonyPatches.DebugMessage("First leap");
                 //Your adulthood is out
                 var fixedAdulthood = false;
                 _ = pawn.story.adulthood.DisabledWorkTypes;
@@ -143,45 +157,61 @@ namespace CultOfCthulhu
                     for (var i = 0; i < 200; i++)
                     {
                         adultWorkList = pawn.story.adulthood.DisabledWorkTypes;
-                        if (adultWorkList?.Count<WorkTypeDef>() == 0) { goto SecondLeap; }
+                        if (adultWorkList?.Count() == 0)
+                        {
+                            goto SecondLeap;
+                        }
+
                         pawn.story.adulthood = BackstoryDatabase.RandomBackstory(BackstorySlot.Adulthood);
                     }
+
                     //Try 200 times to get to 1 disabled work types
                     for (var i = 0; i < 200; i++)
                     {
                         adultWorkList = pawn.story.adulthood.DisabledWorkTypes;
-                        if (adultWorkList?.Count<WorkTypeDef>() <= 1) { goto SecondLeap; }
+                        if (adultWorkList?.Count() <= 1)
+                        {
+                            goto SecondLeap;
+                        }
+
                         pawn.story.adulthood = BackstoryDatabase.RandomBackstory(BackstorySlot.Adulthood);
                     }
+
                     //Give up
                     fixedAdulthood = true;
                 }
-            SecondLeap:
-                HarmonyPatches.DebugMessage($"Second leap");
+
+                SecondLeap:
+                HarmonyPatches.DebugMessage("Second leap");
             }
+
             if (HasIncapableSkills(pawn))
             {
                 HarmonyPatches.DebugMessage($"{pawn.Label} has incapable skills");
                 //pawn.story.GenerateSkillsFromBackstory();
-                List<SkillDef> allDefsListForReading = DefDatabase<SkillDef>.AllDefsListForReading;
+                var allDefsListForReading = DefDatabase<SkillDef>.AllDefsListForReading;
 
                 for (var i = 0; i < allDefsListForReading.Count; i++)
                 {
-                    SkillDef skillDef = allDefsListForReading[i];
-                    SkillRecord skill = pawn.skills.GetSkill(skillDef);
+                    var skillDef = allDefsListForReading[i];
+                    var skill = pawn.skills.GetSkill(skillDef);
                     if (skill.Level <= 3)
                     {
                         skill.Level = 3;
                     }
+
                     if (skill.TotallyDisabled)
                     {
                         HarmonyPatches.DebugMessage($"{pawn.Label}'s {skill.def.LabelCap} is now 3");
                         skill.Level = 3;
                     }
+
                     skill.Notify_SkillDisablesChanged();
                 }
-                HarmonyPatches.DebugMessage($"Skills assigned");
+
+                HarmonyPatches.DebugMessage("Skills assigned");
             }
+
             HarmonyPatches.DebugMessage("Disabled Work Types Attempted");
             Traverse.Create(pawn).Field("cachedDisabledWorkTypes").SetValue(null);
             HarmonyPatches.DebugMessage("Disabled Work Types Succeeded");
@@ -190,6 +220,5 @@ namespace CultOfCthulhu
             Messages.Message(pawn.Label + " has lived their entire life over again.", MessageTypeDefOf.PositiveEvent);
             return true;
         }
-
     }
 }

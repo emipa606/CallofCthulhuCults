@@ -62,9 +62,9 @@ namespace CultOfCthulhu
         {
             base.ExposeData();
                         
-            Scribe_Values.Look<float>(ref ticksUntilDestroyed, "ticksUntilDestroyed", -1f, false);
-            Scribe_Values.Look<float>(ref daysUntilDestroyed, "daysUntilDestroyed", 7f, false);
-            Scribe_Values.Look<float>(ref fertilityBonus, "fertilityBonus", 1.5f, false);
+            Scribe_Values.Look<float>(ref ticksUntilDestroyed, "ticksUntilDestroyed", -1f);
+            Scribe_Values.Look<float>(ref daysUntilDestroyed, "daysUntilDestroyed", 7f);
+            Scribe_Values.Look<float>(ref fertilityBonus, "fertilityBonus", 1.5f);
         }
 
         public override void Tick()
@@ -145,7 +145,7 @@ namespace CultOfCthulhu
                 action = new Action(MakeMatchingGrowZone),
                 hotKey = KeyBindingDefOf.Misc2,
                 defaultDesc = "CommandSunLampMakeGrowingZoneDesc".Translate(),
-                icon = ContentFinder<Texture2D>.Get("UI/Designators/ZoneCreate_Growing", true),
+                icon = ContentFinder<Texture2D>.Get("UI/Designators/ZoneCreate_Growing"),
                 defaultLabel = "CommandSunLampMakeGrowingZoneLabel".Translate()
             };
             yield break;

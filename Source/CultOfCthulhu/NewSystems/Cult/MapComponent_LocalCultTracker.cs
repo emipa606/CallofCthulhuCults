@@ -1,47 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Verse;
+using Cthulhu;
 using RimWorld;
+using Verse;
 using Verse.AI;
 
 namespace CultOfCthulhu
 {
-    partial class MapComponent_LocalCultTracker : MapComponent
+    internal partial class MapComponent_LocalCultTracker : MapComponent
     {
+        public const int OneMinute = 3600;
+        public const int OneDay = 60000;
+        public const int ThreeDays = 180000;
+
+        //Cult seed stuff
+        public Pawn CurrentSeedPawn;
+        public Thing CurrentSeedTarget;
+        public bool doingInquisition;
+
+        public bool needPreacher;
+        //public int ticksToSpawnCultSeed = (OneMinute + 1000) + Rand.Range(-OneMinute, OneMinute); //Between 2-4 days. 1 day = 60000
+
+        public List<IncidentDef> seedIncidents = new List<IncidentDef>
+        {
+            IncidentDef.Named("CultSeedIncident_TreeOfNightmares"),
+            IncidentDef.Named("CultSeedIncident_NightmareMonolith")
+        };
+
+        public int ticksToCheckCultists;
+        public int ticksToSpawnCultSeed = ThreeDays + Rand.Range(-OneDay, OneDay); //Between 2-4 days. 1 day = 60000
+        public int ticksToSpawnHelpfulPreacher = OneMinute + Rand.Range(OneMinute, OneDay);
+        public int ticksToTryJobAgain = OneMinute; //1 minute
+        public int ticksUntilInquisition;
+
         public MapComponent_LocalCultTracker(Map map) : base(map)
         {
             this.map = map;
         }
 
-        public const int OneMinute = 3600;
-        public const int OneDay = 60000;
-        public const int ThreeDays = 180000;
-
         //WorldComponent_GlobalCultTracker globalCultTracker = Find.World.GetComponent<WorldComponent_GlobalCultTracker>();
 
-        public CultSeedState CurrentSeedState { get => CultTracker.Get.currentSeedState; set => CultTracker.Get.currentSeedState = value; }
-        public List<Pawn> antiCultists => CultTracker.Get.antiCultists;
-
-        public bool needPreacher = false;
-        public bool doingInquisition = false;
-        public int ticksToSpawnHelpfulPreacher = OneMinute + Rand.Range(OneMinute, OneDay);
-        public int ticksToCheckCultists = 0;
-        public int ticksUntilInquisition = 0;
-
-        //Cult seed stuff
-        public Pawn CurrentSeedPawn = null;
-        public Thing CurrentSeedTarget = null;
-        public int ticksToTryJobAgain = OneMinute; //1 minute
-        public int ticksToSpawnCultSeed = ThreeDays + Rand.Range(-OneDay, OneDay); //Between 2-4 days. 1 day = 60000
-        //public int ticksToSpawnCultSeed = (OneMinute + 1000) + Rand.Range(-OneMinute, OneMinute); //Between 2-4 days. 1 day = 60000
-
-        public List<IncidentDef> seedIncidents = new List<IncidentDef>()
+        public CultSeedState CurrentSeedState
         {
-            IncidentDef.Named("CultSeedIncident_TreeOfNightmares"),
-            IncidentDef.Named("CultSeedIncident_NightmareMonolith")
-        };
+            get => CultTracker.Get.currentSeedState;
+            set => CultTracker.Get.currentSeedState = value;
+        }
+
+        public List<Pawn> antiCultists => CultTracker.Get.antiCultists;
 
         public void ResolveTerribleCultFounder(Pawn founder)
         {
@@ -77,29 +82,37 @@ namespace CultOfCthulhu
             if (CultTracker.Get.PlayerCult != null)
             {
                 var tempList = new List<Pawn>(CultTracker.Get.PlayerCult.members);
-                foreach (Pawn current in tempList.InRandomOrder<Pawn>())
+                foreach (var current in tempList.InRandomOrder())
                 {
                     if (current == null)
                     {
                         continue;
                     }
 
-                    if (current.Dead) { CultTracker.Get.PlayerCult.RemoveMember(current); continue; }
+                    if (current.Dead)
+                    {
+                        CultTracker.Get.PlayerCult.RemoveMember(current);
+                        continue;
+                    }
+
                     if (preacher == null)
                     {
                         preacher = current;
                     }
 
-                    if (current.skills.GetSkill(SkillDefOf.Social).Level > preacher.skills.GetSkill(SkillDefOf.Social).Level)
+                    if (current.skills.GetSkill(SkillDefOf.Social).Level >
+                        preacher.skills.GetSkill(SkillDefOf.Social).Level)
                     {
                         preacher = current;
                     }
                 }
+
                 if (preacher != null)
                 {
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -113,7 +126,6 @@ namespace CultOfCthulhu
             if (ticksToSpawnHelpfulPreacher > 0)
             {
                 ticksToSpawnHelpfulPreacher--;
-                return;
             }
             else
             {
@@ -121,9 +133,9 @@ namespace CultOfCthulhu
                 {
                     //Log.Messag("Failed to spawn walk-in cultist");
                 }
+
                 needPreacher = false;
             }
-
         }
 
 
@@ -135,19 +147,21 @@ namespace CultOfCthulhu
 
                 if (repeatableResearch != null)
                 {
-                    if (ModSettings_Data.cultsStudySuccessfulCultsIsRepeatable == true)
+                    if (ModSettings_Data.cultsStudySuccessfulCultsIsRepeatable)
                     {
                         if (repeatableResearch.IsFinished)
                         {
-                            Cthulhu.Utility.ChangeResearchProgress(repeatableResearch, 0f, true);
+                            Utility.ChangeResearchProgress(repeatableResearch, 0f, true);
                             Messages.Message("RepeatableResearch".Translate(
-                    repeatableResearch.LabelCap
-                ), MessageTypeDefOf.PositiveEvent);
+                                repeatableResearch.LabelCap
+                            ), MessageTypeDefOf.PositiveEvent);
                         }
                     }
                 }
             }
-            catch (NullReferenceException) { }
+            catch (NullReferenceException)
+            {
+            }
         }
 
         public void NewCultistCheck()
@@ -171,13 +185,13 @@ namespace CultOfCthulhu
             ticksToCheckCultists = Find.TickManager.TicksGame + 500;
 
             var spawnedColonyMembers = new List<Pawn>(map.mapPawns.FreeColonistsAndPrisonersSpawned);
-            Cult playerCult = CultTracker.Get.PlayerCult;
+            var playerCult = CultTracker.Get.PlayerCult;
             if (spawnedColonyMembers == null || spawnedColonyMembers.Count == 0)
             {
                 return;
             }
 
-            foreach (Pawn colonist in spawnedColonyMembers)
+            foreach (var colonist in spawnedColonyMembers)
             {
                 if (!colonist.RaceProps.Humanlike ||
                     colonist.IsPrisoner ||
@@ -188,6 +202,7 @@ namespace CultOfCthulhu
                     {
                         playerCult.RemoveMember(colonist);
                     }
+
                     CultTracker.Get.RemoveInquisitor(colonist);
                     continue;
                 }
@@ -206,7 +221,7 @@ namespace CultOfCthulhu
                     }
                     //Otherwise, you will be removed from the cult.
                     else if (cultMind.CurInstantLevelPercentage > CultLevel.AntiCultist &&
-                        cultMind.CurInstantLevelPercentage < CultLevel.Cultist)
+                             cultMind.CurInstantLevelPercentage < CultLevel.Cultist)
                     {
                         if (playerCult != null)
                         {
@@ -250,6 +265,7 @@ namespace CultOfCthulhu
             {
                 ticksToTryJobAgain -= 1;
             }
+
             if (CurrentSeedPawn.CurJob.def != job &&
                 ticksToTryJobAgain <= 0)
             {
@@ -264,22 +280,23 @@ namespace CultOfCthulhu
                 ticksToTryJobAgain = OneMinute;
                 return true;
             }
+
             return false;
         }
 
         public override void ExposeData()
         {
             //Cult Variables
-            Scribe_Values.Look<bool>(ref needPreacher, "needPreacher", false, false);
-            Scribe_Values.Look<bool>(ref doingInquisition, "doingInquisition", false, false);
-            Scribe_Values.Look<int>(ref ticksToSpawnHelpfulPreacher, "ticksToSpawnHelpfulPreacher", 0, false);
-            Scribe_Values.Look<int>(ref ticksToCheckCultists, "ticksToCheckCultists", 0, false);
-            Scribe_Values.Look<int>(ref ticksUntilInquisition, "ticksUntilInquisition", 0, false);
+            Scribe_Values.Look(ref needPreacher, "needPreacher");
+            Scribe_Values.Look(ref doingInquisition, "doingInquisition");
+            Scribe_Values.Look(ref ticksToSpawnHelpfulPreacher, "ticksToSpawnHelpfulPreacher");
+            Scribe_Values.Look(ref ticksToCheckCultists, "ticksToCheckCultists");
+            Scribe_Values.Look(ref ticksUntilInquisition, "ticksUntilInquisition");
 
             //Cult Seed Variables
-            Scribe_References.Look<Pawn>(ref CurrentSeedPawn, "CurrentSeedPawn", false);
-            Scribe_References.Look<Thing>(ref CurrentSeedTarget, "CurrentSeedTarget", false);
-            Scribe_Values.Look<int>(ref ticksToSpawnCultSeed, "ticksToSpawnCultSeed", 0, false);
+            Scribe_References.Look(ref CurrentSeedPawn, "CurrentSeedPawn");
+            Scribe_References.Look(ref CurrentSeedTarget, "CurrentSeedTarget");
+            Scribe_Values.Look(ref ticksToSpawnCultSeed, "ticksToSpawnCultSeed");
             base.ExposeData();
         }
     }

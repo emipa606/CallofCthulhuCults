@@ -1,24 +1,17 @@
-﻿using RimWorld;
-using RimWorld.Planet;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using RimWorld.Planet;
 using Verse;
 
 namespace CultOfCthulhu
 {
     public class CultInfluence : IExposable
     {
-        public Settlement settlement = null;
+        public bool dominant;
 
-        public float influence = 0f;
-
-        public bool dominant = false;
+        public float influence;
+        public Settlement settlement;
 
         public CultInfluence()
         {
-
         }
 
         public CultInfluence(Settlement newSettlement, float newInfluence)
@@ -33,22 +26,15 @@ namespace CultOfCthulhu
 
         public void ExposeData()
         {
-            Scribe_References.Look<Settlement>(ref settlement, "settlement", false);
-            Scribe_Values.Look<float>(ref influence, "influence", 0f, false);
-            Scribe_Values.Look<bool>(ref dominant, "dominant", false, false);
+            Scribe_References.Look(ref settlement, "settlement");
+            Scribe_Values.Look(ref influence, "influence");
+            Scribe_Values.Look(ref dominant, "dominant");
         }
 
         public override string ToString()
         {
-            return string.Concat(new object[]
-            {
-                "(",
-                settlement,
-                ", influence=",
-                influence.ToString("F1"),
-                (!dominant) ? string.Empty : " dominant",
-                ")"
-            });
+            return string.Concat("(", settlement, ", influence=", influence.ToString("F1"),
+                !dominant ? string.Empty : " dominant", ")");
         }
     }
 }

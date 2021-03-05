@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using RimWorld;
+﻿using RimWorld;
 using Verse;
 
 namespace CultOfCthulhu
@@ -16,12 +12,12 @@ namespace CultOfCthulhu
 
         public virtual Building_SacrificialAltar altar(Map map)
         {
-                return map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar;
+            return map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar;
         }
 
         public virtual Pawn executioner(Map map)
         {
-                return map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.SacrificeData.Executioner;
+            return map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.SacrificeData.Executioner;
         }
 
         public virtual Pawn sacrifice(Map map)
@@ -31,13 +27,12 @@ namespace CultOfCthulhu
 
         public virtual Pawn TempExecutioner(Map map)
         {
-                return map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.tempExecutioner;
+            return map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.tempExecutioner;
         }
 
         public virtual Pawn TempSacrifice(Map map)
         {
             return map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.tempSacrifice;
         }
-
     }
 }

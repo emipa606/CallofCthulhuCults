@@ -1,38 +1,43 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
+
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
-using System.Linq;
-using System.Text;
+using Cthulhu;
+using RimWorld;
+using UnityEngine;
+using Verse;
+using Verse.AI;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
-    class ReanimatedPawnUtility
+    internal class ReanimatedPawnUtility
     {
         public static Color zombieSkin = new Color(0.37f, 0.48f, 0.35f, 1f);
 
-        public static ReanimatedPawn DoGenerateZombiePawnFromSource(Pawn sourcePawn, bool isBerserk = true, bool oathOfHastur = false)
+        public static ReanimatedPawn DoGenerateZombiePawnFromSource(Pawn sourcePawn, bool isBerserk = true,
+            bool oathOfHastur = false)
         {
             var pawnKindDef = PawnKindDef.Named("ReanimatedCorpse");
-            Faction factionDirect = isBerserk ? Find.FactionManager.FirstFactionOfDef(FactionDefOf.AncientsHostile) : Faction.OfPlayer;
-            var pawn = (ReanimatedPawn)ThingMaker.MakeThing(pawnKindDef.race, null);
+            var factionDirect = isBerserk
+                ? Find.FactionManager.FirstFactionOfDef(FactionDefOf.AncientsHostile)
+                : Faction.OfPlayer;
+            var pawn = (ReanimatedPawn) ThingMaker.MakeThing(pawnKindDef.race);
             try
             {
                 pawn.kindDef = pawnKindDef;
@@ -61,7 +66,7 @@ namespace CultOfCthulhu
                     pawn.story.hairDef = sourcePawn.story.hairDef;
                     if (!oathOfHastur)
                     {
-                        foreach (Trait current in sourcePawn.story.traits.allTraits)
+                        foreach (var current in sourcePawn.story.traits.allTraits)
                         {
                             pawn.story.traits.GainTrait(current);
                         }
@@ -75,26 +80,23 @@ namespace CultOfCthulhu
                         RelationshipFixer(pawn, sourcePawn);
                         AddedPartFixer(pawn, sourcePawn);
                     }
+
                     //pawn.story.GenerateSkillsFromBackstory();
                     var nameTriple = sourcePawn.Name as NameTriple;
                     if (!oathOfHastur)
                     {
-                        pawn.Name = new NameTriple(nameTriple.First, string.Concat(new string[]
-                            {
-                            "* ",
-                            Translator.Translate("Reanimated"),
-                            " ",
-                            nameTriple.Nick,
-                            " *"
-                            }), nameTriple.Last);
+                        pawn.Name = new NameTriple(nameTriple.First,
+                            string.Concat("* ", "Reanimated".Translate(), " ", nameTriple.Nick, " *"), nameTriple.Last);
                     }
                     else
                     {
                         pawn.Name = nameTriple;
                     }
                 }
+
                 var headGraphicPath = sourcePawn.story.HeadGraphicPath;
-                typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, headGraphicPath);
+                typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(pawn.story, headGraphicPath);
                 GenerateZombieApparelFromSource(pawn, sourcePawn);
                 var con = new PawnGenerationRequest();
                 PawnInventoryGenerator.GenerateInventoryFor(pawn, con);
@@ -103,19 +105,21 @@ namespace CultOfCthulhu
                 {
                     pawn.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.Berserk);
                 }
+
                 //Log.Message(pawn.Name.ToStringShort);
                 return pawn;
             }
             catch (Exception e)
             {
-                Cthulhu.Utility.DebugReport(e.ToString());
+                Utility.DebugReport(e.ToString());
             }
+
             return null;
         }
 
         public static void AddedPartFixer(ReanimatedPawn pawn, Pawn sourcePawn = null)
         {
-            foreach (Hediff hediff in sourcePawn.health.hediffSet.hediffs)
+            foreach (var hediff in sourcePawn.health.hediffSet.hediffs)
             {
                 if (hediff is Hediff_AddedPart || hediff is Hediff_Implant)
                 {
@@ -127,9 +131,9 @@ namespace CultOfCthulhu
         public static void SkillFixer(ReanimatedPawn pawn, Pawn sourcePawn = null)
         {
             //Add in and fix skill levels
-            foreach (SkillRecord skill in sourcePawn.skills.skills)
+            foreach (var skill in sourcePawn.skills.skills)
             {
-                SkillRecord pawnSkill = pawn.skills.GetSkill(skill.def);
+                var pawnSkill = pawn.skills.GetSkill(skill.def);
                 if (pawnSkill == null)
                 {
                     pawn.skills.skills.Add(skill);
@@ -147,29 +151,34 @@ namespace CultOfCthulhu
             //Add in and fix all blood relationships
             if (sourcePawn.relations.DirectRelations != null && sourcePawn.relations.DirectRelations.Count > 0)
             {
-                foreach (DirectPawnRelation pawnRel in sourcePawn.relations.DirectRelations)
+                foreach (var pawnRel in sourcePawn.relations.DirectRelations)
                 {
                     if (pawnRel.otherPawn != null && pawnRel.def != null)
                     {
                         pawn.relations.AddDirectRelation(pawnRel.def, pawnRel.otherPawn);
                     }
                 }
+
                 sourcePawn.relations.ClearAllRelations();
             }
         }
 
-        public static void GiveZombieSkinEffect(ReanimatedPawn pawn, ReanimatedPawn sourcePawn = null, bool oathOfHastur = false)
+        public static void GiveZombieSkinEffect(ReanimatedPawn pawn, ReanimatedPawn sourcePawn = null,
+            bool oathOfHastur = false)
         {
             if (sourcePawn == null)
             {
                 sourcePawn = pawn;
             }
 
-            Color newSkin = oathOfHastur ? new Color(1, 1, 1) : zombieSkin;
+            var newSkin = oathOfHastur ? new Color(1, 1, 1) : zombieSkin;
 
-            Graphic nakedBodyGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.bodyType.bodyNakedGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, newSkin);
-            Graphic headGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, newSkin);
-            Graphic hairGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, sourcePawn.story.hairColor);
+            var nakedBodyGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.bodyType.bodyNakedGraphicPath,
+                ShaderDatabase.CutoutSkin, Vector2.one, newSkin);
+            var headGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.HeadGraphicPath,
+                ShaderDatabase.CutoutSkin, Vector2.one, newSkin);
+            var hairGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.hairDef.texPath,
+                ShaderDatabase.Cutout, Vector2.one, sourcePawn.story.hairColor);
             pawn.Drawer.renderer.graphics.headGraphic = headGraphic;
             pawn.Drawer.renderer.graphics.nakedGraphic = nakedBodyGraphic;
             pawn.Drawer.renderer.graphics.hairGraphic = hairGraphic;
@@ -181,34 +190,42 @@ namespace CultOfCthulhu
             {
                 return false;
             }
+
             if (pawn.Drawer.renderer == null)
             {
                 return false;
             }
+
             if (pawn.Drawer.renderer.graphics == null)
             {
                 return false;
             }
+
             if (!pawn.Drawer.renderer.graphics.AllResolved)
             {
                 pawn.Drawer.renderer.graphics.ResolveAllGraphics();
             }
+
             if (pawn.Drawer.renderer.graphics.headGraphic == null)
             {
                 return false;
             }
+
             if (pawn.Drawer.renderer.graphics.nakedGraphic == null)
             {
                 return false;
             }
+
             if (pawn.Drawer.renderer.graphics.headGraphic.path == null)
             {
                 return false;
             }
+
             if (pawn.Drawer.renderer.graphics.nakedGraphic.path == null)
             {
                 return false;
             }
+
             GiveZombieSkinEffect(pawn);
             return true;
         }
@@ -218,8 +235,8 @@ namespace CultOfCthulhu
         public static Pawn GenerateZombiePawnFromSource(Pawn sourcePawn)
         {
             var pawnKindDef = PawnKindDef.Named("ReanimatedCorpse");
-            Faction factionDirect = Find.FactionManager.FirstFactionOfDef(FactionDefOf.AncientsHostile);
-            var pawn = (Pawn)ThingMaker.MakeThing(pawnKindDef.race, null);
+            var factionDirect = Find.FactionManager.FirstFactionOfDef(FactionDefOf.AncientsHostile);
+            var pawn = (Pawn) ThingMaker.MakeThing(pawnKindDef.race);
             pawn.kindDef = pawnKindDef;
             pawn.SetFactionDirect(factionDirect);
             pawn.pather = new Pawn_PathFollower(pawn);
@@ -239,6 +256,7 @@ namespace CultOfCthulhu
                 pawn.apparel = new Pawn_ApparelTracker(pawn);
                 pawn.inventory = new Pawn_InventoryTracker(pawn);
             }
+
             if (pawn.RaceProps.Humanlike)
             {
                 pawn.ownership = new Pawn_Ownership(pawn);
@@ -247,18 +265,21 @@ namespace CultOfCthulhu
                 pawn.story = new Pawn_StoryTracker(pawn);
                 pawn.workSettings = new Pawn_WorkSettings(pawn);
             }
+
             if (pawn.RaceProps.intelligence <= Intelligence.ToolUser)
             {
                 pawn.caller = new Pawn_CallTracker(pawn);
             }
+
             //pawn.gender = Gender.None;
             pawn.gender = sourcePawn.gender;
-            Cthulhu.Utility.GenerateRandomAge(pawn, pawn.Map);
+            Utility.GenerateRandomAge(pawn, pawn.Map);
             pawn.needs.SetInitialLevels();
             if (pawn.RaceProps.Humanlike)
             {
                 var headGraphicPath = sourcePawn.story.HeadGraphicPath;
-                typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(pawn.story, headGraphicPath);
+                typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(pawn.story, headGraphicPath);
                 pawn.story.melanin = sourcePawn.story.melanin;
                 pawn.story.crownType = sourcePawn.story.crownType;
                 pawn.story.hairColor = sourcePawn.story.hairColor;
@@ -267,19 +288,24 @@ namespace CultOfCthulhu
                 pawn.story.childhood = sourcePawn.story.childhood;
                 pawn.story.adulthood = sourcePawn.story.adulthood;
                 pawn.story.hairDef = sourcePawn.story.hairDef;
-                foreach (Trait current in sourcePawn.story.traits.allTraits)
+                foreach (var current in sourcePawn.story.traits.allTraits)
                 {
                     pawn.story.traits.GainTrait(current);
                 }
+
                 //pawn.story.GenerateSkillsFromBackstory();
             }
+
             GenerateZombieApparelFromSource(pawn, sourcePawn);
             var con = new PawnGenerationRequest();
             PawnInventoryGenerator.GenerateInventoryFor(pawn, con);
             //Graphic nakedBodyGraphic = GraphicGetter_NakedHumanlike.GetNakedBodyGraphic(sourcePawn.story.bodyType, ShaderDatabase.CutoutSkin, new Color(0.37f, 0.48f, 0.35f, 1f));
-            Graphic nakedBodyGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.bodyType.bodyNakedGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, new Color(0.37f, 0.48f, 0.35f, 1f));
-            Graphic headGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.HeadGraphicPath, ShaderDatabase.CutoutSkin, Vector2.one, new Color(0.37f, 0.48f, 0.35f, 1f));
-            Graphic hairGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.hairDef.texPath, ShaderDatabase.Cutout, Vector2.one, sourcePawn.story.hairColor);
+            var nakedBodyGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.bodyType.bodyNakedGraphicPath,
+                ShaderDatabase.CutoutSkin, Vector2.one, new Color(0.37f, 0.48f, 0.35f, 1f));
+            var headGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.HeadGraphicPath,
+                ShaderDatabase.CutoutSkin, Vector2.one, new Color(0.37f, 0.48f, 0.35f, 1f));
+            var hairGraphic = GraphicDatabase.Get<Graphic_Multi>(sourcePawn.story.hairDef.texPath,
+                ShaderDatabase.Cutout, Vector2.one, sourcePawn.story.hairColor);
             pawn.Drawer.renderer.graphics.headGraphic = headGraphic;
             pawn.Drawer.renderer.graphics.nakedGraphic = nakedBodyGraphic;
             pawn.Drawer.renderer.graphics.hairGraphic = hairGraphic;
@@ -294,23 +320,23 @@ namespace CultOfCthulhu
             {
                 return;
             }
-            foreach (Apparel current in sourcePawn.apparel.WornApparel)
+
+            foreach (var current in sourcePawn.apparel.WornApparel)
             {
                 Apparel apparel;
                 if (current.def.MadeFromStuff)
                 {
-                    apparel = (Apparel)ThingMaker.MakeThing(current.def, current.Stuff);
+                    apparel = (Apparel) ThingMaker.MakeThing(current.def, current.Stuff);
                 }
                 else
                 {
-                    apparel = (Apparel)ThingMaker.MakeThing(current.def, null);
+                    apparel = (Apparel) ThingMaker.MakeThing(current.def);
                 }
-                apparel.DrawColor = new Color(current.DrawColor.r, current.DrawColor.g, current.DrawColor.b, current.DrawColor.a);
-                zombie.apparel.Wear(apparel, true);
+
+                apparel.DrawColor = new Color(current.DrawColor.r, current.DrawColor.g, current.DrawColor.b,
+                    current.DrawColor.a);
+                zombie.apparel.Wear(apparel);
             }
         }
-
-
-
     }
 }

@@ -1,41 +1,39 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
+
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using Cthulhu;
+using RimWorld;
+using Verse;
+using Verse.AI;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
     public class JobDriver_AttendWorship : JobDriver
     {
-        public override bool TryMakePreToilReservations(bool errorOnFailed)
-        {
-            return true;
-        }
         private readonly TargetIndex Build = TargetIndex.A;
         private readonly TargetIndex Facing = TargetIndex.B;
         private readonly TargetIndex Spot = TargetIndex.C;
 
-        protected Building_SacrificialAltar Altar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
+        private Pawn setPreacher;
 
-        private Pawn setPreacher = null;
+        protected Building_SacrificialAltar Altar => (Building_SacrificialAltar) job.GetTarget(TargetIndex.A).Thing;
+
         protected Pawn PreacherPawn
         {
             get
@@ -45,21 +43,33 @@ namespace CultOfCthulhu
                     return setPreacher;
                 }
 
-                if (Altar.preacher != null) { setPreacher = Altar.preacher; return Altar.preacher; }
-                else
+                if (Altar.preacher != null)
                 {
-                    foreach (Pawn pawn in pawn.Map.mapPawns.FreeColonistsSpawned)
+                    setPreacher = Altar.preacher;
+                    return Altar.preacher;
+                }
+
+                foreach (var pawn in pawn.Map.mapPawns.FreeColonistsSpawned)
+                {
+                    if (pawn.CurJob.def == CultsDefOf.Cults_HoldWorship)
                     {
-                        if (pawn.CurJob.def == CultsDefOf.Cults_HoldWorship) { setPreacher = pawn; return pawn; }
+                        setPreacher = pawn;
+                        return pawn;
                     }
                 }
+
                 return null;
             }
         }
 
+        public override bool TryMakePreToilReservations(bool errorOnFailed)
+        {
+            return true;
+        }
+
         public override void ExposeData()
         {
-            Scribe_References.Look<Pawn>(ref setPreacher, "setPreacher");
+            Scribe_References.Look(ref setPreacher, "setPreacher");
             base.ExposeData();
         }
 
@@ -73,17 +83,19 @@ namespace CultOfCthulhu
                 {
                     return JobCondition.Succeeded;
                 }
-                else if (PreacherPawn.CurJob.def != CultsDefOf.Cults_HoldWorship)
+
+                if (PreacherPawn.CurJob.def != CultsDefOf.Cults_HoldWorship)
                 {
                     return JobCondition.Incompletable;
                 }
+
                 return JobCondition.Ongoing;
             });
-            this.EndOnDespawnedOrNull(Spot, JobCondition.Incompletable);
-            this.EndOnDespawnedOrNull(Build, JobCondition.Incompletable);
+            this.EndOnDespawnedOrNull(Spot);
+            this.EndOnDespawnedOrNull(Build);
 
 
-            yield return Toils_Reserve.Reserve(Spot, 1, -1);
+            yield return Toils_Reserve.Reserve(Spot);
             Toil gotoPreacher;
             if (TargetC.HasThing)
             {
@@ -93,6 +105,7 @@ namespace CultOfCthulhu
             {
                 gotoPreacher = Toils_Goto.GotoCell(Spot, PathEndMode.OnCell);
             }
+
             yield return gotoPreacher;
 
             var altarToil = new Toil
@@ -120,8 +133,9 @@ namespace CultOfCthulhu
                     Altar.currentWorshipState == Building_SacrificialAltar.WorshipState.finished)
                 {
                     CultUtility.AttendWorshipTickCheckEnd(PreacherPawn, pawn);
-                    Cthulhu.Utility.DebugReport("Called end tick check");
+                    Utility.DebugReport("Called end tick check");
                 }
+
                 pawn.ClearAllReservations();
                 //if (this.TargetC.HasThing && TargetC.Thing is Thing t)
                 //{
@@ -133,10 +147,7 @@ namespace CultOfCthulhu
                 //    if (Map.reservationManager.IsReserved(this.job.targetC.Cell, Faction.OfPlayer))
                 //        Map.reservationManager.Release(this.job.targetC.Cell, this.pawn);
                 //}
-
-
             });
-            yield break;
         }
     }
 }

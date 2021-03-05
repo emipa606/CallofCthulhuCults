@@ -1,24 +1,24 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
+
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using Cthulhu;
+using RimWorld;
+using Verse;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 
@@ -35,24 +35,27 @@ namespace CultOfCthulhu
                     Messages.Message("Null executioner.", MessageTypeDefOf.RejectInput);
                     return false;
                 }
+
                 if (TempExecutioner(map).story.traits.HasTrait(TraitDefOf.Psychopath) &&
                     TempExecutioner(map).story.traits.HasTrait(TraitDefOf.Cannibal))
                 {
-                    Messages.Message("The executioner already has both psychopath and cannibal traits.", MessageTypeDefOf.RejectInput);
+                    Messages.Message("The executioner already has both psychopath and cannibal traits.",
+                        MessageTypeDefOf.RejectInput);
                     return false;
                 }
             }
             catch (Exception e)
             {
-                Cthulhu.Utility.DebugReport(e.ToString());
+                Utility.DebugReport(e.ToString());
             }
+
             return true;
         }
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             var map = parms.target as Map;
-            Pawn p = map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.SacrificeData.Executioner;
+            var p = map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.SacrificeData.Executioner;
             TraitDef traitToAdd = null;
             if (!p.story.traits.HasTrait(TraitDefOf.Cannibal))
             {
@@ -79,7 +82,7 @@ namespace CultOfCthulhu
             //    p.story.traits.GainTrait(new Trait(traitToAdd));
             //}
             map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = p.Position;
-            Cthulhu.Utility.ApplyTaleDef("Cults_SpellStarryWisdom", p);
+            Utility.ApplyTaleDef("Cults_SpellStarryWisdom", p);
 
             return true;
         }

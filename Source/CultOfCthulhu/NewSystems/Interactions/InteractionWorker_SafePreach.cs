@@ -1,16 +1,14 @@
-﻿using System;
-using Verse;
+﻿using System.Collections.Generic;
 using RimWorld;
-using System.Collections.Generic;
+using Verse;
 
 namespace CultOfCthulhu
 {
     /// <summary>
-    /// Cultist shares ideas with a non-cultist successfully.
+    ///     Cultist shares ideas with a non-cultist successfully.
     /// </summary>
     public class InteractionWorker_SafePreach : InteractionWorker
     {
-
         //How great the effect is on the cultminded values.
         public const float CULTMINDED_EFFECT_MIN = 0.025f;
         public const float CULTMINDED_EFFECT_MAX = 0.05f;
@@ -18,9 +16,11 @@ namespace CultOfCthulhu
         //Very common interaction
         private const float BaseSelectionWeight = 1f;
 
-        public override void Interacted(Pawn initiator, Pawn recipient, List<RulePackDef> extraSentencePacks, out string letterText, out string letterLabel, out LetterDef letterDef, out LookTargets lookTargets)
+        public override void Interacted(Pawn initiator, Pawn recipient, List<RulePackDef> extraSentencePacks,
+            out string letterText, out string letterLabel, out LetterDef letterDef, out LookTargets lookTargets)
         {
-            base.Interacted(initiator, recipient, extraSentencePacks, out letterText, out letterLabel, out letterDef, out lookTargets);
+            base.Interacted(initiator, recipient, extraSentencePacks, out letterText, out letterLabel, out letterDef,
+                out lookTargets);
 
             CultUtility.AffectCultMindedness(recipient, Rand.Range(CULTMINDED_EFFECT_MIN, CULTMINDED_EFFECT_MAX));
             CultUtility.AffectCultMindedness(initiator, Rand.Range(CULTMINDED_EFFECT_MIN, CULTMINDED_EFFECT_MAX));

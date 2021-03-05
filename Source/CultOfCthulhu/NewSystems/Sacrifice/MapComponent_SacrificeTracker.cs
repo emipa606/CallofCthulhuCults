@@ -1,60 +1,107 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
+
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using RimWorld;
+using Verse;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
     public partial class MapComponent_SacrificeTracker : MapComponent
     {
-        
         public static int resurrectionTicks = 10000;
-
-        /// Unspeakable Oath Variables
-        public List<Pawn> toBeResurrected = new List<Pawn>();
-        public int ticksUntilResurrection = -999;
+        public bool ASMwasBonded;
+        public bool ASMwasExcMaster;
+        public bool ASMwasPet;
 
         /// Defend the Brood Variables
         public List<Pawn> defendTheBroodPawns = new List<Pawn>();
+
+        public bool HSMwasFamily;
+        public IncidentDef lastDoubleSideEffect;
+        public IntVec3 lastLocation = IntVec3.Invalid;
+        public CultUtility.OfferingSize lastOfferingSize = CultUtility.OfferingSize.none;
+        public PawnRelationDef lastRelation;
+
+        public CultUtility.SacrificeResult
+            lastResult =
+                CultUtility.SacrificeResult
+                    .success; // Default is a success, so that in-case of a bug, it's a positive bug.
+
+
+        public string lastSacrificeName = "";
+        public CultUtility.SacrificeType lastSacrificeType = CultUtility.SacrificeType.none;
+        public IncidentDef lastSideEffect;
+        public IncidentDef lastSpell;
+        public Building_SacrificialAltar lastUsedAltar; //Default
+        public int ticksUntilResurrection = -999;
+
+        /// Unspeakable Oath Variables
+        public List<Pawn> toBeResurrected = new List<Pawn>();
 
         /// Sacrifice Tracker Variables
         //public List<Pawn> lastSacrificeCongregation = new List<Pawn>();
         public List<Pawn> unspeakableOathPawns = new List<Pawn>();
 
+        public bool wasDoubleTheFun;
 
-        public string lastSacrificeName = "";
-        public bool wasDoubleTheFun = false;
-        public bool ASMwasPet = false;
-        public bool ASMwasBonded = false;
-        public bool ASMwasExcMaster = false;
-        public bool HSMwasFamily = false;
-        public IntVec3 lastLocation = IntVec3.Invalid;
-        public PawnRelationDef lastRelation = null;
-        public IncidentDef lastDoubleSideEffect = null;
-        public IncidentDef lastSideEffect = null;
-        public IncidentDef lastSpell = null;
-        public Building_SacrificialAltar lastUsedAltar = null; //Default
-        public CultUtility.SacrificeResult lastResult = CultUtility.SacrificeResult.success; // Default is a success, so that in-case of a bug, it's a positive bug.
-        public CultUtility.SacrificeType lastSacrificeType = CultUtility.SacrificeType.none;
-        public CultUtility.OfferingSize lastOfferingSize = CultUtility.OfferingSize.none;
+        #region Tick
+
+        public override void MapComponentTick()
+        {
+            base.MapComponentTick();
+            ResolveHasturOathtakers();
+            ResolveHasturResurrections();
+        }
+
+        #endregion Tick
+
+        public override void ExposeData()
+        {
+            //Unspeakable Oath Spell
+            Scribe_Values.Look(ref ticksUntilResurrection, "ticksUntilResurrection", -999);
+            //Scribe_Collections.Look<Corpse>(ref this.toBeResurrected, "toBeResurrected", LookMode.Reference);
+            Scribe_Collections.Look(ref unspeakableOathPawns, "unspeakableOathPawns", LookMode.Reference);
+
+            //Defend the Brood Spell
+            Scribe_Collections.Look(ref defendTheBroodPawns, "defendTheBroodPawns", LookMode.Reference);
+
+            //Sacrifice Variables
+            Scribe_Values.Look(ref lastSacrificeName, "lastSacrificeName", "None");
+            Scribe_Values.Look(ref wasDoubleTheFun, "wasDoubleTheFun");
+            Scribe_Values.Look(ref ASMwasPet, "ASMwasPet");
+            Scribe_Values.Look(ref ASMwasBonded, "ASMwasBonded");
+            Scribe_Values.Look(ref ASMwasExcMaster, "ASMwasExcMaster");
+            Scribe_Values.Look(ref HSMwasFamily, "HSMwasFamily");
+
+            Scribe_Values.Look(ref lastLocation, "lastLocation", IntVec3.Invalid);
+            Scribe_Defs.Look(ref lastRelation, "lastRelation");
+            Scribe_Defs.Look(ref lastDoubleSideEffect, "lastDoubleSideEffect");
+            Scribe_Defs.Look(ref lastSideEffect, "lastSideEffect");
+            Scribe_Defs.Look(ref lastSpell, "lastSpell");
+            Scribe_References.Look(ref lastUsedAltar, "lastUsedAltar");
+            Scribe_Values.Look(ref lastResult, "lastResult", CultUtility.SacrificeResult.success);
+            Scribe_Values.Look(ref lastSacrificeType, "lastSacrificeType");
+            Scribe_Values.Look(ref lastOfferingSize, "lastOfferingSize");
+            base.ExposeData();
+        }
 
         #region Setup
 
@@ -62,12 +109,13 @@ namespace CultOfCthulhu
         //this method causes a new map component to be generated from a static method.
         public static MapComponent_SacrificeTracker Get(Map map)
         {
-            MapComponent_SacrificeTracker mapComponent_SacrificeTracker = map.components.OfType<MapComponent_SacrificeTracker>().FirstOrDefault<MapComponent_SacrificeTracker>();
+            var mapComponent_SacrificeTracker = map.components.OfType<MapComponent_SacrificeTracker>().FirstOrDefault();
             if (mapComponent_SacrificeTracker == null)
             {
                 mapComponent_SacrificeTracker = new MapComponent_SacrificeTracker(map);
                 map.components.Add(mapComponent_SacrificeTracker);
             }
+
             return mapComponent_SacrificeTracker;
         }
 
@@ -96,25 +144,15 @@ namespace CultOfCthulhu
             HSMwasFamily = false;
         }
 
-#endregion Setup
-
-        #region Tick
-
-        public override void MapComponentTick()
-        {
-            base.MapComponentTick();
-            ResolveHasturOathtakers();
-            ResolveHasturResurrections();
-        }
-
-        #endregion Tick
+        #endregion Setup
 
         #region Reports
+
         public string GenerateFailureString()
         {
             var s = new StringBuilder();
             var ran = Rand.Range(1, 40);
-            var message = "SacrificeFailMessage" + ran.ToString();
+            var message = "SacrificeFailMessage" + ran;
             string messageObject = message.Translate(lastUsedAltar.SacrificeData.Executioner);
             s.Append(messageObject);
             return s.ToString();
@@ -123,7 +161,7 @@ namespace CultOfCthulhu
         public void GenerateSacrificeMessage()
         {
             var s = new StringBuilder();
-            LetterDef letterDef = LetterDefOf.ThreatSmall;
+            var letterDef = LetterDefOf.ThreatSmall;
             s.Append("SacrificeIntro".Translate());
             s.Append(" " + lastUsedAltar.SacrificeData.Entity.Label);
 
@@ -132,7 +170,6 @@ namespace CultOfCthulhu
             //The sacrifice is human
             if (lastUsedAltar.SacrificeData.Type == CultUtility.SacrificeType.human)
             {
-
                 s.Append(" " + lastUsedAltar.SacrificeData.Spell.letterLabel + ". ");
 
                 //Was the executioner a family member?
@@ -154,10 +191,10 @@ namespace CultOfCthulhu
                     }
 
                     string familyString = "HumanSacrificeWasFamily".Translate(
-                            lastUsedAltar.SacrificeData.Executioner.LabelShort,
-                            lastUsedAltar.SacrificeData.Executioner.gender.GetPossessive(),
-                            lastRelation.label,
-                            lastSacrificeName
+                        lastUsedAltar.SacrificeData.Executioner.LabelShort,
+                        lastUsedAltar.SacrificeData.Executioner.gender.GetPossessive(),
+                        lastRelation.label,
+                        lastSacrificeName
                     );
                     s.Append(familyString + ". ");
                 }
@@ -167,7 +204,7 @@ namespace CultOfCthulhu
                     s.Append(GenerateFailureString());
                 }
 
-                if ((int)lastResult <= 3 && (int)lastResult > 1)
+                if ((int) lastResult <= 3 && (int) lastResult > 1)
                 {
                     s.Append(" " + lastSideEffect.letterText);
                     if (wasDoubleTheFun)
@@ -175,19 +212,23 @@ namespace CultOfCthulhu
                         s.Append(" " + lastDoubleSideEffect.letterText);
                     }
                 }
+
                 if (lastResult == CultUtility.SacrificeResult.mixedsuccess)
                 {
-                    var buts = new List<string> {
-                    "Cults_butsOne".Translate(),
-                    "Cults_butsTwo".Translate(),
-                    "Cults_butsThree".Translate(),
-                    "Cults_butsFour".Translate()
-                };
-                    s.Append(". " + buts.RandomElement<string>() + ", ");
+                    var buts = new List<string>
+                    {
+                        "Cults_butsOne".Translate(),
+                        "Cults_butsTwo".Translate(),
+                        "Cults_butsThree".Translate(),
+                        "Cults_butsFour".Translate()
+                    };
+                    s.Append(". " + buts.RandomElement() + ", ");
                 }
-                if ((int)lastResult > 2)
+
+                if ((int) lastResult > 2)
                 {
-                    s.Append(lastUsedAltar.SacrificeData.Executioner.ToString() + " " + lastUsedAltar.SacrificeData.Spell.letterText + ".");
+                    s.Append(lastUsedAltar.SacrificeData.Executioner + " " +
+                             lastUsedAltar.SacrificeData.Spell.letterText + ".");
                 }
 
                 s.Append(" " + "Cults_ritualWas".Translate());
@@ -212,32 +253,36 @@ namespace CultOfCthulhu
                         s.Append("this should never happen");
                         break;
                 }
-                labelToTranslate = "SacrificeLabel" + lastResult.ToString();
+
+                labelToTranslate = "SacrificeLabel" + lastResult;
             }
             else if (lastUsedAltar.SacrificeData.Type == CultUtility.SacrificeType.animal)
             {
                 s.Append(" " + "AnimalSacrificeReason".Translate() + ".");
                 if (ASMwasPet)
                 {
-                    s.Append(" " + "AnimalSacrificeWasPet".Translate() + lastUsedAltar.SacrificeData.Entity.Label + ".");
+                    s.Append(" " + "AnimalSacrificeWasPet".Translate() + lastUsedAltar.SacrificeData.Entity.Label +
+                             ".");
                 }
 
                 if (ASMwasBonded)
                 {
                     string bondString = "AnimalSacrificeWasBonded".Translate(
-                            lastSacrificeName,
-                            lastUsedAltar.SacrificeData.Executioner.LabelShort
+                        lastSacrificeName,
+                        lastUsedAltar.SacrificeData.Executioner.LabelShort
                     );
                     s.Append(" " + bondString + ".");
                 }
+
                 if (ASMwasExcMaster)
                 {
                     string bondString = "AnimalSacrificeWasExcMaster".Translate(
-                            lastSacrificeName,
-                            lastUsedAltar.SacrificeData.Executioner.LabelShort
+                        lastSacrificeName,
+                        lastUsedAltar.SacrificeData.Executioner.LabelShort
                     );
                     s.Append(" " + bondString + ".");
                 }
+
                 if (ASMwasBonded || ASMwasPet || ASMwasExcMaster)
                 {
                     s.Append(" " + "GreedilyReceived".Translate() + lastUsedAltar.SacrificeData.Entity.Label + ".");
@@ -246,6 +291,7 @@ namespace CultOfCthulhu
                 {
                     s.Append(" " + "ReadilyReceived".Translate() + ".");
                 }
+
                 textLabel = "AnimalSacrificeLabel".Translate();
                 goto LetterStack;
             }
@@ -256,41 +302,12 @@ namespace CultOfCthulhu
                 textLabel = "OfferingLabel".Translate();
                 goto LetterStack;
             }
+
             textLabel = labelToTranslate.Translate();
             LetterStack:
             Find.LetterStack.ReceiveLetter(textLabel, s.ToString(), letterDef, new TargetInfo(lastLocation, map));
         }
+
         #endregion Reports
-        
-        public override void ExposeData()
-        {
-            //Unspeakable Oath Spell
-            Scribe_Values.Look<int>(ref ticksUntilResurrection, "ticksUntilResurrection", -999);
-            //Scribe_Collections.Look<Corpse>(ref this.toBeResurrected, "toBeResurrected", LookMode.Reference);
-            Scribe_Collections.Look<Pawn>(ref unspeakableOathPawns, "unspeakableOathPawns", LookMode.Reference);
-            
-            //Defend the Brood Spell
-            Scribe_Collections.Look<Pawn>(ref defendTheBroodPawns, "defendTheBroodPawns", LookMode.Reference, new object[0]);
-
-            //Sacrifice Variables
-            Scribe_Values.Look<string>(ref lastSacrificeName, "lastSacrificeName", "None", false);
-            Scribe_Values.Look<bool>(ref wasDoubleTheFun, "wasDoubleTheFun", false, false);
-            Scribe_Values.Look<bool>(ref ASMwasPet, "ASMwasPet", false, false);
-            Scribe_Values.Look<bool>(ref ASMwasBonded, "ASMwasBonded", false, false);
-            Scribe_Values.Look<bool>(ref ASMwasExcMaster, "ASMwasExcMaster", false, false);
-            Scribe_Values.Look<bool>(ref HSMwasFamily, "HSMwasFamily", false, false);
-
-            Scribe_Values.Look<IntVec3>(ref lastLocation, "lastLocation", IntVec3.Invalid, false);
-            Scribe_Defs.Look<PawnRelationDef>(ref lastRelation, "lastRelation");
-            Scribe_Defs.Look<IncidentDef>(ref lastDoubleSideEffect, "lastDoubleSideEffect");
-            Scribe_Defs.Look<IncidentDef>(ref lastSideEffect, "lastSideEffect");
-            Scribe_Defs.Look<IncidentDef>(ref lastSpell, "lastSpell");
-            Scribe_References.Look<Building_SacrificialAltar>(ref lastUsedAltar, "lastUsedAltar", false);
-            Scribe_Values.Look<CultUtility.SacrificeResult>(ref lastResult, "lastResult", CultUtility.SacrificeResult.success, false);
-            Scribe_Values.Look<CultUtility.SacrificeType>(ref lastSacrificeType, "lastSacrificeType", CultUtility.SacrificeType.none, false);
-            Scribe_Values.Look<CultUtility.OfferingSize>(ref lastOfferingSize, "lastOfferingSize", CultUtility.OfferingSize.none, false);
-            base.ExposeData();
-
-        }
     }
 }

@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using RimWorld;
-using Verse;
 using RimWorld.Planet;
+using Verse;
 
 namespace CultOfCthulhu
 {
     public static class CultTracker
     {
-        public static WorldComponent_GlobalCultTracker Get => Find.World.GetComponent<WorldComponent_GlobalCultTracker>();
+        public static WorldComponent_GlobalCultTracker Get =>
+            Find.World.GetComponent<WorldComponent_GlobalCultTracker>();
     }
 
-    public enum CultSeedState : int
+    public enum CultSeedState
     {
         NeedSeed = 0,
         NeedSeeing = 1,
@@ -25,15 +24,19 @@ namespace CultOfCthulhu
 
     public class WorldComponent_GlobalCultTracker : WorldComponent
     {
-        public bool needPreacher = false;
         public bool doingInquisition = false;
-        public bool exposedToCults = false;
+        public bool exposedToCults;
+        public bool needPreacher = false;
+        private List<CultistExperience> workingInts = new List<CultistExperience>();
+
+        private List<Pawn> workingPawns = new List<Pawn>();
+
         public bool ExposedToCults
         {
             get => exposedToCults;
             set
             {
-                if (value != exposedToCults && value == true)
+                if (value != exposedToCults && value)
                 {
                     Find.LetterStack.ReceiveLetter("Cults_InitialExposureLabel".Translate(),
                         "Cults_InitialExposureDesc".Translate(), CultsDefOf.Cults_StandardMessage, null);
@@ -43,9 +46,46 @@ namespace CultOfCthulhu
             }
         }
 
+        public override void ExposeData()
+        {
+            base.ExposeData();
+            Scribe_Collections.Look(ref worldCults, "worldCults", LookMode.Deep);
+            Scribe_Collections.Look(ref antiCultists, "antiCultists", LookMode.Reference);
+            Scribe_Values.Look(ref currentSeedState, "CurrentSeedState");
+            Scribe_Values.Look(ref exposedToCults, "exposedToCults");
+            //Scribe_Collections.Look<Pawn, int[]>(ref this.cultistExperiences, "cultistExperiences", LookMode.Reference, LookMode.Value);
+            if (Scribe.mode == LoadSaveMode.Saving)
+            {
+                workingPawns = new List<Pawn>();
+                workingInts = new List<CultistExperience>();
+                if (cultistExperiences != null && cultistExperiences?.Count > 0)
+                {
+                    foreach (var keyPair in cultistExperiences)
+                    {
+                        workingPawns.Add(keyPair.Key);
+                        workingInts.Add(keyPair.Value);
+                    }
+                }
+            }
+
+            Scribe_Collections.Look(ref workingPawns, "workingPawns", LookMode.Reference);
+            Scribe_Collections.Look(ref workingInts, "workingInts", LookMode.Deep);
+            if (Scribe.mode != LoadSaveMode.PostLoadInit)
+            {
+                return;
+            }
+
+            cultistExperiences = new Dictionary<Pawn, CultistExperience>();
+            for (var i = 0; i < workingPawns.Count; i++)
+            {
+                cultistExperiences.Add(workingPawns[i], workingInts[i]);
+            }
+        }
+
 
         #region stuff
-        public List<ResearchProjectDef> cultResearch = new List<ResearchProjectDef>()
+
+        public List<ResearchProjectDef> cultResearch = new List<ResearchProjectDef>
         {
             ResearchProjectDef.Named("Forbidden_Studies"),
             ResearchProjectDef.Named("Forbidden_Deities"),
@@ -59,7 +99,7 @@ namespace CultOfCthulhu
             ResearchProjectDef.Named("Forbidden_Reports")
         };
 
-        public List<Cult> worldCults = null;
+        public List<Cult> worldCults;
         public List<Pawn> antiCultists = new List<Pawn>();
         public CultSeedState currentSeedState = CultSeedState.NeedSeed;
         public Dictionary<Pawn, CultistExperience> cultistExperiences = new Dictionary<Pawn, CultistExperience>();
@@ -72,7 +112,7 @@ namespace CultOfCthulhu
                 Cult result = null;
                 if (worldCults != null && worldCults.Count > 0)
                 {
-                    result = worldCults.FirstOrDefault((Cult x) => x.foundingFaction == Faction.OfPlayerSilentFail);
+                    result = worldCults.FirstOrDefault(x => x.foundingFaction == Faction.OfPlayerSilentFail);
                 }
 
                 return result;
@@ -88,7 +128,7 @@ namespace CultOfCthulhu
 
             if (!cultistExperiences?.ContainsKey(p) ?? true)
             {
-                cultistExperiences.Add(p, new CultistExperience(0,0));
+                cultistExperiences.Add(p, new CultistExperience(0, 0));
             }
 
             if (!carriedOutSacrifice)
@@ -110,7 +150,7 @@ namespace CultOfCthulhu
 
             if (!cultistExperiences.ContainsKey(p))
             {
-                cultistExperiences.Add(p, new CultistExperience(0,0));
+                cultistExperiences.Add(p, new CultistExperience(0, 0));
             }
 
             return !sacrifice ? cultistExperiences[p].PreachCount : cultistExperiences[p].SacrificeCount;
@@ -119,14 +159,16 @@ namespace CultOfCthulhu
         public Cult LocalDominantCult(Map map)
         {
             Cult result = null;
-            Settlement settlement = Find.WorldObjects.SettlementAt(map.Tile);
+            var settlement = Find.WorldObjects.SettlementAt(map.Tile);
             if (settlement != null)
             {
                 if (worldCults.Count > 0)
                 {
-                    result = worldCults.FirstOrDefault((Cult x) => x.influences.FirstOrDefault((CultInfluence y) => y.settlement == settlement && y.dominant) != null);
+                    result = worldCults.FirstOrDefault(x =>
+                        x.influences.FirstOrDefault(y => y.settlement == settlement && y.dominant) != null);
                 }
             }
+
             return result;
         }
 
@@ -141,13 +183,14 @@ namespace CultOfCthulhu
             {
                 return;
             }
+
             if (antiCultists.Count == 0)
             {
                 return;
             }
 
             var tempList = new List<Pawn>(antiCultists);
-            foreach (Pawn current in tempList)
+            foreach (var current in tempList)
             {
                 if (current == inquisitor)
                 {
@@ -178,7 +221,6 @@ namespace CultOfCthulhu
             }
 
 
-
             //Add the anti-cultist to the list.
             antiCultists.Add(antiCultist);
             //If the cult already exists, show a message to initiate the pawn into the inquisitor faction.
@@ -191,44 +233,7 @@ namespace CultOfCthulhu
                 "Cults_InquisitionPlotBegins".Translate(antiCultist.LabelShort, PlayerCult.name),
                 MessageTypeDefOf.PositiveEvent);
         }
+
         #endregion stuff
-
-        private List<Pawn> workingPawns = new List<Pawn>();
-        private List<CultistExperience> workingInts = new List<CultistExperience>();
-        public override void ExposeData()
-        {
-            base.ExposeData();
-            Scribe_Collections.Look<Cult>(ref worldCults, "worldCults", LookMode.Deep, new object[0]);
-            Scribe_Collections.Look<Pawn>(ref antiCultists, "antiCultists", LookMode.Reference, new object[0]);
-            Scribe_Values.Look<CultSeedState>(ref currentSeedState, "CurrentSeedState", CultSeedState.NeedSeed, false);
-            Scribe_Values.Look<bool>(ref exposedToCults, "exposedToCults", false);
-            //Scribe_Collections.Look<Pawn, int[]>(ref this.cultistExperiences, "cultistExperiences", LookMode.Reference, LookMode.Value);
-            if (Scribe.mode == LoadSaveMode.Saving)
-            {
-                workingPawns = new List<Pawn>();
-                workingInts = new List<CultistExperience>();
-                if (cultistExperiences != null && cultistExperiences?.Count > 0)
-                {
-                    foreach (var keyPair in cultistExperiences)
-                    {
-                        workingPawns.Add(keyPair.Key);
-                        workingInts.Add(keyPair.Value);
-                    }
-                }
-            }
-            Scribe_Collections.Look<Pawn>(ref workingPawns, "workingPawns", LookMode.Reference);
-            Scribe_Collections.Look<CultistExperience>(ref workingInts, "workingInts", LookMode.Deep);
-            if (Scribe.mode != LoadSaveMode.PostLoadInit)
-            {
-                return;
-            }
-
-            cultistExperiences = new Dictionary<Pawn, CultistExperience>();
-            for (var i = 0; i < workingPawns.Count; i++)
-            {
-                cultistExperiences.Add(workingPawns[i], workingInts[i]);
-            }
-        }
     }
-
 }

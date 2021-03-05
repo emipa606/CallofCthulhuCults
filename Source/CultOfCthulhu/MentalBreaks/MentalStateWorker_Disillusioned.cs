@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Verse;
+﻿using Verse;
 using Verse.AI;
 
 namespace CultOfCthulhu
@@ -21,16 +17,18 @@ namespace CultOfCthulhu
                 return false;
             }
 
-            Need_CultMindedness cultMind = pawn.needs.TryGetNeed<Need_CultMindedness>();
-            if (cultMind != null)
+            var cultMind = pawn.needs.TryGetNeed<Need_CultMindedness>();
+            if (cultMind == null)
             {
-                if (cultMind.CurLevel > 0.8)
-                {
-                    return true;
-                }
+                return false;
             }
+
+            if (cultMind.CurLevel > 0.8)
+            {
+                return true;
+            }
+
             return false;
         }
-
     }
 }

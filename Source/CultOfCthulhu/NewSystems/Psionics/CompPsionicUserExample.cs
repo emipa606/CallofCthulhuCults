@@ -1,25 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using RimWorld;
+﻿using AbilityUser;
 using Verse;
-using AbilityUser;
 
 namespace CultOfCthulhu
 {
-    public class CompPsionicUserExample : AbilityUser.CompAbilityUser
+    public class CompPsionicUserExample : CompAbilityUser
     {
+        private bool firstTick;
+
         //A simple check boolean to make sure we don't give abilities twice.
         //Starts false because we haven't given abilities yet.
-        private bool gaveAbilities = false;
+        private bool gaveAbilities;
 
-        private bool firstTick = false;
-        
         /// <summary>
-        /// To be psionic, the character must have a psionic brain.
+        ///     To be psionic, the character must have a psionic brain.
         /// </summary>
-        private bool IsPsionic 
+        private bool IsPsionic
         {
             get
             {
@@ -33,7 +28,7 @@ namespace CultOfCthulhu
         }
 
         /// <summary>
-        /// Gives this component class to the character if they are psionic.
+        ///     Gives this component class to the character if they are psionic.
         /// </summary>
         public override bool TryTransformPawn()
         {
@@ -41,10 +36,10 @@ namespace CultOfCthulhu
         }
 
         /// <summary>
-        /// After getting the component class, checks 200 ticks
-        /// after the game starts.
-        /// If the character is psionic, give them the abilities in
-        /// the function PostInitalizeTick()
+        ///     After getting the component class, checks 200 ticks
+        ///     after the game starts.
+        ///     If the character is psionic, give them the abilities in
+        ///     the function PostInitalizeTick()
         /// </summary>
         public override void CompTick()
         {
@@ -61,14 +56,15 @@ namespace CultOfCthulhu
                     {
                         PostInitializeTick();
                     }
+
                     base.CompTick();
                 }
             }
         }
-        
+
         /// <summary>
-        /// Adds the ability "Psionic Blast" to the character.
-        /// Sets gaveAbilities to true, because we gave the abilties.
+        ///     Adds the ability "Psionic Blast" to the character.
+        ///     Sets gaveAbilities to true, because we gave the abilties.
         /// </summary>
         private void PostInitializeTick()
         {
@@ -87,7 +83,7 @@ namespace CultOfCthulhu
             {
                 gaveAbilities = true;
                 Initialize();
-                AddPawnAbility(CultsDefOf.Cults_PsionicBlast);   
+                AddPawnAbility(CultsDefOf.Cults_PsionicBlast);
             }
         }
 
@@ -96,7 +92,7 @@ namespace CultOfCthulhu
         public override void PostExposeData()
         {
             base.PostExposeData();
-            Scribe_Values.Look(ref gaveAbilities, "gaveAbilities", false);
+            Scribe_Values.Look(ref gaveAbilities, "gaveAbilities");
         }
     }
 }

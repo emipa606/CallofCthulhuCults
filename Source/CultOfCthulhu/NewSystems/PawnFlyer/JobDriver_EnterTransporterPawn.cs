@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Cthulhu;
 using Verse;
 using Verse.AI;
-using RimWorld;
 
 namespace CultOfCthulhu
 {
@@ -16,7 +15,7 @@ namespace CultOfCthulhu
         {
             get
             {
-                Thing thing = job.GetTarget(TransporterInd).Thing;
+                var thing = job.GetTarget(TransporterInd).Thing;
                 return thing?.TryGetComp<CompTransporterPawn>();
             }
         }
@@ -30,20 +29,19 @@ namespace CultOfCthulhu
         protected override IEnumerable<Toil> MakeNewToils()
         {
             this.FailOnDespawnedOrNull(TransporterInd);
-            yield return Toils_Reserve.Reserve(TransporterInd, 1);
+            yield return Toils_Reserve.Reserve(TransporterInd);
             yield return Toils_Goto.GotoThing(TransporterInd, PathEndMode.Touch);
             yield return new Toil
             {
                 initAction = delegate
                 {
-                    Cthulhu.Utility.DebugReport("EnterTransporterPawn Called");
-                    CompTransporterPawn transporter = Transporter;
+                    Utility.DebugReport("EnterTransporterPawn Called");
+                    var transporter = Transporter;
                     pawn.DeSpawn();
-                    transporter.GetDirectlyHeldThings().TryAdd(pawn, true);
+                    transporter.GetDirectlyHeldThings().TryAdd(pawn);
                     transporter.Notify_PawnEnteredTransporterOnHisOwn(pawn);
                 }
             };
-            yield break;
         }
     }
 }

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Verse;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using RimWorld;
+using UnityEngine;
+using Verse;
 
 namespace CultOfCthulhu
 {
@@ -12,32 +9,28 @@ namespace CultOfCthulhu
     {
         private readonly string symbol;
         private readonly string version = "0";
-#pragma warning disable IDE0032 // Use auto property
-        private readonly string portrait = string.Empty;
-        private readonly string titles = string.Empty;
-        private readonly string domains = string.Empty;
-        private readonly string descriptionLong = string.Empty;
-#pragma warning restore IDE0032 // Use auto property
-
-        public List<IncidentDef> tier1SpellDefs = new List<IncidentDef>();
-        public List<IncidentDef> tier2SpellDefs = new List<IncidentDef>();
-        public List<IncidentDef> tier3SpellDefs = new List<IncidentDef>();
-        public IncidentDef finalSpellDef;
-        public List<ThingDef> favoredApparel = new List<ThingDef>();
-        public List<FavoredThing> pleasingOfferings = new List<FavoredThing>();
         public List<FavoredThing> displeasingOfferings = new List<FavoredThing>();
+        public readonly List<ThingDef> favoredApparel = new List<ThingDef>();
         public List<FavoredThing> favoredWorshipperRaces = new List<FavoredThing>();
+
+        public readonly bool favorsOutdoorWorship = false;
+        public IncidentDef finalSpellDef;
         public List<FavoredThing> hereticWorshipperRaces = new List<FavoredThing>();
+        public List<FavoredThing> pleasingOfferings = new List<FavoredThing>();
 
-        public bool favorsOutdoorWorship = false;
+        [Unsaved] private Texture2D symbolTex;
 
-        [Unsaved]
-        private Texture2D symbolTex;
+        public readonly List<IncidentDef> tier1SpellDefs = new List<IncidentDef>();
+        public readonly List<IncidentDef> tier2SpellDefs = new List<IncidentDef>();
+        public readonly List<IncidentDef> tier3SpellDefs = new List<IncidentDef>();
 
-        public string Portrait => portrait;
-        public string Domains => domains;
-        public string DescriptionLong => descriptionLong;
-        public string Titles => titles;
+        public string Portrait { get; } = string.Empty;
+
+        public string Domains { get; } = string.Empty;
+
+        public string DescriptionLong { get; } = string.Empty;
+
+        public string Titles { get; } = string.Empty;
 
         public Texture2D Symbol
         {
@@ -45,12 +38,15 @@ namespace CultOfCthulhu
             {
                 if (symbolTex == null)
                 {
-                    symbolTex = ContentFinder<Texture2D>.Get(symbol, true);
+                    symbolTex = ContentFinder<Texture2D>.Get(symbol);
                 }
+
                 return symbolTex;
             }
         }
 
         public int Version => int.TryParse(version, out var x) ? x : 0;
+#pragma warning disable IDE0032 // Use auto property
+#pragma warning restore IDE0032 // Use auto property
     }
 }

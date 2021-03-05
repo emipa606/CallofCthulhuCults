@@ -1,14 +1,10 @@
-﻿using System;
-using RimWorld;
+﻿using Cthulhu;
 using Verse;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CultOfCthulhu
 {
     public class Dialog_RenameCult : Dialog_Rename
     {
-
         private readonly Map map;
 
         public Dialog_RenameCult(Map newMap)
@@ -20,18 +16,21 @@ namespace CultOfCthulhu
             }
             else
             {
-                Cthulhu.Utility.ErrorReport("Missing map to declare as home area");
+                Utility.ErrorReport("Missing map to declare as home area");
             }
         }
 
         protected override AcceptanceReport NameIsValid(string name)
         {
-            AcceptanceReport result = base.NameIsValid(name);
+            var result = base.NameIsValid(name);
             if (!result.Accepted)
             {
                 return result;
             }
-            return name.Length == 0 || (!CultUtility.CheckValidCultName(name)) ? "NameIsInvalid".Translate() : (AcceptanceReport)true;
+
+            return name.Length == 0 || !CultUtility.CheckValidCultName(name)
+                ? "NameIsInvalid".Translate()
+                : (AcceptanceReport) true;
         }
 
         protected override void SetName(string name)
@@ -42,7 +41,7 @@ namespace CultOfCthulhu
             }
             else
             {
-                Cthulhu.Utility.ErrorReport("Map Reference Null Exception");
+                Utility.ErrorReport("Map Reference Null Exception");
             }
         }
     }

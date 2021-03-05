@@ -1,6 +1,6 @@
-﻿using System;
-using Verse;
+﻿using Cthulhu;
 using RimWorld;
+using Verse;
 
 namespace CultOfCthulhu
 {
@@ -8,13 +8,14 @@ namespace CultOfCthulhu
     {
         public override void DoEffectOn(Pawn user, Thing target)
         {
-            var pawn = (Pawn)target;
+            var pawn = (Pawn) target;
             if (pawn.Dead)
             {
                 return;
             }
-            Cthulhu.Utility.ApplySanityLoss(pawn, 0.9f);
-            CultUtility.AffectCultMindedness(pawn, 0.99f, 0.99f);
+
+            Utility.ApplySanityLoss(pawn, 0.9f);
+            CultUtility.AffectCultMindedness(pawn, 0.99f);
             Messages.Message("CompTargetEffectCultMinded".Translate(
                 pawn.Label
             ), MessageTypeDefOf.NeutralEvent);

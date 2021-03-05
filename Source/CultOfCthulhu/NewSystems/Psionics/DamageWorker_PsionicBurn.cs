@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Verse;
-using RimWorld;
+﻿using Verse;
 
 namespace CultOfCthulhu
 {
-    class DamageWorker_PsionicBurn : DamageWorker
+    internal class DamageWorker_PsionicBurn : DamageWorker
     {
         public override DamageResult Apply(DamageInfo dinfo, Thing victim)
         {

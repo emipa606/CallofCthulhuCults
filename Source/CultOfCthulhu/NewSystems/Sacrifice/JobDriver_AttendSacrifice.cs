@@ -1,41 +1,40 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
+
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using RimWorld;
+using Verse;
+using Verse.AI;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
     public class JobDriver_AttendSacrifice : JobDriver
     {
-        public override bool TryMakePreToilReservations(bool errorOnFailed)
-        {
-            return true;
-        }
         private readonly TargetIndex Build = TargetIndex.A;
         private readonly TargetIndex Facing = TargetIndex.B;
         private readonly TargetIndex Spot = TargetIndex.C;
 
-        private Pawn setExecutioner = null;
 
-        protected Building_SacrificialAltar Altar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
+        private string report = "";
+
+        private Pawn setExecutioner;
+
+        protected Building_SacrificialAltar Altar => (Building_SacrificialAltar) job.GetTarget(TargetIndex.A).Thing;
 
         protected Pawn ExecutionerPawn
         {
@@ -46,26 +45,36 @@ namespace CultOfCthulhu
                     return setExecutioner;
                 }
 
-                if (Altar.SacrificeData.Executioner != null) { setExecutioner = Altar.SacrificeData.Executioner; return Altar.SacrificeData.Executioner; }
-                else
+                if (Altar.SacrificeData.Executioner != null)
                 {
-                    foreach (Pawn pawn in pawn.Map.mapPawns.FreeColonistsSpawned)
+                    setExecutioner = Altar.SacrificeData.Executioner;
+                    return Altar.SacrificeData.Executioner;
+                }
+
+                foreach (var pawn in pawn.Map.mapPawns.FreeColonistsSpawned)
+                {
+                    if (pawn.CurJob.def == CultsDefOf.Cults_HoldSacrifice)
                     {
-                        if (pawn.CurJob.def == CultsDefOf.Cults_HoldSacrifice) { setExecutioner = pawn; return pawn; }
+                        setExecutioner = pawn;
+                        return pawn;
                     }
                 }
+
                 return null;
             }
         }
 
+        public override bool TryMakePreToilReservations(bool errorOnFailed)
+        {
+            return true;
+        }
+
         public override void ExposeData()
         {
-            Scribe_References.Look<Pawn>(ref setExecutioner, "setExecutioner");
+            Scribe_References.Look(ref setExecutioner, "setExecutioner");
             base.ExposeData();
         }
 
-
-        private string report = "";
         public override string GetReport()
         {
             return report != "" ? ReportStringProcessed(report) : base.GetReport();
@@ -82,6 +91,7 @@ namespace CultOfCthulhu
                 {
                     return JobCondition.Incompletable;
                 }
+
                 if (ExecutionerPawn.CurJob == null)
                 {
                     return JobCondition.Incompletable;
@@ -91,18 +101,20 @@ namespace CultOfCthulhu
                 {
                     return JobCondition.Succeeded;
                 }
-                else if (ExecutionerPawn.CurJob.def != CultsDefOf.Cults_HoldSacrifice)
+
+                if (ExecutionerPawn.CurJob.def != CultsDefOf.Cults_HoldSacrifice)
                 {
                     return JobCondition.Incompletable;
                 }
+
                 return JobCondition.Ongoing;
             });
-            
-            this.EndOnDespawnedOrNull(Spot, JobCondition.Incompletable);
-            this.EndOnDespawnedOrNull(Build, JobCondition.Incompletable);
+
+            this.EndOnDespawnedOrNull(Spot);
+            this.EndOnDespawnedOrNull(Build);
 
 
-            yield return Toils_Reserve.Reserve(Spot, 1, -1);
+            yield return Toils_Reserve.Reserve(Spot);
 
             //Toil 1: Go to the locations
             Toil gotoExecutioner;
@@ -114,6 +126,7 @@ namespace CultOfCthulhu
             {
                 gotoExecutioner = Toils_Goto.GotoCell(Spot, PathEndMode.OnCell);
             }
+
             yield return gotoExecutioner;
 
             //Toil 2: 'Attend'
@@ -144,7 +157,7 @@ namespace CultOfCthulhu
             });
             altarToil.JumpIf(() => ExecutionerPawn.CurJob.def == CultsDefOf.Cults_HoldSacrifice, altarToil);
             yield return altarToil;
-            
+
             //ToDo -- Add random Ia! Ia!
             yield return new Toil
             {
@@ -173,7 +186,8 @@ namespace CultOfCthulhu
                     {
                         if (Altar.currentSacrificeState != Building_SacrificialAltar.SacrificeState.finished)
                         {
-                            Altar.ChangeState(Building_SacrificialAltar.State.sacrificing, Building_SacrificialAltar.SacrificeState.finished);
+                            Altar.ChangeState(Building_SacrificialAltar.State.sacrificing,
+                                Building_SacrificialAltar.SacrificeState.finished);
                         }
                     }
                 },
@@ -209,7 +223,7 @@ namespace CultOfCthulhu
                 {
                     if (pawn.Map.reservationManager.ReservedBy(TargetC.Cell.GetEdifice(pawn.Map), pawn))
                     {
-                        pawn.ClearAllReservations();  //this.pawn.Map.reservationManager.Release(this.job.targetC.Cell, this.pawn);
+                        pawn.ClearAllReservations(); //this.pawn.Map.reservationManager.Release(this.job.targetC.Cell, this.pawn);
                     }
                 }
             });

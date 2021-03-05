@@ -1,41 +1,42 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
+
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using Verse;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
-
     public class MapComponent_FertilityMods : MapComponent
     {
-        public MapComponent_FertilityMods(Map map) : base (map)
+        public static float fertilityBonus = 1.0f;
+        public static float fertilityMax = 1.75f;
+
+        public List<Building_TotemFertility> fertilityTotems;
+        public bool listNeedsUpdate;
+
+        private List<IntVec3> tempList;
+
+        public MapComponent_FertilityMods(Map map) : base(map)
         {
             this.map = map;
         }
 
-        public static float fertilityBonus = 1.0f;
-        public static float fertilityMax = 1.75f;
-        public bool listNeedsUpdate = false;
-
-        public List<Building_TotemFertility> fertilityTotems;
         public List<Building_TotemFertility> FertilityTotems
         {
             get
@@ -44,12 +45,12 @@ namespace CultOfCthulhu
                 {
                     fertilityTotems = new List<Building_TotemFertility>();
                 }
+
                 return fertilityTotems;
             }
             set => fertilityTotems = value;
         }
 
-        private List<IntVec3> tempList;
         public List<IntVec3> ActiveCells
         {
             get
@@ -58,14 +59,15 @@ namespace CultOfCthulhu
                 {
                     listNeedsUpdate = false;
                     tempList = new List<IntVec3>();
-                    foreach (Building_TotemFertility totem in FertilityTotems)
+                    foreach (var totem in FertilityTotems)
                     {
-                        foreach (IntVec3 cell in totem.GrowableCells)
+                        foreach (var cell in totem.GrowableCells)
                         {
                             tempList.Add(cell);
                         }
                     }
                 }
+
                 return tempList;
             }
         }
@@ -74,13 +76,14 @@ namespace CultOfCthulhu
         {
             get
             {
-                MapComponent_FertilityMods MapComponent_FertilityMods = map.components.OfType<MapComponent_FertilityMods>().FirstOrDefault<MapComponent_FertilityMods>();
+                var MapComponent_FertilityMods = map.components.OfType<MapComponent_FertilityMods>().FirstOrDefault();
                 var flag = MapComponent_FertilityMods == null;
                 if (flag)
                 {
                     MapComponent_FertilityMods = new MapComponent_FertilityMods(map);
                     map.components.Add(MapComponent_FertilityMods);
                 }
+
                 return MapComponent_FertilityMods;
             }
         }
@@ -91,7 +94,6 @@ namespace CultOfCthulhu
             if (GrowableCells == null)
             {
                 Log.Error("Missing Growable Cells List");
-                return;
             }
         }
 
@@ -105,9 +107,9 @@ namespace CultOfCthulhu
                 Log.Error("Missing Growable Cells List");
                 return;
             }
+
             GrowableCells.RemoveAll(x => cells.Contains(x));
             listNeedsUpdate = true;
-
         }
 
         //public static void CopyTerrain(TerrainDef oldTerrain, TerrainDef newTerrain)
@@ -234,6 +236,5 @@ namespace CultOfCthulhu
 
         //    Cthulhu.Utility.DebugReport(s.ToString());
         //}
-
     }
 }

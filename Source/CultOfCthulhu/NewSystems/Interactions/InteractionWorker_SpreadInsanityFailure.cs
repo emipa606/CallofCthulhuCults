@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using RimWorld;
+﻿using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -15,11 +14,11 @@ namespace CultOfCthulhu
     /// </summary>
     public class InteractionWorker_SpreadInsanityFailure : InteractionWorker
     {
-        //How great the effect is on the sanity values.
-        public static readonly FloatRange SANITY_IMPACT = new FloatRange(0.15f, 0.2f);
-        
         //Almost three times the chance
         private const float BaseSelectionWeight = 0.8f;
+
+        //How great the effect is on the sanity values.
+        public static readonly FloatRange SANITY_IMPACT = new FloatRange(0.15f, 0.2f);
 
         public override float RandomSelectionWeight(Pawn initiator, Pawn recipient)
         {
@@ -51,7 +50,7 @@ namespace CultOfCthulhu
             var math = 2f;
             //Subtract the social skill of the initiator by 10.
             //A social skill of 20 will return a 0 chance of this happening.
-            math -= (float)initiator.skills.GetSkill(SkillDefOf.Social).Level / 10;
+            math -= (float) initiator.skills.GetSkill(SkillDefOf.Social).Level / 10;
             //Throw in random chance.
             math += Rand.Range(-0.5f, 0.5f);
 

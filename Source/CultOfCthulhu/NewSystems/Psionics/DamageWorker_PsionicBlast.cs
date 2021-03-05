@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Verse;
+﻿using AbilityUser;
 using RimWorld;
-using AbilityUser;
 using UnityEngine;
+using Verse;
 
 namespace CultOfCthulhu
 {
-    class DamageWorker_PsionicBlast : DamageWorker
+    internal class DamageWorker_PsionicBlast : DamageWorker
     {
         public Vector3 PushResult(Thing thingToPush, Thing Caster, int pushDist, out bool collision)
         {
-            Vector3 origin = thingToPush.TrueCenter();
-            Vector3 result = origin;
+            var origin = thingToPush.TrueCenter();
+            var result = origin;
             var collisionResult = false;
             for (var i = 1; i <= pushDist; i++)
             {
@@ -31,7 +27,7 @@ namespace CultOfCthulhu
                 }
 
                 var tempNewLoc = new Vector3(origin.x + pushDistX, 0f, origin.z + pushDistZ);
-                if (GenGrid.Standable(tempNewLoc.ToIntVec3(), Caster.Map))
+                if (tempNewLoc.ToIntVec3().Standable(Caster.Map))
                 {
                     result = tempNewLoc;
                 }
@@ -45,6 +41,7 @@ namespace CultOfCthulhu
                     }
                 }
             }
+
             collision = collisionResult;
             return result;
         }
@@ -54,12 +51,14 @@ namespace CultOfCthulhu
             var Caster = instigator as Pawn;
             if (target != null && target is Pawn)
             {
-                Vector3 loc = PushResult(target, Caster, distance, out var applyDamage);
+                var loc = PushResult(target, Caster, distance, out var applyDamage);
                 //if (((Pawn)target).RaceProps.Humanlike) ((Pawn)target).needs.mood.thoughts.memories.TryGainMemory(ThoughtDef.Named("PJ_ThoughtPush"), null);
-                var flyingObject = (FlyingObject)GenSpawn.Spawn(ThingDef.Named("Cults_PFlyingObject"), target.Position, target.Map);
+                var flyingObject = (FlyingObject) GenSpawn.Spawn(ThingDef.Named("Cults_PFlyingObject"), target.Position,
+                    target.Map);
                 if (applyDamage && damageOnCollision)
                 {
-                    flyingObject.Launch(Caster, new LocalTargetInfo(loc.ToIntVec3()), target, new DamageInfo(DamageDefOf.Blunt, Rand.Range(8, 10)));
+                    flyingObject.Launch(Caster, new LocalTargetInfo(loc.ToIntVec3()), target,
+                        new DamageInfo(DamageDefOf.Blunt, Rand.Range(8, 10)));
                 }
                 else
                 {

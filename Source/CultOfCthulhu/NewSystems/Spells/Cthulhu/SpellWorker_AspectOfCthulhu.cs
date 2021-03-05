@@ -1,24 +1,22 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+
+using RimWorld;
+using Verse;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
@@ -27,7 +25,6 @@ namespace CultOfCthulhu
     {
         protected override bool CanFireNowSub(IncidentParms parms)
         {
-
             //Cthulhu.Utility.DebugReport("
             //: " + this.def.defName);
             return true;
@@ -66,7 +63,7 @@ namespace CultOfCthulhu
         //                                select peeps;
         //        return two;
         //}
-        
+
         public void ApplyAspect(Pawn p, int count = 3)
         {
             if (count <= 0)
@@ -81,13 +78,13 @@ namespace CultOfCthulhu
             var foundPawn = false;
             Messages.Message("Cults_AspectOfCthulhu_TargetACharacter".Translate(), MessageTypeDefOf.NeutralEvent);
 
-            Find.Targeter.BeginTargeting(parms, delegate (LocalTargetInfo t)
+            Find.Targeter.BeginTargeting(parms, delegate(LocalTargetInfo t)
             {
                 if (t.Thing is Pawn pawn)
                 {
                     BodyPartRecord tempRecord = null;
                     var isEye = false;
-                    foreach (BodyPartRecord current in pawn.RaceProps.body.AllParts.InRandomOrder<BodyPartRecord>())
+                    foreach (var current in pawn.RaceProps.body.AllParts.InRandomOrder())
                     {
                         if (current.def == BodyPartDefOf.Eye)
                         {
@@ -112,7 +109,8 @@ namespace CultOfCthulhu
                             }
                         }
                     }
-                    foreach (BodyPartRecord current in pawn.RaceProps.body.AllParts.InRandomOrder<BodyPartRecord>())
+
+                    foreach (var current in pawn.RaceProps.body.AllParts.InRandomOrder())
                     {
                         if (current.def == BodyPartDefOf.Eye)
                         {
@@ -129,6 +127,7 @@ namespace CultOfCthulhu
                             break;
                         }
                     }
+
                     Leap:
 
 
@@ -141,11 +140,11 @@ namespace CultOfCthulhu
 
                     if (isEye)
                     {
-                        pawn.health.AddHediff(CultsDefOf.Cults_CthulhidEyestalk, tempRecord, null);
+                        pawn.health.AddHediff(CultsDefOf.Cults_CthulhidEyestalk, tempRecord);
                     }
                     else
                     {
-                        pawn.health.AddHediff(CultsDefOf.Cults_CthulhidTentacle, tempRecord, null);
+                        pawn.health.AddHediff(CultsDefOf.Cults_CthulhidTentacle, tempRecord);
                     }
 
                     Messages.Message("Cults_AspectOfCthulhuDesc".Translate(
@@ -153,28 +152,23 @@ namespace CultOfCthulhu
                     pawn.Map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = pawn.Position;
                     foundPawn = true;
                 }
-
             }, null, delegate
             {
                 if (!foundPawn)
                 {
-                    LongEventHandler.QueueLongEvent(delegate
-                    {
-                        ApplyAspect(p, count - 1);
-                    }, "aspectOfCthulhu", false, null);
+                    LongEventHandler.QueueLongEvent(delegate { ApplyAspect(p, count - 1); }, "aspectOfCthulhu", false,
+                        null);
                 }
             });
-
         }
 
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             var map = parms.target as Map;
-            Pawn pawn = altar(map).SacrificeData.Executioner;
+            var pawn = altar(map).SacrificeData.Executioner;
             ApplyAspect(pawn);
             return true;
-
         }
     }
 }

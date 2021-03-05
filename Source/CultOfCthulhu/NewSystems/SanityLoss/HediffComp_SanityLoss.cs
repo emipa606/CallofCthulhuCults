@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Cthulhu;
 using Verse;
-using RimWorld;
 
 namespace CultOfCthulhu
 {
     public class HediffComp_SanityLoss : HediffComp
     {
-
         public override void CompPostTick(ref float severityAdjustment)
         {
             if (Pawn != null)
@@ -23,7 +18,7 @@ namespace CultOfCthulhu
                 }
             }
 
-            if (Cthulhu.Utility.IsCosmicHorrorsLoaded())
+            if (Utility.IsCosmicHorrorsLoaded())
             {
                 if (Pawn.GetType().ToString() == "CosmicHorrorPawn")
                 {
@@ -32,12 +27,11 @@ namespace CultOfCthulhu
             }
         }
 
-        
+
         public void MakeSane()
         {
             parent.Severity -= 1f;
             Pawn.health.Notify_HediffChanged(parent);
         }
     }
-
 }

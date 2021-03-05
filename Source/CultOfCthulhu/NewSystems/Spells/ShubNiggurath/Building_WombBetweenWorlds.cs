@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Text;
+using Cthulhu;
+using RimWorld;
 using Verse;
 using Verse.AI.Group;
-using RimWorld;
-using System.Text;
 
 namespace CultOfCthulhu
 {
-
     public class Building_WombBetweenWorlds : ThingWithComps
     {
         private const int InitialPawnSpawnDelay = 960;
@@ -20,20 +18,18 @@ namespace CultOfCthulhu
 
         private const int InitialPawnsPoints = 260;
 
+        //private static readonly FloatRange PawnSpawnIntervalDays = new FloatRange(0.85f, 1.1f);
+        private static readonly FloatRange PawnSpawnIntervalDays = new FloatRange(3.85f, 3.1f);
+
         public bool active = true;
+
+        private Lord lord;
 
         public int nextPawnSpawnTick = -1;
 
         public List<Pawn> spawnedPawns = new List<Pawn>();
 
-        private Lord lord;
-
         private int ticksToSpawnInitialPawns = -1;
-
-        //private static readonly FloatRange PawnSpawnIntervalDays = new FloatRange(0.85f, 1.1f);
-        private static readonly FloatRange PawnSpawnIntervalDays = new FloatRange(3.85f, 3.1f);
-
-        
 
 
         private float SpawnedPawnsPoints
@@ -46,6 +42,7 @@ namespace CultOfCthulhu
                 {
                     num += spawnedPawns[i].kindDef.combatPower;
                 }
+
                 return num;
             }
         }
@@ -55,7 +52,7 @@ namespace CultOfCthulhu
             base.SpawnSetup(map, bla);
             if (Faction == null)
             {
-                SetFaction(Faction.OfInsects, null);
+                SetFaction(Faction.OfInsects);
             }
         }
 
@@ -74,6 +71,7 @@ namespace CultOfCthulhu
                     return;
                 }
             }
+
             CalculateNextPawnSpawnTick();
         }
 
@@ -85,6 +83,7 @@ namespace CultOfCthulhu
             {
                 Activate();
             }
+
             if (active)
             {
                 if (ticksToSpawnInitialPawns > 0)
@@ -95,16 +94,18 @@ namespace CultOfCthulhu
                         SpawnInitialPawnsNow();
                     }
                 }
+
                 if (Find.TickManager.TicksGame >= nextPawnSpawnTick)
                 {
                     if (SpawnedPawnsPoints < MaxSpawnedPawnsPoints)
                     {
-                        var flag = TrySpawnPawn(out Pawn pawn, Map);
+                        var flag = TrySpawnPawn(out var pawn, Map);
                         if (flag && pawn.caller != null)
                         {
                             pawn.caller.DoCall();
                         }
                     }
+
                     CalculateNextPawnSpawnTick();
                 }
             }
@@ -128,25 +129,27 @@ namespace CultOfCthulhu
                 {
                     SpawnInitialPawnsNow();
                 }
+
                 //Lord lord = this.Lord;
                 //if (lord != null)
                 //{
                 //    lord.ReceiveMemo("HiveAttacked");
                 //}
             }
+
             base.PostApplyDamage(dinfo, totalDamageDealt);
         }
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look<bool>(ref active, "active", false, false);
-            Scribe_Values.Look<int>(ref nextPawnSpawnTick, "nextPawnSpawnTick", 0, false);
-            Scribe_Collections.Look<Pawn>(ref spawnedPawns, "spawnedPawns", LookMode.Reference, new object[0]);
-            Scribe_Values.Look<int>(ref ticksToSpawnInitialPawns, "ticksToSpawnInitialPawns", 0, false);
+            Scribe_Values.Look(ref active, "active");
+            Scribe_Values.Look(ref nextPawnSpawnTick, "nextPawnSpawnTick");
+            Scribe_Collections.Look(ref spawnedPawns, "spawnedPawns", LookMode.Reference);
+            Scribe_Values.Look(ref ticksToSpawnInitialPawns, "ticksToSpawnInitialPawns");
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
-                spawnedPawns.RemoveAll((Pawn x) => x == null);
+                spawnedPawns.RemoveAll(x => x == null);
             }
         }
 
@@ -169,12 +172,10 @@ namespace CultOfCthulhu
 
             if (CanSpawnPawns())
             {
-                text = text + "DarkYoungSpawnsIn".Translate() + ": " + (nextPawnSpawnTick - Find.TickManager.TicksGame).ToStringTicksToPeriodVague();
+                text = text + "DarkYoungSpawnsIn".Translate() + ": " +
+                       (nextPawnSpawnTick - Find.TickManager.TicksGame).ToStringTicksToPeriodVague();
             }
-            else
-            {
 
-            }
             s.Append(text);
             return s.ToString();
         }
@@ -186,27 +187,32 @@ namespace CultOfCthulhu
 
         private void CalculateNextPawnSpawnTick()
         {
-            var num = GenMath.LerpDouble(0f, 5f, 1f, 0.5f, (float)spawnedPawns.Count);
-            nextPawnSpawnTick = Find.TickManager.TicksGame + (int)(PawnSpawnIntervalDays.RandomInRange * 60000f / (num * Find.Storyteller.difficulty.enemyReproductionRateFactor));
+            var num = GenMath.LerpDouble(0f, 5f, 1f, 0.5f, spawnedPawns.Count);
+            nextPawnSpawnTick = Find.TickManager.TicksGame + (int) (PawnSpawnIntervalDays.RandomInRange * 60000f /
+                                                                    (num * Find.Storyteller.difficulty
+                                                                        .enemyReproductionRateFactor));
             //this.nextPawnSpawnTick = Find.TickManager.TicksGame + (int)(Building_WombBetweenWorlds.PawnSpawnIntervalDays.RandomInRange * 60000f);
         }
 
         private void FilterOutUnspawnedPawns()
         {
-            spawnedPawns.RemoveAll((Pawn x) => !x.Spawned);
+            spawnedPawns.RemoveAll(x => !x.Spawned);
         }
 
         private bool TrySpawnPawn(out Pawn pawn, Map map)
         {
-            var kindDef = Cthulhu.Utility.IsCosmicHorrorsLoaded() ? PawnKindDef.Named("ROM_DarkYoung") : PawnKindDefOf.Megaspider;
+            var kindDef = Utility.IsCosmicHorrorsLoaded()
+                ? PawnKindDef.Named("ROM_DarkYoung")
+                : PawnKindDefOf.Megaspider;
             pawn = PawnGenerator.GeneratePawn(kindDef, Faction);
             try
             {
-                IntVec3 pos = Position;
+                var pos = Position;
                 for (var i = 0; i < 3; i++)
                 {
                     pos += GenAdj.CardinalDirections[2];
                 }
+
                 GenSpawn.Spawn(pawn, CellFinder.RandomClosewalkCellNear(pos, map, 1), map); //
                 spawnedPawns.Add(pawn);
                 if (Faction != Faction.OfPlayer)
@@ -215,6 +221,7 @@ namespace CultOfCthulhu
                     {
                         lord = CreateNewLord();
                     }
+
                     lord.AddPawn(pawn);
                 }
 
@@ -230,37 +237,35 @@ namespace CultOfCthulhu
         [DebuggerHidden]
         public override IEnumerable<Gizmo> GetGizmos()
         {
-            IEnumerator<Gizmo> enumerator = base.GetGizmos().GetEnumerator();
+            var enumerator = base.GetGizmos().GetEnumerator();
             while (enumerator.MoveNext())
             {
-                Gizmo current = enumerator.Current;
+                var current = enumerator.Current;
                 yield return current;
             }
+
             if (Prefs.DevMode)
             {
                 yield return new Command_Action
                 {
                     defaultLabel = "DEBUG: Spawn pawn",
                     icon = TexCommand.ReleaseAnimals,
-                    action = delegate
-                    {
-                        TrySpawnPawn(out Pawn pawn, Map);
-                    }
+                    action = delegate { TrySpawnPawn(out var pawn, Map); }
                 };
             }
-            yield break;
         }
 
         public override bool PreventPlayerSellingThingsNearby(out string reason)
         {
             if (spawnedPawns.Count > 0)
             {
-                if (spawnedPawns.Any((Pawn p) => !p.Downed))
+                if (spawnedPawns.Any(p => !p.Downed))
                 {
                     reason = def.label;
                     return true;
                 }
             }
+
             reason = null;
             return false;
         }

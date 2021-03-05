@@ -35,6 +35,8 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=815039373
 - This will be removed when/if Jecrell comes back
 - Added support for Combat Extended
 - Removed the production-tag on altars so they can be used in thronerooms
+- Added an option to make sermons voluntary, making pawns complete some types of jobs before joining
+- Improved the sermon scheduling with some inspiration from the excellent mod [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1565942758]Colony Leadership[/url] Now you can select what days to do sermons and also when they should start in the day.
 
 [img]https://i.imgur.com/7Gzt3Rg.png[/img]
 
@@ -102,12 +104,16 @@ http://steamcommunity.com/sharedfiles/filedetails/?id=932008009
 	
 	Want to contribute? Get in touch with us in the workshop or Ludeon forums.	
 
-Questions? Comments? Want to chat? Come join our Discord server. https://discord.gg/AaVFA7V
 
-Pssst~~
-Still there?
-Jecrell here, lead programmer of the Call of Cthulhu mod series.
-
-Want to buy me a coffee? Fuel my madness for mods here below.
-https://patreon.com/jecrell</description>
+[img]https://i.imgur.com/Rs6T6cr.png[/img]
+[list]
+[*] See if the the error persists if you just have this mod and its requirements active.
+[*] If not, try adding your other mods until it happens again.
+[*] Post your error-log using [url=https://steamcommunity.com/workshop/filedetails/?id=818773962]HugsLib[/url] and command Ctrl+F12
+[*] For best support, please use the Discord-channel for error-reporting.
+[*] Do not report errors by making a discussion-thread, I get no notification of that.
+[*] If you have the solution for a problem, please post it to the GitHub repository.
+[/list]
+</description>
 </ModMetaData>
+

@@ -1,6 +1,4 @@
-﻿using System;
-using Verse;
-using RimWorld;
+﻿using Verse;
 
 namespace CultOfCthulhu
 {
@@ -8,7 +6,7 @@ namespace CultOfCthulhu
     {
         public CompProperties_LaunchablePawn()
         {
-            compClass = typeof(CultOfCthulhu.CompLaunchablePawn);
+            compClass = typeof(CompLaunchablePawn);
         }
     }
 }

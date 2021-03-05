@@ -1,25 +1,29 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
+
 using System.Collections.Generic;
+using Cthulhu;
+using RimWorld;
+using RimWorld.Planet;
+using Verse;
+using Verse.AI;
+
 //using System.Diagnostics;
 //using System.Linq;
-using System.Text;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
 //using Verse.AI.Group;
 //using Verse.Sound;       // Needed when you do something with Sound
 //using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;
-using System.Linq;
+// RimWorld specific functions are found here (like 'Building_Battery')
+
 //using RimWorld.Planet;   // RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
@@ -27,6 +31,10 @@ namespace CultOfCthulhu
 {
     public partial class Building_SacrificialAltar : Building, IBillGiver
     {
+        public bool UsableForBillsAfterFueling()
+        {
+            return CurrentlyUsableForBills();
+        }
 
         #region Worship
 
@@ -34,11 +42,11 @@ namespace CultOfCthulhu
         {
             MorningWorship,
             EveningWorship
-        };
+        }
 
         public void TryChangeWorshipValues(ChangeWorshipType type, bool value)
         {
-            Cthulhu.Utility.DebugReport("Attempting to change worship values: " + type.ToString() + " " + value.ToString());
+            Utility.DebugReport("Attempting to change worship values: " + type + " " + value);
             //Disabling auto-worship is not a hard thing.
             if (value == false)
             {
@@ -57,7 +65,7 @@ namespace CultOfCthulhu
 
             var canChange = true;
             //Check if another altar exists.
-            foreach (Building bld in Map.listerBuildings.allBuildingsColonist)
+            foreach (var bld in Map.listerBuildings.allBuildingsColonist)
             {
                 //Check all other altars
                 if (bld is Building_SacrificialAltar)
@@ -71,6 +79,7 @@ namespace CultOfCthulhu
                             canChange = false;
                         }
                     }
+
                     if (type == ChangeWorshipType.MorningWorship)
                     {
                         if (altar2.OptionMorning)
@@ -80,12 +89,14 @@ namespace CultOfCthulhu
                     }
                 }
             }
+
             if (canChange)
             {
                 if (type == ChangeWorshipType.MorningWorship)
                 {
                     OptionMorning = true;
                 }
+
                 if (type == ChangeWorshipType.EveningWorship)
                 {
                     OptionEvening = true;
@@ -94,11 +105,11 @@ namespace CultOfCthulhu
         }
 
 
-
         private void CancelWorship()
         {
             Pawn pawn = null;
-            List<Pawn> listeners = Map.mapPawns.AllPawnsSpawned.FindAll(x => x.RaceProps.intelligence == Intelligence.Humanlike);
+            var listeners =
+                Map.mapPawns.AllPawnsSpawned.FindAll(x => x.RaceProps.intelligence == Intelligence.Humanlike);
             var flag = new bool[listeners.Count];
             for (var i = 0; i < listeners.Count; i++)
             {
@@ -113,6 +124,7 @@ namespace CultOfCthulhu
                     }
                 }
             }
+
             ChangeState(State.notinuse);
             //this.currentState = State.off;
             Messages.Message("Cults_CancellingSermon".Translate(), MessageTypeDefOf.NegativeEvent);
@@ -127,18 +139,22 @@ namespace CultOfCthulhu
                 //CancelWorship();
                 return;
             }
+
             if (tempPreacher == null)
             {
                 tempPreacher = CultUtility.DetermineBestPreacher(Map);
             }
-            if (Cthulhu.Utility.IsMorning(Map))
+
+            if (Utility.IsMorning(Map))
             {
                 didMorningRitual = true;
             }
-            if (Cthulhu.Utility.IsEvening(Map))
+
+            if (Utility.IsEvening(Map))
             {
                 didEveningRitual = true;
             }
+
             TryWorship();
         }
 
@@ -149,7 +165,6 @@ namespace CultOfCthulhu
 
         private void TryWorship(bool forced = false)
         {
-
             if (CanGatherToWorshipNow())
             {
                 switch (currentWorshipState)
@@ -159,20 +174,23 @@ namespace CultOfCthulhu
                         if (IsSacrificing())
                         {
                             string timeOfDay = "Cults_Morning".Translate();
-                            if (Cthulhu.Utility.IsEvening(Map))
+                            if (Utility.IsEvening(Map))
                             {
                                 timeOfDay = "Cults_Evening".Translate();
                             }
 
-                            Messages.Message("Cults_MorningEveningSermonInterrupted".Translate(timeOfDay), MessageTypeDefOf.RejectInput);
+                            Messages.Message("Cults_MorningEveningSermonInterrupted".Translate(timeOfDay),
+                                MessageTypeDefOf.RejectInput);
                         }
+
                         StartToWorship(forced);
                         return;
 
                     case WorshipState.started:
                     case WorshipState.gathering:
                     case WorshipState.finishing:
-                        Messages.Message("Cults_AlreadyGatheringForASermon".Translate(), TargetInfo.Invalid, MessageTypeDefOf.RejectInput);
+                        Messages.Message("Cults_AlreadyGatheringForASermon".Translate(), TargetInfo.Invalid,
+                            MessageTypeDefOf.RejectInput);
                         return;
                 }
             }
@@ -212,6 +230,7 @@ namespace CultOfCthulhu
                     return RejectMessage("Cults_AltarNeedsToBeCleared".Translate());
                 }
             }
+
             return true;
         }
 
@@ -226,21 +245,23 @@ namespace CultOfCthulhu
                 CultUtility.AbortCongregation(null, "The altar is unavailable.");
                 return;
             }
-            if (!Cthulhu.Utility.IsActorAvailable(preacher))
+
+            if (!Utility.IsActorAvailable(preacher))
             {
                 CultUtility.AbortCongregation(this, "The preacher, " + preacher.LabelShort + ", is unavaialable.");
                 preacher = null;
                 return;
             }
 
-            var factionBase = (Settlement)Map.info.parent;
+            var factionBase = (Settlement) Map.info.parent;
 
-            Messages.Message("WorshipGathering".Translate(factionBase.Label), TargetInfo.Invalid, MessageTypeDefOf.NeutralEvent);
+            Messages.Message("WorshipGathering".Translate(factionBase.Label), TargetInfo.Invalid,
+                MessageTypeDefOf.NeutralEvent);
             ChangeState(State.worshipping, WorshipState.started);
             //this.currentState = State.started;
             //Map.GetComponent<MapComponent_SacrificeTracker>().lastResult = CultUtility.SacrificeResult.none;
 
-            Cthulhu.Utility.DebugReport("Force worship called");
+            Utility.DebugReport("Force worship called");
             var job = new Job(CultsDefOf.Cults_HoldWorship, this)
             {
                 playerForced = forced
@@ -248,13 +269,13 @@ namespace CultOfCthulhu
             preacher.jobs.TryTakeOrderedJob(job);
             //preacher.jobs.EndCurrentJob(JobCondition.InterruptForced);
             //GetWorshipGroup(this, Map, forced);
-
         }
 
-        
-        public static void GetWorshipGroup(Building_SacrificialAltar altar, IEnumerable<IntVec3> inRangeCells, bool forced = false)
+
+        public static void GetWorshipGroup(Building_SacrificialAltar altar, IEnumerable<IntVec3> inRangeCells,
+            bool forced = false)
         {
-            altar.GetWorshipGroup(inRangeCells, false);
+            altar.GetWorshipGroup(inRangeCells);
         }
 
         public void GetWorshipGroup(IEnumerable<IntVec3> inRangeCells, bool forced = false)
@@ -264,7 +285,7 @@ namespace CultOfCthulhu
 
             if (AvailableWorshippers != null && AvailableWorshippers.Count > 0)
             {
-                foreach (Pawn p in AvailableWorshippers)
+                foreach (var p in AvailableWorshippers)
                 {
                     if (CultUtility.ShouldAttendWorship(p, this))
                     {
@@ -283,15 +304,9 @@ namespace CultOfCthulhu
                 num = 0;
             }
 
-            return (Rand.RangeInclusive(0, 15) + num) >= 20;
+            return Rand.RangeInclusive(0, 15) + num >= 20;
         }
-
 
         #endregion Worship
-
-        public bool UsableForBillsAfterFueling()
-        {
-            return CurrentlyUsableForBills();
-        }
     }
 }

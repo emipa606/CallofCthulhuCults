@@ -1,5 +1,4 @@
-﻿using RimWorld;
-using UnityEngine;
+﻿using UnityEngine;
 using Verse;
 
 namespace CultOfCthulhu
@@ -10,12 +9,12 @@ namespace CultOfCthulhu
         public static bool cultsForcedInvestigation = true;
         public static bool cultsStudySuccessfulCultsIsRepeatable = true;
         public static bool cultsShowDebugCode = true;
-        public static bool makeWorshipsVoluntary = false;
+        public static bool makeWorshipsVoluntary;
     }
 
     public class ModMain : Mod
     {
-        readonly Settings settings;
+        private readonly Settings settings;
 
         public ModMain(ModContentPack content) : base(content)
         {
@@ -47,7 +46,8 @@ namespace CultOfCthulhu
                 new Rect(inRect.x + offset, inRect.y + offset + spacer + offset + spacer, inRect.width - offset,
                     height), "Cults_MakeWorshipsVoluntary".Translate(), ref settings.makeWorshipsVoluntary);
             Widgets.CheckboxLabeled(
-                new Rect(inRect.x + offset, inRect.y + offset + spacer + offset + spacer + offset + spacer, inRect.width - offset,
+                new Rect(inRect.x + offset, inRect.y + offset + spacer + offset + spacer + offset + spacer,
+                    inRect.width - offset,
                     height), "ShowDebugCode".Translate(), ref settings.cultsShowDebugCode);
             settings.Write();
         }
@@ -56,19 +56,19 @@ namespace CultOfCthulhu
     public class Settings : ModSettings
     {
         public bool cultsForcedInvestigation = true;
+        public bool cultsShowDebugCode;
         public bool cultsStudySuccessfulCultsIsRepeatable = true;
-        public bool cultsShowDebugCode = false;
-        public bool makeWorshipsVoluntary = false;
+        public bool makeWorshipsVoluntary;
 
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look<bool>(ref cultsForcedInvestigation, "cultsForcedInvestigation", true);
-            Scribe_Values.Look<bool>(ref cultsStudySuccessfulCultsIsRepeatable,
+            Scribe_Values.Look(ref cultsForcedInvestigation, "cultsForcedInvestigation", true);
+            Scribe_Values.Look(ref cultsStudySuccessfulCultsIsRepeatable,
                 "cultsStudySuccessfulCultsIsRepeatable", true);
-            Scribe_Values.Look<bool>(ref cultsShowDebugCode, "cultsShowDebugCode", true);
-            Scribe_Values.Look<bool>(ref makeWorshipsVoluntary, "makeWorshipsVoluntary", false);
+            Scribe_Values.Look(ref cultsShowDebugCode, "cultsShowDebugCode", true);
+            Scribe_Values.Look(ref makeWorshipsVoluntary, "makeWorshipsVoluntary");
         }
     }
 }

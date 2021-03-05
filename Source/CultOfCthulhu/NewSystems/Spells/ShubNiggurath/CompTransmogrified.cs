@@ -1,17 +1,11 @@
 ﻿using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using RimWorld.Planet;
 using Verse;
 
 namespace CultOfCthulhu
 {
     public class CompTransmogrified : ThingComp
     {
-        public Pawn Pawn => parent as Pawn;
-        public Hediff_Transmogrified Hediff => Pawn.health.hediffSet.GetFirstHediffOfDef(CultsDefOf.Cults_MonstrousBody, false) as Hediff_Transmogrified;
-
         //public BodyPartRecord CorePart
         //{
         //    get
@@ -20,20 +14,27 @@ namespace CultOfCthulhu
         //    }
         //}
 
-        private bool isTransmogrified = false;
+        private bool isTransmogrified;
+        public Pawn Pawn => parent as Pawn;
+
+        public Hediff_Transmogrified Hediff =>
+            Pawn.health.hediffSet.GetFirstHediffOfDef(CultsDefOf.Cults_MonstrousBody) as Hediff_Transmogrified;
+
         public bool IsTransmogrified
         {
             get => isTransmogrified;
             set
             {
-                if (value == true && isTransmogrified == false)
+                if (value && isTransmogrified == false)
                 {
-                    Find.LetterStack.ReceiveLetter("Cults_TransmogrifiedLetter".Translate(), "Cults_TransmogrifiedLetterDesc".Translate(parent.LabelShort), LetterDefOf.PositiveEvent, new RimWorld.Planet.GlobalTargetInfo(parent), null);
+                    Find.LetterStack.ReceiveLetter("Cults_TransmogrifiedLetter".Translate(),
+                        "Cults_TransmogrifiedLetterDesc".Translate(parent.LabelShort), LetterDefOf.PositiveEvent,
+                        new GlobalTargetInfo(parent));
                 }
+
                 //HealthUtility.AdjustSeverity(this.parent as Pawn, CultsDefOf.Cults_MonstrousBody, 1.0f);
                 isTransmogrified = value;
                 MakeHediff();
-
             }
         }
 
@@ -41,16 +42,16 @@ namespace CultOfCthulhu
         {
             if (isTransmogrified && Hediff == null)
             {
-                Hediff hediff = HediffMaker.MakeHediff(CultsDefOf.Cults_MonstrousBody, Pawn, null);
+                var hediff = HediffMaker.MakeHediff(CultsDefOf.Cults_MonstrousBody, Pawn);
                 hediff.Severity = 1.0f;
-                Pawn.health.AddHediff(hediff, null, null);
+                Pawn.health.AddHediff(hediff);
             }
         }
 
         public override void PostExposeData()
         {
             base.PostExposeData();
-            Scribe_Values.Look<bool>(ref isTransmogrified, "isTransmogrified", false);
+            Scribe_Values.Look(ref isTransmogrified, "isTransmogrified");
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 MakeHediff();

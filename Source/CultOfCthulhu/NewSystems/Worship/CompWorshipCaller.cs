@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using RimWorld;
 using Verse;
-using UnityEngine;
+using Verse.AI;
 using Verse.Sound;
 
 namespace CultOfCthulhu
@@ -9,10 +8,14 @@ namespace CultOfCthulhu
     public class CompWorshipCaller : ThingComp
     {
         public CompProperties_WorshipCaller Props => props as CompProperties_WorshipCaller;
-        public Building_SacrificialAltar Altar => (Building_SacrificialAltar)GenClosest.ClosestThingReachable(parent.PositionHeld, parent.Map,
-                    ThingRequest.ForGroup(ThingRequestGroup.BuildingArtificial), Verse.AI.PathEndMode.ClosestTouch,
-                    TraverseMode.ByPawn, 9999, x => x is Building_SacrificialAltar, null, 0, -1, false, RegionType.Set_Passable, false);
-        public IEnumerable<IntVec3> CellsInRange => GenRadial.RadialCellsAround(parent.Position, Props.rangeRadius, true);
+
+        public Building_SacrificialAltar Altar => (Building_SacrificialAltar) GenClosest.ClosestThingReachable(
+            parent.PositionHeld, parent.Map,
+            ThingRequest.ForGroup(ThingRequestGroup.BuildingArtificial), PathEndMode.ClosestTouch,
+            TraverseMode.ByPawn, 9999, x => x is Building_SacrificialAltar);
+
+        public IEnumerable<IntVec3> CellsInRange =>
+            GenRadial.RadialCellsAround(parent.Position, Props.rangeRadius, true);
 
 
         public virtual void Use(bool forced)
@@ -29,7 +32,7 @@ namespace CultOfCthulhu
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
         {
-            foreach (Gizmo g in base.CompGetGizmosExtra())
+            foreach (var g in base.CompGetGizmosExtra())
             {
                 yield return g;
             }

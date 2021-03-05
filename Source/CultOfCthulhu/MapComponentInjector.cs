@@ -1,7 +1,4 @@
-﻿using CultOfCthulhu;
-using RimWorld;
-using RimWorld.Planet;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,60 +9,71 @@ namespace Cthulhu
     [StaticConstructorOnStartup]
     public class MapComponentInjectorBehavior : MonoBehaviour
     {
+        private static readonly List<Type> mapComponents;
+        private int lastTicks;
+        protected bool monstrousDefsAdded = false;
+
+        private float reinjectTime;
+
         static MapComponentInjectorBehavior()
         {
-            var initializer = new UnityEngine.GameObject("JecrellMapCompInjector");
+            var initializer = new GameObject("JecrellMapCompInjector");
             initializer.AddComponent<MapComponentInjectorBehavior>();
-            DontDestroyOnLoad((UnityEngine.Object) initializer);
+            DontDestroyOnLoad(initializer);
             mapComponents = new List<Type>();
             typeof(MapComponentInjectorBehavior).Assembly.GetTypes()
-                .Where((Type t) => t.IsClass && t.IsSubclassOf(typeof(MapComponent))).ToList()
-                .ForEach((Type t) => mapComponents.Add(t));
+                .Where(t => t.IsClass && t.IsSubclassOf(typeof(MapComponent))).ToList()
+                .ForEach(t => mapComponents.Add(t));
             //mapComponents.ForEach((Type t) => Log.Message(t.Name + "found for MapComponentInjector"));
         }
-
-        protected float reinjectTime = 0;
-        protected bool monstrousDefsAdded = false;
-        int lastTicks;
-        static readonly List<Type> mapComponents;
 
         public void FixedUpdate()
         {
             try
             {
-                if (Find.TickManager != null)
+                if (Find.TickManager == null)
                 {
-                    if (Find.TickManager.TicksGame > lastTicks + 10)
+                    return;
+                }
+
+                if (Find.TickManager.TicksGame <= lastTicks + 10)
+                {
+                    return;
+                }
+
+                lastTicks = Find.TickManager.TicksGame;
+                reinjectTime -= Time.fixedDeltaTime;
+                if (!(reinjectTime <= 0))
+                {
+                    return;
+                }
+
+                reinjectTime = 0;
+                if (Find.Maps != null)
+                {
+                    Find.Maps.ForEach(delegate(Map map)
                     {
-                        lastTicks = Find.TickManager.TicksGame;
-                        reinjectTime -= Time.fixedDeltaTime;
-                        if (reinjectTime <= 0)
+                        if (map.components != null)
                         {
-                            reinjectTime = 0;
-                            if (Find.Maps != null)
+                            mapComponents.ForEach(delegate(Type t)
                             {
-                                Find.Maps.ForEach(delegate(Map map)
+                                if (map.components.Any(mp => mp.GetType() == t))
                                 {
-                                    if (map.components != null)
-                                    {
-                                        mapComponents.ForEach(delegate(Type t)
-                                        {
-                                            if (!map.components.Any((MapComponent mp) => mp.GetType() == t))
-                                            {
-                                                var comp = (MapComponent) typeof(MapComponent)
-                                                    .GetConstructor(Type.EmptyTypes).Invoke(new object[] {map});
-                                                map.components.Add(comp);
-                                            }
-                                        });
-                                    }
-                                });
-                            }
+                                    return;
+                                }
+
+                                var comp = (MapComponent) typeof(MapComponent)
+                                    .GetConstructor(Type.EmptyTypes)
+                                    ?.Invoke(new object[] {map});
+                                map.components.Add(comp);
+                            });
                         }
-                    }
+                    });
                 }
             }
             catch (Exception)
             {
+                // ignored
             }
         }
     }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Verse;
 
 namespace CultOfCthulhu
@@ -10,6 +7,6 @@ namespace CultOfCthulhu
     {
         public List<FavoredEntry> Deities => Props.deities;
 
-        public CompProperties_FavoredObject Props => (CompProperties_FavoredObject)props;
+        public CompProperties_FavoredObject Props => (CompProperties_FavoredObject) props;
     }
 }

@@ -1,39 +1,39 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
+
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
+using Cthulhu;
+using RimWorld;
+using Verse;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
     public class SpellWorker_RatsInTheWalls : SpellWorker
     {
+        private readonly List<IntVec3> AvailableFloors = new List<IntVec3>();
+
         protected override bool CanFireNowSub(IncidentParms parms)
         {
-
             //Cthulhu.Utility.DebugReport("
             //: " + this.def.defName);
             return true;
         }
-
-        private readonly List<IntVec3> AvailableFloors = new List<IntVec3>();
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
@@ -43,49 +43,52 @@ namespace CultOfCthulhu
             for (var i = 0; i < countToSpawn; i++)
             {
                 //Find floors in the home area
-                IntVec3 intVec = IntVec3.Invalid; 
-                intVec = CellFinderLoose.RandomCellWith((IntVec3 c) => c.InBounds(map) &&
-                                                                       c.Standable(map) &&
-                                                                       !c.InNoBuildEdgeArea(map) &&
-                                                                       map.terrainGrid.TerrainAt(c).layerable && 
-                                                                       map.areaManager.Home.ActiveCells.Contains<IntVec3>(c) &&
-                                                                       !c.Fogged(map), map, 1000);
+                var intVec = IntVec3.Invalid;
+                intVec = CellFinderLoose.RandomCellWith(c => c.InBounds(map) &&
+                                                             c.Standable(map) &&
+                                                             !c.InNoBuildEdgeArea(map) &&
+                                                             map.terrainGrid.TerrainAt(c).layerable &&
+                                                             map.areaManager.Home.ActiveCells.Contains(c) &&
+                                                             !c.Fogged(map), map);
                 if (intVec == IntVec3.Invalid || intVec == null)
                 {
                     //Find smoothed floors in the home area
-                    intVec = CellFinderLoose.RandomCellWith((IntVec3 c) => c.InBounds(map) &&
-                                                                           c.Standable(map) &&
-                                                                           !c.InNoBuildEdgeArea(map) &&
-                                                                           map.terrainGrid.TerrainAt(c).defName.Contains("_Smooth") &&
-                                                                           map.areaManager.Home.ActiveCells.Contains<IntVec3>(c) &&
-                                                                           !c.Fogged(map), map, 1000);
+                    intVec = CellFinderLoose.RandomCellWith(c => c.InBounds(map) &&
+                                                                 c.Standable(map) &&
+                                                                 !c.InNoBuildEdgeArea(map) &&
+                                                                 map.terrainGrid.TerrainAt(c).defName
+                                                                     .Contains("_Smooth") &&
+                                                                 map.areaManager.Home.ActiveCells.Contains(c) &&
+                                                                 !c.Fogged(map), map);
                     if (intVec == IntVec3.Invalid || intVec == null)
                     {
                         //Find floors... anywhere
-                        intVec = CellFinderLoose.RandomCellWith((IntVec3 c) => c.InBounds(map) &&
-                                                                               c.Standable(map) &&
-                                                                               !c.InNoBuildEdgeArea(map) &&
-                                                                               map.terrainGrid.TerrainAt(c).layerable &&
-                                                                               !c.Fogged(map), map, 1000);
+                        intVec = CellFinderLoose.RandomCellWith(c => c.InBounds(map) &&
+                                                                     c.Standable(map) &&
+                                                                     !c.InNoBuildEdgeArea(map) &&
+                                                                     map.terrainGrid.TerrainAt(c).layerable &&
+                                                                     !c.Fogged(map), map);
                         if (intVec == IntVec3.Invalid || intVec == null)
                         {
                             //Find the ground near the players then.
                             if (intVec == IntVec3.Invalid || intVec == null)
                             {
-                                intVec = CellFinderLoose.RandomCellWith((IntVec3 c) => c.InBounds(map) &&
-                                                                                       c.Standable(map) &&
-                                                                                       !c.InNoBuildEdgeArea(map) &&
-                                                                                       map.areaManager.Home.ActiveCells.Contains<IntVec3>(c) &&
-                                                                                       !c.Fogged(map), map, 1000);
+                                intVec = CellFinderLoose.RandomCellWith(c => c.InBounds(map) &&
+                                                                             c.Standable(map) &&
+                                                                             !c.InNoBuildEdgeArea(map) &&
+                                                                             map.areaManager.Home.ActiveCells.Contains(
+                                                                                 c) &&
+                                                                             !c.Fogged(map), map);
                                 if (intVec == IntVec3.Invalid || intVec == null)
                                 {
-                                    Cthulhu.Utility.DebugReport("Error: Can't assign cell for Rats in the Walls spell.");
+                                    Utility.DebugReport("Error: Can't assign cell for Rats in the Walls spell.");
                                     continue;
                                 }
                             }
                         }
                     }
                 }
+
                 //Throw some smoke
                 MoteMaker.ThrowDustPuff(intVec, map, 1f);
 
@@ -96,17 +99,20 @@ namespace CultOfCthulhu
                 }
 
                 //Spawn the rat
-                Cthulhu.Utility.SpawnPawnsOfCountAt(CultsDefOf.Rat, intVec, map, Rand.Range(1, 5), null, false, true);
-                
+                Utility.SpawnPawnsOfCountAt(CultsDefOf.Rat, intVec, map, Rand.Range(1, 5), null, false, true);
+
                 num++;
             }
+
             if (num > 0)
             {
                 Find.CameraDriver.shaker.DoShake(1f);
-                Find.LetterStack.ReceiveLetter(def.letterLabel, def.letterText, def.letterDef, new TargetInfo(map.GetComponent<MapComponent_SacrificeTracker>().lastLocation, map), null);
+                Find.LetterStack.ReceiveLetter(def.letterLabel, def.letterText, def.letterDef,
+                    new TargetInfo(map.GetComponent<MapComponent_SacrificeTracker>().lastLocation, map));
                 Messages.Message("Cults_RatsMessage".Translate(), MessageTypeDefOf.NegativeEvent);
-                Cthulhu.Utility.ApplyTaleDef("Cults_SpellRatsInTheWalls", map);
+                Utility.ApplyTaleDef("Cults_SpellRatsInTheWalls", map);
             }
+
             return num > 0;
         }
     }

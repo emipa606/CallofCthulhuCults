@@ -1,45 +1,49 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
+
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using Cthulhu;
+using RimWorld;
+using Verse;
+using Verse.AI;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
     public class JobDriver_HoldWorship : JobDriver
     {
+        private const TargetIndex AltarIndex = TargetIndex.A;
+
+        private string report = "";
+
+        public int TicksLeftInService = int.MaxValue;
+
+        private Thing WorshipCaller;
+
+        public bool Forced => job.playerForced;
+
+        protected Building_SacrificialAltar DropAltar => (Building_SacrificialAltar) job.GetTarget(TargetIndex.A).Thing;
+
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
             return true;
         }
-        private const TargetIndex AltarIndex = TargetIndex.A;
 
-        private Thing WorshipCaller = null;
-
-        public bool Forced => job.playerForced;
-
-        public int TicksLeftInService = int.MaxValue;
-
-        protected Building_SacrificialAltar DropAltar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
-
-        private string report = "";
         public override string GetReport()
         {
             return report != "" ? ReportStringProcessed(report) : base.GetReport();
@@ -50,22 +54,23 @@ namespace CultOfCthulhu
         {
             //Commence fail checks!
             this.FailOnDestroyedOrNull(TargetIndex.A);
-            
+
             yield return Toils_Reserve.Reserve(AltarIndex, Building_SacrificialAltar.LyingSlotsCount);
 
             yield return new Toil
             {
                 initAction = delegate
                 {
-                    DropAltar.ChangeState(Building_SacrificialAltar.State.worshipping, Building_SacrificialAltar.WorshipState.gathering);
+                    DropAltar.ChangeState(Building_SacrificialAltar.State.worshipping,
+                        Building_SacrificialAltar.WorshipState.gathering);
                 }
             };
 
             //Who are we worshipping today?
-            var deitySymbol = ((CosmicEntityDef)DropAltar.currentWorshipDeity.def).Symbol;
+            var deitySymbol = ((CosmicEntityDef) DropAltar.currentWorshipDeity.def).Symbol;
             var deityLabel = DropAltar.currentWorshipDeity.Label;
 
-            Toil goToAltar = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.InteractionCell);
+            var goToAltar = Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.InteractionCell);
 
             //Toil 0: Activate any nearby Worship Callers.
             yield return new Toil
@@ -77,9 +82,9 @@ namespace CultOfCthulhu
                         return x.TryGetComp<CompWorshipCaller>() != null;
                     }
 
-                    Thing worshipCaller = GenClosest.ClosestThingReachable(DropAltar.Position, DropAltar.Map,
+                    var worshipCaller = GenClosest.ClosestThingReachable(DropAltar.Position, DropAltar.Map,
                         ThingRequest.ForGroup(ThingRequestGroup.BuildingArtificial), PathEndMode.ClosestTouch,
-                        TraverseParms.For(pawn, Danger.None, TraverseMode.ByPawn), 9999, validator, null, 0, -1, false, RegionType.Set_Passable, false);
+                        TraverseParms.For(pawn, Danger.None), 9999, validator);
                     if (worshipCaller != null)
                     {
                         WorshipCaller = worshipCaller;
@@ -92,13 +97,11 @@ namespace CultOfCthulhu
                 }
             };
 
-            yield return Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.ClosestTouch).JumpIfDespawnedOrNullOrForbidden(TargetIndex.B, goToAltar);
+            yield return Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.ClosestTouch)
+                .JumpIfDespawnedOrNullOrForbidden(TargetIndex.B, goToAltar);
             yield return new Toil
             {
-                initAction = delegate
-                {
-                    WorshipCaller.TryGetComp<CompWorshipCaller>().Use(Forced);
-                }
+                initAction = delegate { WorshipCaller.TryGetComp<CompWorshipCaller>().Use(Forced); }
             }.JumpIfDespawnedOrNullOrForbidden(TargetIndex.B, goToAltar);
 
             //Toil 1: Go to the altar.
@@ -112,7 +115,8 @@ namespace CultOfCthulhu
                 initAction = delegate
                 {
                     report = "Cults_WaitingToStartSermon".Translate();
-                    DropAltar.ChangeState(Building_SacrificialAltar.State.worshipping, Building_SacrificialAltar.WorshipState.worshipping);
+                    DropAltar.ChangeState(Building_SacrificialAltar.State.worshipping,
+                        Building_SacrificialAltar.WorshipState.worshipping);
                 }
             };
 
@@ -135,7 +139,7 @@ namespace CultOfCthulhu
                 },
                 tickAction = delegate
                 {
-                    Pawn actor = pawn;
+                    var actor = pawn;
                     actor.skills.Learn(SkillDefOf.Social, 0.25f);
                     actor.GainComfortFromCellIfPossible();
                 }
@@ -149,13 +153,13 @@ namespace CultOfCthulhu
                 defaultCompleteMode = ToilCompleteMode.Delay,
                 defaultDuration = CultUtility.ritualDuration
             };
-            chantingTime.WithProgressBarToilDelay(TargetIndex.A, false, -0.5f);
+            chantingTime.WithProgressBarToilDelay(TargetIndex.A);
             chantingTime.PlaySustainerOrSound(CultsDefOf.RitualChanting);
             chantingTime.initAction = delegate
             {
                 report = "Cults_PrayingTo".Translate(
-                        deityLabel
-                    );
+                    deityLabel
+                );
                 if (deitySymbol != null)
                 {
                     MoteMaker.MakeInteractionBubble(pawn, null, ThingDefOf.Mote_Speech, deitySymbol);
@@ -163,7 +167,7 @@ namespace CultOfCthulhu
             };
             chantingTime.tickAction = delegate
             {
-                Pawn actor = pawn;
+                var actor = pawn;
                 actor.skills.Learn(SkillDefOf.Social, 0.25f);
                 actor.GainComfortFromCellIfPossible();
             };
@@ -194,7 +198,8 @@ namespace CultOfCthulhu
                     {
                         if (DropAltar.currentWorshipState != Building_SacrificialAltar.WorshipState.finished)
                         {
-                            DropAltar.ChangeState(Building_SacrificialAltar.State.worshipping, Building_SacrificialAltar.WorshipState.finished);
+                            DropAltar.ChangeState(Building_SacrificialAltar.State.worshipping,
+                                Building_SacrificialAltar.WorshipState.finished);
                             //Map.GetComponent<MapComponent_SacrificeTracker>().ClearVariables();
                         }
                     }
@@ -209,15 +214,10 @@ namespace CultOfCthulhu
                 if (DropAltar.currentWorshipState == Building_SacrificialAltar.WorshipState.finishing ||
                     DropAltar.currentWorshipState == Building_SacrificialAltar.WorshipState.finished)
                 {
-                    Cthulhu.Utility.DebugReport("Called end tick check");
+                    Utility.DebugReport("Called end tick check");
                     CultUtility.HoldWorshipTickCheckEnd(pawn);
                 }
-
             });
-
-            yield break;
-
-
         }
     }
 }

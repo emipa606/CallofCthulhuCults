@@ -1,50 +1,44 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
+using System.Collections.Generic;
+using RimWorld;
+using Verse;
+using Verse.AI;
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
     public class JobDriver_MidnightInquisition : JobDriver
     {
+        private readonly TargetIndex InquisitorIndex = TargetIndex.A;
+        private readonly TargetIndex PreacherIndex = TargetIndex.B;
+
+
+        private bool firstHit = true;
+        private bool notifiedPlayer;
+
+        private Pawn Preacher => job.GetTarget(TargetIndex.B).Thing as Pawn;
+
+        protected Pawn Inquisitor => (Pawn) job.GetTarget(TargetIndex.A).Thing;
+
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
             return true;
         }
-
-        private readonly TargetIndex InquisitorIndex = TargetIndex.A;
-        private readonly TargetIndex PreacherIndex = TargetIndex.B;
-
-        protected Pawn Preacher => job.GetTarget(TargetIndex.B).Thing as Pawn;
-
-        protected Pawn Inquisitor => (Pawn)job.GetTarget(TargetIndex.A).Thing;
-
-        public override void ExposeData()
-        {
-            base.ExposeData();
-        }
-
-
-        private bool firstHit = true;
-        private bool notifiedPlayer = false;
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
@@ -53,17 +47,16 @@ namespace CultOfCthulhu
             {
                 initAction = delegate
                 {
-                //Empty
-            }
+                    //Empty
+                }
             };
 
 
-            this.EndOnDespawnedOrNull(InquisitorIndex, JobCondition.Incompletable);
-            this.EndOnDespawnedOrNull(PreacherIndex, JobCondition.Incompletable);
+            this.EndOnDespawnedOrNull(InquisitorIndex);
+            this.EndOnDespawnedOrNull(PreacherIndex);
             //this.EndOnDespawnedOrNull(Build, JobCondition.Incompletable);
             yield return Toils_Reserve.Reserve(PreacherIndex, job.def.joyMaxParticipants);
-            Toil gotoPreacher;
-            gotoPreacher = Toils_Goto.GotoThing(PreacherIndex, PathEndMode.ClosestTouch);
+            var gotoPreacher = Toils_Goto.GotoThing(PreacherIndex, PathEndMode.ClosestTouch);
             yield return gotoPreacher;
 
             if (Preacher.jobs.curDriver.asleep)
@@ -83,7 +76,7 @@ namespace CultOfCthulhu
 
             void hitAction()
             {
-                Pawn prey = Preacher;
+                var prey = Preacher;
                 var surpriseAttack = firstHit;
                 if (pawn.meleeVerbs.TryMeleeAttack(prey, job.verbToUse, surpriseAttack))
                 {
@@ -94,16 +87,23 @@ namespace CultOfCthulhu
                         {
                             Find.TickManager.TogglePaused();
                         }
+
                         Messages.Message("MessageAttackedByPredator".Translate(
                             prey.LabelShort,
                             pawn.LabelShort
                         ).CapitalizeFirst(), prey, MessageTypeDefOf.ThreatBig);
                     }
+
                     pawn.Map.attackTargetsCache.UpdateTarget(pawn);
                 }
+
                 firstHit = false;
             }
-            yield return Toils_Combat.FollowAndMeleeAttack(TargetIndex.A, hitAction).JumpIfDespawnedOrNull(TargetIndex.A, toil).FailOn(() => Find.TickManager.TicksGame > startTick + 5000 && (job.GetTarget(TargetIndex.A).Cell - pawn.Position).LengthHorizontalSquared > 4f);
+
+            yield return Toils_Combat.FollowAndMeleeAttack(TargetIndex.A, hitAction)
+                .JumpIfDespawnedOrNull(TargetIndex.A, toil).FailOn(() =>
+                    Find.TickManager.TicksGame > startTick + 5000 &&
+                    (job.GetTarget(TargetIndex.A).Cell - pawn.Position).LengthHorizontalSquared > 4f);
             yield return toil;
 
             AddFinishAction(() =>

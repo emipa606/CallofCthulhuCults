@@ -1,15 +1,17 @@
-﻿using System;
-using Verse;
-using Verse.Sound;
+﻿using System.Collections.Generic;
+using Cthulhu;
 using RimWorld;
 using UnityEngine;
-using System.Collections.Generic;
+using Verse;
+using Verse.Sound;
 
 namespace CultOfCthulhu
 {
     public class PawnFlyersLanded : Thing, IActiveDropPod, IThingHolder
     {
         public int age;
+
+        private ActiveDropPodInfo contents;
 
         public PawnFlyer pawnFlyer;
 
@@ -29,8 +31,6 @@ namespace CultOfCthulhu
             return null;
         }
 
-        private ActiveDropPodInfo contents;
-
         public ActiveDropPodInfo Contents
         {
             get => contents;
@@ -40,10 +40,12 @@ namespace CultOfCthulhu
                 {
                     contents.parent = null;
                 }
+
                 if (value != null)
                 {
                     value.parent = this;
                 }
+
                 contents = value;
             }
         }
@@ -52,14 +54,11 @@ namespace CultOfCthulhu
         {
             base.ExposeData();
             //Pawn
-            Scribe_References.Look<PawnFlyer>(ref pawnFlyer, "pawnFlyer");
+            Scribe_References.Look(ref pawnFlyer, "pawnFlyer");
 
             //Vanilla
-            Scribe_Values.Look<int>(ref age, "age", 0, false);
-            Scribe_Deep.Look<ActiveDropPodInfo>(ref contents, "contents", new object[]
-            {
-                this
-            });
+            Scribe_Values.Look(ref age, "age");
+            Scribe_Deep.Look(ref contents, "contents", this);
         }
 
         public IntVec3 GetPosition()
@@ -91,15 +90,15 @@ namespace CultOfCthulhu
 
         public override void Destroy(DestroyMode mode = DestroyMode.Vanish)
         {
-            contents?.innerContainer?.ClearAndDestroyContents(DestroyMode.Vanish);
-            Map map = Map;
+            contents?.innerContainer?.ClearAndDestroyContents();
+            var map = Map;
             base.Destroy(mode);
             if (mode == DestroyMode.KillFinalize)
             {
                 for (var i = 0; i < 1; i++)
                 {
-                    Thing thing = ThingMaker.MakeThing(ThingDefOf.ChunkSlagSteel, null);
-                    GenPlace.TryPlaceThing(thing, Position, map, ThingPlaceMode.Near, null);
+                    var thing = ThingMaker.MakeThing(ThingDefOf.ChunkSlagSteel);
+                    GenPlace.TryPlaceThing(thing, Position, map, ThingPlaceMode.Near);
                 }
             }
         }
@@ -112,18 +111,16 @@ namespace CultOfCthulhu
                 {
                     GenSpawn.Spawn(pawnFlyer, Position, Map, Rot4.Random);
 
-                    Cthulhu.Utility.DebugReport("Spawned Destroyed PawnFlyer: " + pawnFlyer.Label);
+                    Utility.DebugReport("Spawned Destroyed PawnFlyer: " + pawnFlyer.Label);
                 }
                 else
                 {
-                    GenPlace.TryPlaceThing(pawnFlyer, Position, Map, ThingPlaceMode.Near, out Thing pawnFlyer2, delegate (Thing placedThing, int count)
-                     {
-                         Cthulhu.Utility.DebugReport("Successfully Spawned: " + pawnFlyer.Label);
-                     });
+                    GenPlace.TryPlaceThing(pawnFlyer, Position, Map, ThingPlaceMode.Near, out var pawnFlyer2,
+                        delegate { Utility.DebugReport("Successfully Spawned: " + pawnFlyer.Label); });
                 }
             }
 
-            foreach (Thing thing in contents.innerContainer.InRandomOrder())
+            foreach (var thing in contents.innerContainer.InRandomOrder())
             {
                 //Log.Message("1");
                 if (thing.Spawned)
@@ -134,15 +131,17 @@ namespace CultOfCthulhu
 
                 //this.contents.innerContainer.TryDrop(thing, ThingPlaceMode.Near, out thing2);
 
-                GenPlace.TryPlaceThing(thing, Position, Map, ThingPlaceMode.Near, out Thing thing2, delegate (Thing placedThing, int count)
-                 {
-                    //Log.Message("3");
+                GenPlace.TryPlaceThing(thing, Position, Map, ThingPlaceMode.Near, out var thing2,
+                    delegate(Thing placedThing, int count)
+                    {
+                        //Log.Message("3");
 
-                    if (Find.TickManager.TicksGame < 1200 && TutorSystem.TutorialMode && placedThing.def.category == ThingCategory.Item)
-                     {
-                         Find.TutorialState.AddStartingItem(placedThing);
-                     }
-                 });
+                        if (Find.TickManager.TicksGame < 1200 && TutorSystem.TutorialMode &&
+                            placedThing.def.category == ThingCategory.Item)
+                        {
+                            Find.TutorialState.AddStartingItem(placedThing);
+                        }
+                    });
                 //Log.Message("4");
 
                 if (thing2 is Pawn pawn)
@@ -158,38 +157,36 @@ namespace CultOfCthulhu
                     {
                         if (PawnFlyerDef.landedTale != null)
                         {
-                            TaleRecorder.RecordTale(PawnFlyerDef.landedTale, new object[]
-                            {
-                            pawn
-                            });
+                            TaleRecorder.RecordTale(PawnFlyerDef.landedTale, pawn);
                         }
                     }
+
                     if (pawn.IsColonist && pawn.Spawned && !Map.IsPlayerHome)
                     {
                         pawn.drafter.Drafted = true;
                     }
                 }
             }
-            
+
             if (contents.leaveSlag)
             {
                 for (var j = 0; j < 1; j++)
                 {
-                    Thing thing3 = ThingMaker.MakeThing(ThingDefOf.ChunkSlagSteel, null);
-                    GenPlace.TryPlaceThing(thing3, Position, Map, ThingPlaceMode.Near, null);
+                    var thing3 = ThingMaker.MakeThing(ThingDefOf.ChunkSlagSteel);
+                    GenPlace.TryPlaceThing(thing3, Position, Map, ThingPlaceMode.Near);
                 }
             }
+
             if (PawnFlyerDef.dismountSound != null)
             {
-                PawnFlyerDef.dismountSound.PlayOneShot(new TargetInfo(Position, Map, false));
+                PawnFlyerDef.dismountSound.PlayOneShot(new TargetInfo(Position, Map));
             }
             else
             {
                 Log.Warning("PawnFlyersLanded :: Dismount sound not set");
             }
-            Destroy(DestroyMode.Vanish);
+
+            Destroy();
         }
-
-
     }
 }

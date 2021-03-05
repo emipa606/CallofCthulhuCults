@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using RimWorld;
 
 namespace CultOfCthulhu
 {
@@ -21,6 +20,7 @@ namespace CultOfCthulhu
             {
                 transporters = new List<CompTransporterPawn>();
             }
+
             if (!transporters.Contains(transComp))
             {
                 transporters.Add(transComp);
@@ -31,27 +31,32 @@ namespace CultOfCthulhu
             {
                 if (transporters[j] != transComp)
                 {
-                    if (!transComp.Map.reachability.CanReach(transComp.parent.Position, transporters[j].parent, PathEndMode.Touch, TraverseParms.For(TraverseMode.PassDoors, Danger.Deadly, false)))
+                    if (!transComp.Map.reachability.CanReach(transComp.parent.Position, transporters[j].parent,
+                        PathEndMode.Touch, TraverseParms.For(TraverseMode.PassDoors)))
                     {
-                        Messages.Message("MessageTransporterUnreachable".Translate(), transporters[j].parent, MessageTypeDefOf.RejectInput);
+                        Messages.Message("MessageTransporterUnreachable".Translate(), transporters[j].parent,
+                            MessageTypeDefOf.RejectInput);
                         return;
                     }
                 }
             }
+
             Find.WindowStack.Add(new Dialog_LoadTransportersPawn(transComp.Map, transporters));
         }
 
         public override bool InheritInteractionsFrom(Gizmo other)
         {
-            var command_LoadToTransporter = (Command_LoadToTransporterPawn)other;
+            var command_LoadToTransporter = (Command_LoadToTransporterPawn) other;
             if (command_LoadToTransporter.transComp.parent.def != transComp.parent.def)
             {
                 return false;
             }
+
             if (transporters == null)
             {
                 transporters = new List<CompTransporterPawn>();
             }
+
             transporters.Add(command_LoadToTransporter.transComp);
             return false;
         }

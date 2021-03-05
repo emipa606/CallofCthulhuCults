@@ -1,27 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Verse;
+﻿using System.Collections.Generic;
 using RimWorld;
-using Verse.Sound;
-using Verse.AI;
 using UnityEngine;
+using Verse;
+using Verse.AI;
+using Verse.Sound;
 
 namespace CultOfCthulhu
 {
     public class Plant_TreeOfMadness : Plant
     {
-        public bool isQuiet = false;
-        private bool isMuted = false;
-        private bool setup = false;
-        private int ticksUntilQuiet = 960;
-        private Sustainer sustainerAmbient = null;
         private static readonly FloatRange QuietIntervalDays = new FloatRange(1.5f, 2.5f);
+        private bool isMuted;
+        public bool isQuiet;
+        private bool setup;
+        private Sustainer sustainerAmbient;
+        private int ticksUntilQuiet = 960;
 
         public override void SpawnSetup(Map map, bool bla)
         {
-            ticksUntilQuiet += (int)(QuietIntervalDays.RandomInRange * 60000f);
+            ticksUntilQuiet += (int) (QuietIntervalDays.RandomInRange * 60000f);
             base.SpawnSetup(map, bla);
         }
 
@@ -39,10 +36,9 @@ namespace CultOfCthulhu
                 setup = true;
                 if (!def.building.soundAmbient.NullOrUndefined() && sustainerAmbient == null)
                 {
-                    var info = SoundInfo.InMap(this, MaintenanceType.None);
+                    var info = SoundInfo.InMap(this);
                     sustainerAmbient = def.building.soundAmbient.TrySpawnSustainer(info);
                 }
-
             }
         }
 
@@ -76,9 +72,11 @@ namespace CultOfCthulhu
             if (this.StoringThing() == null)
             {
                 Thought_MemoryObservation thought_MemoryObservation;
-                thought_MemoryObservation = (Thought_MemoryObservation)ThoughtMaker.MakeThought(DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareTree"));
+                thought_MemoryObservation =
+                    (Thought_MemoryObservation) ThoughtMaker.MakeThought(
+                        DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareTree"));
                 thought_MemoryObservation.Target = this;
-                Pawn Dave = thought_MemoryObservation.pawn;
+                var Dave = thought_MemoryObservation.pawn;
                 if (Dave == null)
                 {
                     return null;
@@ -88,15 +86,17 @@ namespace CultOfCthulhu
                 {
                     return thought_MemoryObservation;
                 }
-                else
+
+                if (Dave.needs.TryGetNeed<Need_CultMindedness>().CurLevel > 0.7)
                 {
-                    if (Dave.needs.TryGetNeed<Need_CultMindedness>().CurLevel > 0.7)
-                    {
-                        thought_MemoryObservation = (Thought_MemoryObservation)ThoughtMaker.MakeThought(DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareTreeCultist"));
-                    }
+                    thought_MemoryObservation =
+                        (Thought_MemoryObservation) ThoughtMaker.MakeThought(
+                            DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareTreeCultist"));
                 }
+
                 return thought_MemoryObservation;
             }
+
             return null;
         }
 
@@ -104,10 +104,10 @@ namespace CultOfCthulhu
         public override IEnumerable<FloatMenuOption> GetFloatMenuOptions(Pawn myPawn)
         {
             ///This code returns all the other float menu options first!
-            IEnumerator<FloatMenuOption> enumerator = base.GetFloatMenuOptions(myPawn).GetEnumerator();
+            var enumerator = base.GetFloatMenuOptions(myPawn).GetEnumerator();
             while (enumerator.MoveNext())
             {
-                FloatMenuOption current = enumerator.Current;
+                var current = enumerator.Current;
                 yield return current;
             }
 
@@ -124,7 +124,8 @@ namespace CultOfCthulhu
                         myPawn.jobs.TryTakeOrderedJob(job);
                         //mypawn.CurJob.EndCurrentJob(JobCondition.InterruptForced);
                     }
-                    yield return new FloatMenuOption("Cults_Investigate".Translate(), action0, MenuOptionPriority.Default, null, null, 0f, null);
+
+                    yield return new FloatMenuOption("Cults_Investigate".Translate(), action0);
                 }
             }
         }
@@ -135,14 +136,12 @@ namespace CultOfCthulhu
             isMuted = !isMuted;
             if (sustainerAmbient != null && isMuted)
             {
-                    sustainerAmbient.End();
+                sustainerAmbient.End();
             }
             else if (!def.building.soundAmbient.NullOrUndefined() && sustainerAmbient == null)
             {
-                 var info = SoundInfo.InMap(this, MaintenanceType.None);
-                    sustainerAmbient = new Sustainer(def.building.soundAmbient, info);
-
-
+                var info = SoundInfo.InMap(this);
+                sustainerAmbient = new Sustainer(def.building.soundAmbient, info);
             }
             else
             {
@@ -152,24 +151,21 @@ namespace CultOfCthulhu
 
         public override IEnumerable<Gizmo> GetGizmos()
         {
-            IEnumerator<Gizmo> enumerator = base.GetGizmos().GetEnumerator();
+            var enumerator = base.GetGizmos().GetEnumerator();
             while (enumerator.MoveNext())
             {
-                Gizmo current = enumerator.Current;
+                var current = enumerator.Current;
                 yield return current;
             }
 
             var toggleDef = new Command_Toggle
             {
                 hotKey = KeyBindingDefOf.Command_TogglePower,
-                icon = ContentFinder<Texture2D>.Get("UI/Icons/Commands/Mute", true),
+                icon = ContentFinder<Texture2D>.Get("UI/Icons/Commands/Mute"),
                 defaultLabel = "Mute".Translate(),
                 defaultDesc = "MuteDesc".Translate(),
                 isActive = () => isMuted,
-                toggleAction = delegate
-                {
-                    MuteToggle();
-                }
+                toggleAction = delegate { MuteToggle(); }
             };
             yield return toggleDef;
         }
@@ -179,7 +175,6 @@ namespace CultOfCthulhu
             base.ExposeData();
             // Save and load the work variables, so they don't default after loading
             //Scribe_Values.Look<bool>(ref isMuted, "isMuted", false);
-
         }
     }
 }

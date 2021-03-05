@@ -38,8 +38,8 @@ namespace CultOfCthulhu
 
         public void ExposeData()
         {
-            Scribe_Values.Look(ref sacrificeCount, "sacrificeCount", 0);
-            Scribe_Values.Look(ref preachCount, "preachCount", 0);
+            Scribe_Values.Look(ref sacrificeCount, "sacrificeCount");
+            Scribe_Values.Look(ref preachCount, "preachCount");
         }
     }
 }

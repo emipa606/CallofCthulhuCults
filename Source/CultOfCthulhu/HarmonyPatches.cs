@@ -1,32 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using HarmonyLib;
-using Verse;
 using RimWorld;
 using UnityEngine;
+using Verse;
 
 namespace CultOfCthulhu
 {
     [StaticConstructorOnStartup]
-    static class HarmonyPatches
+    internal static class HarmonyPatches
     {
-        public static bool DebugMode = false;
-
-        public static void DebugMessage(string s)
-        {
-            if (DebugMode)
-            {
-                Log.Message(s);
-            }
-        }
+        private static readonly bool DebugMode = false;
 
         static HarmonyPatches()
         {
             var harmony = new Harmony("rimworld.jecrell.cthulhu.cults");
             harmony.Patch(AccessTools.Method(typeof(ThingWithComps), nameof(ThingWithComps.InitializeComps)), null,
-                new HarmonyMethod(typeof(HarmonyPatches), nameof(InitializeComps_PostFix)), null);
+                new HarmonyMethod(typeof(HarmonyPatches), nameof(InitializeComps_PostFix)));
             DebugMessage("ThingWithComps.InitializeComps_PostFix Passed");
 
             harmony.Patch(AccessTools.Property(typeof(Pawn), nameof(Pawn.BodySize)).GetGetMethod(), null,
@@ -41,18 +31,19 @@ namespace CultOfCthulhu
             harmony.Patch(
                 AccessTools.Method(typeof(GenLabel), "BestKindLabel",
                     new[] {typeof(Pawn), typeof(bool), typeof(bool), typeof(bool), typeof(int)}), null,
-                new HarmonyMethod(typeof(HarmonyPatches), nameof(BestKindLabel_PostFix)), null);
+                new HarmonyMethod(typeof(HarmonyPatches), nameof(BestKindLabel_PostFix)));
             DebugMessage("GenLabel.BestKindLabel_PostFix Passed");
 
             harmony.Patch(AccessTools.Method(typeof(Pawn_DrawTracker), nameof(Pawn_DrawTracker.DrawAt)), null,
-                new HarmonyMethod(typeof(HarmonyPatches), nameof(DrawAt_PostFix)), null);
+                new HarmonyMethod(typeof(HarmonyPatches), nameof(DrawAt_PostFix)));
             DebugMessage("Pawn_DrawTracker.DrawAt_PostFix Passed");
 
             harmony.Patch(
                 AccessTools.Method(typeof(PawnUtility), nameof(PawnUtility.IsTravelingInTransportPodWorldObject)), null,
                 new HarmonyMethod(typeof(HarmonyPatches),
                     nameof(IsTravelingInTransportPodWorldObject_PostFix)));
-            DebugMessage("PawnUtility.IsTravelingInTransportPodWorldObject.IsTravelingInTransportPodWorldObject_PostFix Passed");
+            DebugMessage(
+                "PawnUtility.IsTravelingInTransportPodWorldObject.IsTravelingInTransportPodWorldObject_PostFix Passed");
 
             harmony.Patch(AccessTools.Method(typeof(FertilityGrid), "CalculateFertilityAt"), null, new HarmonyMethod(
                 typeof(HarmonyPatches),
@@ -61,11 +52,19 @@ namespace CultOfCthulhu
 
             harmony.Patch(AccessTools.Method(typeof(MouseoverReadout), "MouseoverReadoutOnGUI"), new HarmonyMethod(
                 typeof(HarmonyPatches),
-                nameof(MouseoverReadoutOnGUI)), null);
+                nameof(MouseoverReadoutOnGUI)));
             DebugMessage("MouseoverReadout.MouseoverReadoutOnGUI Passed");
         }
 
-        public static string SpeedPercentString(float extraPathTicks)
+        public static void DebugMessage(string s)
+        {
+            if (DebugMode)
+            {
+                Log.Message(s);
+            }
+        }
+
+        private static string SpeedPercentString(float extraPathTicks)
         {
             var f = 13f / (extraPathTicks + 13f);
             return f.ToStringPercent();
@@ -73,7 +72,7 @@ namespace CultOfCthulhu
 
         public static bool MouseoverReadoutOnGUI(MouseoverReadout __instance)
         {
-            IntVec3 c = UI.MouseCell();
+            var c = UI.MouseCell();
             if (!c.InBounds(Find.CurrentMap) ||
                 Event.current.type != EventType.Repaint ||
                 Find.MainTabsRoot.OpenTab != null)
@@ -81,105 +80,116 @@ namespace CultOfCthulhu
                 return false;
             }
 
-            if (Find.CurrentMap.GetComponent<MapComponent_FertilityMods>().Get is MapComponent_FertilityMods fert &&
-                fert.ActiveCells.Contains(c))
+            if (!(Find.CurrentMap.GetComponent<MapComponent_FertilityMods>().Get is MapComponent_FertilityMods fert) ||
+                !fert.ActiveCells.Contains(c))
             {
-                //Original Variables
-                var BotLeft = new Vector2(15f, 65f);
+                return true;
+            }
 
-                GenUI.DrawTextWinterShadow(new Rect(256f, (float) (UI.screenHeight - 256), -256f, 256f));
-                Text.Font = GameFont.Small;
-                GUI.color = new Color(1f, 1f, 1f, 0.8f);
+            //Original Variables
+            var BotLeft = new Vector2(15f, 65f);
 
-                var num = 0f;
-                Rect rect;
-                if (c.Fogged(Find.CurrentMap))
-                {
-                    rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
-                    Widgets.Label(rect, "Undiscovered".Translate());
-                    GUI.color = Color.white;
-                    return false;
-                }
-                rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
-                var num2 = Mathf.RoundToInt(Find.CurrentMap.glowGrid.GameGlowAt(c) * 100f);
-                var glowStrings = Traverse.Create(__instance).Field("glowStrings").GetValue<string[]>();
-                Widgets.Label(rect, glowStrings[num2]);
-                num += 19f;
-                rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
-                TerrainDef terrain = c.GetTerrain(Find.CurrentMap);
-                //string SpeedPercentString = Traverse.Create(__instance).Method("SpeedPercentString", (float)terrain.pathCost).GetValue<string>();
-                //TerrainDef cachedTerrain = Traverse.Create(__instance).Field("cachedTerrain").GetValue<TerrainDef>();
-                _ =
-                    Traverse.Create(__instance).Field("cachedTerrainString").GetValue<string>();
+            GenUI.DrawTextWinterShadow(new Rect(256f, UI.screenHeight - 256, -256f, 256f));
+            Text.Font = GameFont.Small;
+            GUI.color = new Color(1f, 1f, 1f, 0.8f);
 
-                //if (terrain != cachedTerrain)
-                //{
-                var fertNum = Find.CurrentMap.fertilityGrid.FertilityAt(c);
-                string str = (fertNum <= 0.0001)
-                    ? TaggedString.Empty
-                    : (" " + "FertShort".Translate() + " " + fertNum.ToStringPercent());
-                string cachedTerrainString = terrain.LabelCap + ((terrain.passability == Traversability.Impassable)
-                                          ? null
-                                          : (" (" + "WalkSpeed".Translate(SpeedPercentString((float)terrain.pathCost) + str + ")")));
-                //cachedTerrain = terrain;
-                //}
-                Widgets.Label(rect, cachedTerrainString);
-                num += 19f;
-                Zone zone = c.GetZone(Find.CurrentMap);
-                if (zone != null)
-                {
-                    rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
-                    var label = zone.label;
-                    Widgets.Label(rect, label);
-                    num += 19f;
-                }
-                var depth = Find.CurrentMap.snowGrid.GetDepth(c);
-                if (depth > 0.03f)
-                {
-                    rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
-                    SnowCategory snowCategory = SnowUtility.GetSnowCategory(depth);
-                    string label2 = SnowUtility.GetDescription(snowCategory) + 
-                        " (" + 
-                        "WalkSpeed".Translate(SpeedPercentString((float) SnowUtility.MovementTicksAddOn(snowCategory))) + 
-                        ")";
-                    Widgets.Label(rect, label2);
-                    num += 19f;
-                }
-                List<Thing> thingList = c.GetThingList(Find.CurrentMap);
-                for (var i = 0; i < thingList.Count; i++)
-                {
-                    Thing thing = thingList[i];
-                    if (thing.def.category != ThingCategory.Mote)
-                    {
-                        rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
-                        var labelMouseover = thing.LabelMouseover;
-                        Widgets.Label(rect, labelMouseover);
-                        num += 19f;
-                    }
-                }
-                RoofDef roof = c.GetRoof(Find.CurrentMap);
-                if (roof != null)
-                {
-                    rect = new Rect(BotLeft.x, (float) UI.screenHeight - BotLeft.y - num, 999f, 999f);
-                    Widgets.Label(rect, roof.LabelCap);
-                }
+            var num = 0f;
+            Rect rect;
+            if (c.Fogged(Find.CurrentMap))
+            {
+                rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                Widgets.Label(rect, "Undiscovered".Translate());
                 GUI.color = Color.white;
                 return false;
             }
-            return true;
+
+            rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
+            var num2 = Mathf.RoundToInt(Find.CurrentMap.glowGrid.GameGlowAt(c) * 100f);
+            var glowStrings = Traverse.Create(__instance).Field("glowStrings").GetValue<string[]>();
+            Widgets.Label(rect, glowStrings[num2]);
+            num += 19f;
+            rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
+            var terrain = c.GetTerrain(Find.CurrentMap);
+            //string SpeedPercentString = Traverse.Create(__instance).Method("SpeedPercentString", (float)terrain.pathCost).GetValue<string>();
+            //TerrainDef cachedTerrain = Traverse.Create(__instance).Field("cachedTerrain").GetValue<TerrainDef>();
+            _ =
+                Traverse.Create(__instance).Field("cachedTerrainString").GetValue<string>();
+
+            //if (terrain != cachedTerrain)
+            //{
+            var fertNum = Find.CurrentMap.fertilityGrid.FertilityAt(c);
+            string str = fertNum <= 0.0001
+                ? TaggedString.Empty
+                : " " + "FertShort".Translate() + " " + fertNum.ToStringPercent();
+            string cachedTerrainString = terrain.LabelCap + (terrain.passability == Traversability.Impassable
+                ? null
+                : " (" + "WalkSpeed".Translate(SpeedPercentString(terrain.pathCost) + str + ")"));
+            //cachedTerrain = terrain;
+            //}
+            Widgets.Label(rect, cachedTerrainString);
+            num += 19f;
+            var zone = c.GetZone(Find.CurrentMap);
+            if (zone != null)
+            {
+                rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                var label = zone.label;
+                Widgets.Label(rect, label);
+                num += 19f;
+            }
+
+            var depth = Find.CurrentMap.snowGrid.GetDepth(c);
+            if (depth > 0.03f)
+            {
+                rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                var snowCategory = SnowUtility.GetSnowCategory(depth);
+                string label2 = SnowUtility.GetDescription(snowCategory) +
+                                " (" +
+                                "WalkSpeed".Translate(
+                                    SpeedPercentString(SnowUtility.MovementTicksAddOn(snowCategory))) +
+                                ")";
+                Widgets.Label(rect, label2);
+                num += 19f;
+            }
+
+            var thingList = c.GetThingList(Find.CurrentMap);
+            foreach (var thing in thingList)
+            {
+                if (thing.def.category == ThingCategory.Mote)
+                {
+                    continue;
+                }
+
+                rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                var labelMouseover = thing.LabelMouseover;
+                Widgets.Label(rect, labelMouseover);
+                num += 19f;
+            }
+
+            var roof = c.GetRoof(Find.CurrentMap);
+            if (roof != null)
+            {
+                rect = new Rect(BotLeft.x, UI.screenHeight - BotLeft.y - num, 999f, 999f);
+                Widgets.Label(rect, roof.LabelCap);
+            }
+
+            GUI.color = Color.white;
+            return false;
+
         }
 
 
         // RimWorld.FertilityGrid
         public static void CalculateFertilityAt(FertilityGrid __instance, IntVec3 loc, ref float __result)
         {
-            Map map = Traverse.Create(__instance).Field("map").GetValue<Map>();
-            if (map.GetComponent<MapComponent_FertilityMods>().Get is MapComponent_FertilityMods comp)
+            var map = Traverse.Create(__instance).Field("map").GetValue<Map>();
+            if (!(map.GetComponent<MapComponent_FertilityMods>().Get is MapComponent_FertilityMods comp))
             {
-                if (comp.ActiveCells.Contains(loc))
-                {
-                    __result *= 2;
-                }
+                return;
+            }
+
+            if (comp.ActiveCells.Contains(loc))
+            {
+                __result *= 2;
             }
         }
 
@@ -196,28 +206,29 @@ namespace CultOfCthulhu
         public static void DrawAt_PostFix(Pawn_DrawTracker __instance, Vector3 loc)
         {
             var pawn = (Pawn) AccessTools.Field(typeof(Pawn_DrawTracker), "pawn").GetValue(__instance);
-            if (pawn?.GetComp<CompTransmogrified>() is CompTransmogrified compTrans && compTrans.IsTransmogrified &&
-                pawn.Spawned)
+            if (!(pawn?.GetComp<CompTransmogrified>() is CompTransmogrified compTrans) || !compTrans.IsTransmogrified ||
+                !pawn.Spawned)
             {
-                Material matSingle;
-                matSingle = CultsDefOf.Cults_TransmogAura.graphicData.Graphic.MatSingle;
-                var angle = pawn.Rotation.AsAngle + (compTrans.Hediff.UndulationTicks * 100);
-
-                var xCap = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.x + 0.5f;
-                var zCap = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.y + 0.5f;
-
-                var x = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.x;
-                var z = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.y;
-                var drawX = Mathf.Clamp((x + compTrans.Hediff.UndulationTicks) * compTrans.Hediff.graphicDiv, 0.01f,
-                    xCap);
-                var drawY = Altitudes.AltitudeFor(AltitudeLayer.Terrain);
-                var drawZ = Mathf.Clamp((z + compTrans.Hediff.UndulationTicks) * compTrans.Hediff.graphicDiv, 0.01f,
-                    zCap);
-                var s = new Vector3(drawX, drawY, drawZ);
-                Matrix4x4 matrix = default;
-                matrix.SetTRS(loc, Quaternion.AngleAxis(angle, Vector3.up), s);
-                Graphics.DrawMesh(MeshPool.plane10Back, matrix, matSingle, 0);
+                return;
             }
+
+            var matSingle = CultsDefOf.Cults_TransmogAura.graphicData.Graphic.MatSingle;
+            var angle = pawn.Rotation.AsAngle + (compTrans.Hediff.UndulationTicks * 100);
+
+            var xCap = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.x + 0.5f;
+            var zCap = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.y + 0.5f;
+
+            var x = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.x;
+            var z = pawn.kindDef.lifeStages[0].bodyGraphicData.drawSize.y;
+            var drawX = Mathf.Clamp((x + compTrans.Hediff.UndulationTicks) * compTrans.Hediff.graphicDiv, 0.01f,
+                xCap);
+            var drawY = AltitudeLayer.Terrain.AltitudeFor();
+            var drawZ = Mathf.Clamp((z + compTrans.Hediff.UndulationTicks) * compTrans.Hediff.graphicDiv, 0.01f,
+                zCap);
+            var s = new Vector3(drawX, drawY, drawZ);
+            Matrix4x4 matrix = default;
+            matrix.SetTRS(loc, Quaternion.AngleAxis(angle, Vector3.up), s);
+            Graphics.DrawMesh(MeshPool.plane10Back, matrix, matSingle, 0);
         }
 
         // RimWorld.GenLabel
@@ -255,7 +266,7 @@ namespace CultOfCthulhu
                 return;
             }
 
-            if (p.RaceProps == null || (!p.RaceProps.Animal))
+            if (p.RaceProps == null || !p.RaceProps.Animal)
             {
                 return;
             }
@@ -263,10 +274,8 @@ namespace CultOfCthulhu
             var thingComp = (ThingComp) Activator.CreateInstance(typeof(CompTransmogrified));
             thingComp.parent = __instance;
             var comps = AccessTools.Field(typeof(ThingWithComps), "comps").GetValue(__instance);
-            if (comps != null)
-            {
-                ((List<ThingComp>) comps).Add(thingComp);
-            }
+            ((List<ThingComp>) comps)?.Add(thingComp);
+
             thingComp.Initialize(null);
         }
     }

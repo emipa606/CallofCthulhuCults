@@ -1,27 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Cthulhu;
 using RimWorld;
 using Verse;
-using Verse.AI;
 
 namespace CultOfCthulhu
 {
-    class IncidentWorker_CultSeed_NightmareMonolith : IncidentWorker_CultSeed
+    internal class IncidentWorker_CultSeed_NightmareMonolith : IncidentWorker_CultSeed
     {
-
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             var map = parms.target as Map;
             //Create a spawn point for our nightmare Tree
-            if (!Cthulhu.Utility.TryFindSpawnCell(CultsDefOf.Cults_MonolithNightmare, map.Center, map, 60, out IntVec3 intVec))
+            if (!Utility.TryFindSpawnCell(CultsDefOf.Cults_MonolithNightmare, map.Center, map, 60, out var intVec))
             {
                 return false;
             }
 
             //Spawn in the nightmare tree.
-            var thing = (Building)ThingMaker.MakeThing(CultsDefOf.Cults_MonolithNightmare, null);
+            var thing = (Building) ThingMaker.MakeThing(CultsDefOf.Cults_MonolithNightmare);
             //thing.Growth = 1f;
             GenPlace.TryPlaceThing(thing, intVec.RandomAdjacentCell8Way(), map, ThingPlaceMode.Near);
 

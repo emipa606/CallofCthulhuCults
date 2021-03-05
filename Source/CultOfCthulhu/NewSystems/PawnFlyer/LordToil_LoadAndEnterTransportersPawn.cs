@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Cthulhu;
 using Verse.AI;
 using Verse.AI.Group;
-using RimWorld;
 
 namespace CultOfCthulhu
 {
@@ -9,13 +8,13 @@ namespace CultOfCthulhu
     {
         private readonly int transportersGroup = -1;
 
-        public override bool AllowSatisfyLongNeeds => false;
-
         public LordToil_LoadAndEnterTransportersPawn(int transportersGroup)
         {
-            Cthulhu.Utility.DebugReport("LordToil_LoadAndCenterTranpsortersPawn Called");
+            Utility.DebugReport("LordToil_LoadAndCenterTranpsortersPawn Called");
             this.transportersGroup = transportersGroup;
         }
+
+        public override bool AllowSatisfyLongNeeds => false;
 
         public override void UpdateAllDuties()
         {

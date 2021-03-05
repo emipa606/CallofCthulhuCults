@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Cthulhu;
 using Verse;
 using Verse.AI;
-using RimWorld;
 
 namespace CultOfCthulhu
 {
@@ -12,19 +11,19 @@ namespace CultOfCthulhu
 
         protected override Job TryGiveJob(Pawn pawn)
         {
-            Cthulhu.Utility.DebugReport("JobGiver_LoadTransportersPawn Called");
+            Utility.DebugReport("JobGiver_LoadTransportersPawn Called");
             var transportersGroup = pawn.mindState.duty.transportersGroup;
             LoadTransportersPawnJobUtility.GetTransportersInGroup(transportersGroup, pawn.Map, tmpTransporters);
             for (var i = 0; i < tmpTransporters.Count; i++)
             {
-                CompTransporterPawn transporter = tmpTransporters[i];
+                var transporter = tmpTransporters[i];
                 if (LoadTransportersPawnJobUtility.HasJobOnTransporter(pawn, transporter))
                 {
                     return LoadTransportersPawnJobUtility.JobOnTransporter(pawn, transporter);
                 }
             }
+
             return null;
         }
-
     }
 }

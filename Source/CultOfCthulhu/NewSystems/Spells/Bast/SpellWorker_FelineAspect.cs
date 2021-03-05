@@ -1,26 +1,22 @@
 ﻿using CultOfCthulhu;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using RimWorld;
 using Verse;
 
 namespace BastCult
 {
     /// <summary>
-    /// This spell augments the executioner with the grace and deadliness of a cat.
+    ///     This spell augments the executioner with the grace and deadliness of a cat.
     /// </summary>
     public class SpellWorker_FelineAspect : SpellWorker
     {
         public override bool CanSummonNow(Map map)
         {
-            FelineAspectProperties felineProps = def.GetModExtension<FelineAspectProperties>();
+            var felineProps = def.GetModExtension<FelineAspectProperties>();
 
-            if(felineProps != null)
+            if (felineProps != null)
             {
                 //Get executioner.
-                Pawn executioner = altar(map).tempExecutioner;
+                var executioner = altar(map).tempExecutioner;
 
                 return ExecutionerIsValid(executioner, felineProps);
             }
@@ -32,23 +28,23 @@ namespace BastCult
         {
             var map = parms.target as Map;
 
-            FelineAspectProperties felineProps = def.GetModExtension<FelineAspectProperties>();
+            var felineProps = def.GetModExtension<FelineAspectProperties>();
 
             if (felineProps != null)
             {
                 //Get executioner.
-                Pawn executioner = altar(map).tempExecutioner;
+                var executioner = altar(map).tempExecutioner;
 
                 if (ExecutionerIsValid(executioner, felineProps))
                 {
                     //Apply Hediffs
                     //To body
-                    executioner.health.AddHediff(felineProps.hediffToApplyToBody, null);
+                    executioner.health.AddHediff(felineProps.hediffToApplyToBody);
 
                     //To hands
-                    foreach(BodyPartDef hand in felineProps.handDefs)
+                    foreach (var hand in felineProps.handDefs)
                     {
-                        List<BodyPartRecord> records = executioner.RaceProps.body.AllParts.FindAll(part => part.def == hand);
+                        var records = executioner.RaceProps.body.AllParts.FindAll(part => part.def == hand);
                         if (records?.Count > 0)
                         {
                             foreach (var record in records)
@@ -65,7 +61,7 @@ namespace BastCult
 
         public bool ExecutionerIsValid(Pawn preacher, FelineAspectProperties felineProps)
         {
-            return !preacher.health.hediffSet.HasHediff(felineProps.hediffToApplyToBody, false);
+            return !preacher.health.hediffSet.HasHediff(felineProps.hediffToApplyToBody);
         }
     }
 }

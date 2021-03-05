@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Cthulhu;
 using RimWorld;
 using Verse;
 using Verse.AI.Group;
@@ -15,7 +12,7 @@ namespace CultOfCthulhu
             //Log.Message("Building_SignOfDagon SpawnSetup");
             base.SpawnSetup(map, bla);
             Building_SignOfDagon toDestroy = null;
-            foreach (Building bld in map.listerBuildings.allBuildingsColonist)
+            foreach (var bld in map.listerBuildings.allBuildingsColonist)
             {
                 if (bld == this)
                 {
@@ -27,36 +24,40 @@ namespace CultOfCthulhu
                     toDestroy = dagon;
                 }
             }
+
             if (toDestroy != null)
             {
-                toDestroy.Destroy(0);
+                toDestroy.Destroy();
             }
 
-            List<Pawn> list = map.GetComponent<MapComponent_SacrificeTracker>().defendTheBroodPawns;
+            var list = map.GetComponent<MapComponent_SacrificeTracker>().defendTheBroodPawns;
             if (list == null)
             {
                 return;
             }
+
             if (list.Count <= 0)
             {
                 return;
             }
+
             Faction f;
-            if (Cthulhu.Utility.IsCosmicHorrorsLoaded())
+            if (Utility.IsCosmicHorrorsLoaded())
             {
                 f = Find.FactionManager.FirstFactionOfDef(FactionDef.Named("ROM_DeepOne"));
             }
             else
             {
-                Messages.Message("Cosmic horrors mod is not loaded. Using insectoids instead.", MessageTypeDefOf.NegativeEvent);
+                Messages.Message("Cosmic horrors mod is not loaded. Using insectoids instead.",
+                    MessageTypeDefOf.NegativeEvent);
                 f = Find.FactionManager.FirstFactionOfDef(FactionDef.Named("ROM_DeepOneAlt"));
             }
 
             Lord lord = null;
             //Log.Message("Building_SignOfDagon LordJob_DefendPoint");
             var lordJob = new LordJob_DefendPoint(Position);
-            Cthulhu.Utility.TemporaryGoodwill(f, false);
-            foreach (Pawn current in list)
+            Utility.TemporaryGoodwill(f);
+            foreach (var current in list)
             {
                 if (lord == null)
                 {
@@ -68,6 +69,7 @@ namespace CultOfCthulhu
                     map.lordManager.RemoveLord(lord);
                 }
             }
+
             LordMaker.MakeNewLord(f, lordJob, map, list);
         }
     }

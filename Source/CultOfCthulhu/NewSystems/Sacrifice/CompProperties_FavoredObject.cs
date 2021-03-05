@@ -1,7 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using Verse;
-using RimWorld;
-using System.Collections.Generic;
 
 namespace CultOfCthulhu
 {
@@ -14,7 +12,7 @@ namespace CultOfCthulhu
     public class CompProperties_FavoredObject : CompProperties
     {
         public List<FavoredEntry> deities;
-        
+
         public CompProperties_FavoredObject()
         {
             compClass = typeof(CompFavoredObject);

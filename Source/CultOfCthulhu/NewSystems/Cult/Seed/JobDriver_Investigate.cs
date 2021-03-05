@@ -1,42 +1,43 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
+
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using Cthulhu;
+using RimWorld;
+using Verse;
+using Verse.AI;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
-
     public class JobDriver_Investigate : JobDriver
     {
+        private readonly TargetIndex InvestigateeIndex = TargetIndex.B;
+
+        private readonly TargetIndex InvestigatorIndex = TargetIndex.A;
+
+        protected Thing Investigatee => job.GetTarget(TargetIndex.B).Thing;
+
+        protected Pawn Investigator => (Pawn) job.GetTarget(TargetIndex.A).Thing;
+
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
             return true;
         }
-
-        private readonly TargetIndex InvestigatorIndex = TargetIndex.A;
-        private readonly TargetIndex InvestigateeIndex = TargetIndex.B;
-
-        protected Thing Investigatee => job.GetTarget(TargetIndex.B).Thing;
-
-        protected Pawn Investigator => (Pawn)job.GetTarget(TargetIndex.A).Thing;
 
         public override void ExposeData()
         {
@@ -45,8 +46,8 @@ namespace CultOfCthulhu
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
-            this.EndOnDespawnedOrNull(InvestigatorIndex, JobCondition.Incompletable);
-            this.EndOnDespawnedOrNull(InvestigateeIndex, JobCondition.Incompletable);
+            this.EndOnDespawnedOrNull(InvestigatorIndex);
+            this.EndOnDespawnedOrNull(InvestigateeIndex);
             //this.EndOnDespawnedOrNull(Build, JobCondition.Incompletable);
             yield return Toils_Reserve.Reserve(InvestigateeIndex, job.def.joyMaxParticipants);
             Toil gotoInvestigatee;
@@ -66,7 +67,8 @@ namespace CultOfCthulhu
                 pawn.rotationTracker.FaceCell(TargetB.Cell);
                 pawn.GainComfortFromCellIfPossible();
             });
-            watchToil.AddFinishAction(() => Map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedState = CultSeedState.FinishedSeeing);
+            watchToil.AddFinishAction(() =>
+                Map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedState = CultSeedState.FinishedSeeing);
             yield return watchToil;
 
             AddFinishAction(() =>
@@ -75,8 +77,9 @@ namespace CultOfCthulhu
                 if (Map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedState == CultSeedState.FinishedSeeing)
                 {
                     CultUtility.InvestigatedCultSeed(Investigator, Investigatee);
-                    Cthulhu.Utility.DebugReport("Called end tick check");
+                    Utility.DebugReport("Called end tick check");
                 }
+
                 //if (this.TargetB.HasThing)
                 //{
                 //    Find.Reservations.Release(this.job.targetC.Thing, pawn);

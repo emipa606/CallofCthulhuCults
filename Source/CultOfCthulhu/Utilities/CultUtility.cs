@@ -52,7 +52,7 @@ namespace CultOfCthulhu
             }
 
             return CellFinderLoose.TryFindSkyfallerCell(defToCheck, map, out pos, 10, nearLoc, maxDist, true, false,
-                false, false, false, false, null);
+                false, false, false);
         }
 
 
@@ -226,7 +226,7 @@ namespace CultOfCthulhu
                 {
                     p = null;
                     request = new PawnGenerationRequest(pawnKindDef, Faction.OfPlayer, PawnGenerationContext.NonPlayer,
-                        map.Tile, false, false, false, false, true, true, 20f, false, true, true, false, false, false);
+                        map.Tile, false, false, false, false, true, true, 20f, false, true, true, false);
                     p = PawnGenerator.GeneratePawn(request);
 
                     if (p.skills.GetSkill(SkillDefOf.Social).TotallyDisabled)
@@ -249,7 +249,7 @@ namespace CultOfCthulhu
             else if (type == CultistType.DarkEmmisary)
             {
                 request = new PawnGenerationRequest(pawnKindDef, Faction.OfPlayer, PawnGenerationContext.NonPlayer,
-                    map.Tile, false, false, false, false, true, true, 20f, false, true, true, false, false, false);
+                    map.Tile, false, false, false, false, true, true, 20f, false, true, true, false);
                 p = PawnGenerator.GeneratePawn(request);
                 Thing tHood = ThingMaker.MakeThing(ThingDef.Named("Apparel_NyarlathotepHood"),
                     ThingDef.Named("DevilstrandCloth"));
@@ -263,7 +263,7 @@ namespace CultOfCthulhu
             else
             {
                 request = new PawnGenerationRequest(pawnKindDef, Faction.OfPlayer, PawnGenerationContext.NonPlayer,
-                    map.Tile, false, false, false, false, true, true, 20f, false, true, true, false, false);
+                    map.Tile, false, false, false, false, true, true, 20f, false, true, true, false);
                 p = PawnGenerator.GeneratePawn(request);
             }
             //We need psychopathic cannibals
@@ -1148,8 +1148,7 @@ namespace CultOfCthulhu
                         {
                             if (prisoner != null)
                             {
-                                if (GenSight.LineOfSight(prisoner.Position, altar.Position, altar.Map, true, null, 0,
-                                    0))
+                                if (GenSight.LineOfSight(prisoner.Position, altar.Position, altar.Map, true))
                                 {
                                     if (prisoner.needs != null)
                                     {
@@ -1475,7 +1474,7 @@ namespace CultOfCthulhu
             IntVec3 spawnLoc = pawn.Position + GenAdj.AdjacentCells[(int)Direction8Way.South];
             Thing cultSeed = pawn.Map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedTarget;
 
-            var thing = (ThingWithComps)ThingMaker.MakeThing(CultsDefOf.Cults_Grimoire, null);
+            var thing = (ThingWithComps)ThingMaker.MakeThing(CultsDefOf.Cults_Grimoire);
             //thing.SetFaction(Faction.OfPlayer);
             GenPlace.TryPlaceThing(thing, spawnLoc, pawn.Map, ThingPlaceMode.Near);
             Find.WindowStack.Add(new Dialog_MessageBox("CultBookSummary".Translate(pawn.Name.ToStringShort),
@@ -1772,7 +1771,7 @@ namespace CultOfCthulhu
                     return;
                 }
 
-                pawn.needs.mood.thoughts.memories.TryGainMemory(ThoughtMaker.MakeThought(def, scoreStageIndex), null);
+                pawn.needs.mood.thoughts.memories.TryGainMemory(ThoughtMaker.MakeThought(def, scoreStageIndex));
             }
         }
 

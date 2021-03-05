@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Verse;
+﻿using System.Collections.Generic;
+using Cthulhu;
 using RimWorld;
+using Verse;
 using Verse.AI;
 
 namespace CultOfCthulhu
 {
-    partial class MapComponent_LocalCultTracker : MapComponent
+    internal partial class MapComponent_LocalCultTracker
     {
-
-        public void InquisitionCheck()
+        private void InquisitionCheck()
         {
             //Can we have an inquisition?
 
@@ -40,16 +37,12 @@ namespace CultOfCthulhu
 
             //We need 2 violence-capable inquisitors.
             var assailants = new List<Pawn>();
-            foreach (Pawn current in antiCultists)
+            foreach (var current in antiCultists)
             {
-                if (Cthulhu.Utility.CapableOfViolence(current) && current.IsColonist)
+                if (Utility.CapableOfViolence(current) && current.IsColonist)
                 {
                     assailants.Add(current);
                 }
-            }
-            if (assailants == null)
-            {
-                return;
             }
 
             if (assailants.Count < 2)
@@ -58,20 +51,20 @@ namespace CultOfCthulhu
             }
 
             //We need night conditions.
-            if (!Cthulhu.Utility.IsNight(map))
+            if (!Utility.IsNight(map))
             {
                 return;
             }
 
             //We need a preacher
-            if (!TryFindPreacher(out Pawn preacher))
+            if (!TryFindPreacher(out var preacher))
             {
-                Cthulhu.Utility.DebugReport("Inquisition: Unable to find preacher.");
+                Utility.DebugReport("Inquisition: Unable to find preacher.");
                 return;
             }
 
             //Check if the assailants equal the preacher...
-            foreach (Pawn current in assailants)
+            foreach (var current in assailants)
             {
                 if (current == preacher)
                 {
@@ -84,15 +77,17 @@ namespace CultOfCthulhu
             {
                 var ran = Rand.Range(1, 3);
                 ticksUntilInquisition = Find.TickManager.TicksGame + (GenDate.TicksPerDay * ran);
-                Cthulhu.Utility.DebugReport("Inquisition: Current Ticks: " + Find.TickManager.TicksGame.ToString() + " Ticker set to: " + ticksUntilInquisition.ToString());
+                Utility.DebugReport("Inquisition: Current Ticks: " + Find.TickManager.TicksGame + " Ticker set to: " +
+                                    ticksUntilInquisition);
             }
+
             if (ticksUntilInquisition < Find.TickManager.TicksGame)
             {
                 TryInquisition(assailants, preacher);
             }
         }
 
-        public void TryInquisition(List<Pawn> assailants, Pawn preacher)
+        private void TryInquisition(List<Pawn> assailants, Pawn preacher)
         {
             //Don't try another inquisition for a long time.
             ticksUntilInquisition = Find.TickManager.TicksGame + (GenDate.TicksPerDay * Rand.Range(7, 28));
@@ -102,14 +97,14 @@ namespace CultOfCthulhu
                 return;
             }
 
-            foreach (Pawn antiCultist in assailants)
+            foreach (var antiCultist in assailants)
             {
                 if (antiCultist == null)
                 {
                     continue;
                 }
 
-                if (!Cthulhu.Utility.IsActorAvailable(antiCultist))
+                if (!Utility.IsActorAvailable(antiCultist))
                 {
                     continue;
                 }

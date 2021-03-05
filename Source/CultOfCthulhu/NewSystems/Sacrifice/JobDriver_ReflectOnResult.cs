@@ -1,32 +1,30 @@
 ﻿// ----------------------------------------------------------------------
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
-using System;
+
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using Verse.AI;
 
 // ----------------------------------------------------------------------
 // These are RimWorld-specific usings. Activate/Deactivate what you need:
 // ----------------------------------------------------------------------
-using UnityEngine;         // Always needed
+// Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
-using Verse.AI.Group;
-using Verse.Sound;       // Needed when you do something with Sound
-using Verse.Noise;       // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
-using RimWorld.Planet;   // RimWorld specific functions for world creation
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
+// Needed when you do something with Sound
+// Needed when you do something with Noises
+// RimWorld specific functions are found here (like 'Building_Battery')
+
+// RimWorld specific functions for world creation
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
-    class JobDriver_ReflectOnResult : JobDriver
+    internal class JobDriver_ReflectOnResult : JobDriver
     {
-
-        protected Building_SacrificialAltar altar => (Building_SacrificialAltar)job.GetTarget(TargetIndex.A).Thing;
+        protected Building_SacrificialAltar altar => (Building_SacrificialAltar) job.GetTarget(TargetIndex.A).Thing;
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -53,7 +51,8 @@ namespace CultOfCthulhu
             {
                 initAction = delegate
                 {
-                    if (Map.GetComponent<MapComponent_SacrificeTracker>().lastResult == CultUtility.SacrificeResult.success)
+                    if (Map.GetComponent<MapComponent_SacrificeTracker>().lastResult ==
+                        CultUtility.SacrificeResult.success)
                     {
                         //Do something? Ia Ia!
                     }
@@ -79,7 +78,8 @@ namespace CultOfCthulhu
                     {
                         if (altar.currentSacrificeState != Building_SacrificialAltar.SacrificeState.finished)
                         {
-                            altar.ChangeState(Building_SacrificialAltar.State.sacrificing, Building_SacrificialAltar.SacrificeState.finished);
+                            altar.ChangeState(Building_SacrificialAltar.State.sacrificing,
+                                Building_SacrificialAltar.SacrificeState.finished);
                             Map.GetComponent<MapComponent_SacrificeTracker>().ClearSacrificeVariables();
                         }
                     }
@@ -87,6 +87,5 @@ namespace CultOfCthulhu
                 defaultCompleteMode = ToilCompleteMode.Instant
             };
         }
-
     }
 }

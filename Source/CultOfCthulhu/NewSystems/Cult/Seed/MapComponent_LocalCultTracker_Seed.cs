@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using RimWorld;
 using Verse;
 
 namespace CultOfCthulhu
 {
-    partial class MapComponent_LocalCultTracker : MapComponent
+    internal partial class MapComponent_LocalCultTracker : MapComponent
     {
         public void CultSeedCheck()
         {
@@ -19,9 +16,11 @@ namespace CultOfCthulhu
                     CurrentSeedState = CultSeedState.FinishedWriting;
                 }
             }
+
             if (CurrentSeedState < CultSeedState.NeedTable)
             {
-                if (map.listerBuildings.allBuildingsColonist.FirstOrDefault((Building bld) => bld is Building_SacrificialAltar || bld is Building_ForbiddenReserachCenter) != null)
+                if (map.listerBuildings.allBuildingsColonist.FirstOrDefault(bld =>
+                    bld is Building_SacrificialAltar || bld is Building_ForbiddenReserachCenter) != null)
                 {
                     CurrentSeedState = CultSeedState.NeedTable;
                 }
@@ -58,14 +57,14 @@ namespace CultOfCthulhu
                 if (GenLocalDate.HourInteger(map) > 21 || GenLocalDate.HourInteger(map) < 6)
                 {
                     ticksToSpawnCultSeed = OneDay + Rand.Range(-20000, +20000);
-                    IncidentDef seed = seedIncidents.RandomElement<IncidentDef>();
-                    IncidentParms parms = StorytellerUtility.DefaultParmsNow(seed.category, map);
+                    var seed = seedIncidents.RandomElement();
+                    var parms = StorytellerUtility.DefaultParmsNow(seed.category, map);
                     seed.Worker.TryExecute(parms);
                     return;
                 }
+
                 ticksToSpawnCultSeed += GenDate.TicksPerHour;
             }
         }
-
     }
 }

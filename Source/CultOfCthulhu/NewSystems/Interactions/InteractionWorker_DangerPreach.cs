@@ -1,13 +1,12 @@
-﻿using System;
-using Verse;
+﻿using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
-using System.Collections.Generic;
+using Verse;
 
 namespace CultOfCthulhu
 {
     /// <summary>
-    /// Cultist shares ideas with a non-cultist for massive failure.
+    ///     Cultist shares ideas with a non-cultist for massive failure.
     /// </summary>
     public class InteractionWorker_DangerPreach : InteractionWorker
     {
@@ -18,9 +17,11 @@ namespace CultOfCthulhu
         //Almost three times the chance
         private const float BaseSelectionWeight = 0.8f;
 
-        public override void Interacted(Pawn initiator, Pawn recipient, List<RulePackDef> extraSentencePacks, out string letterText, out string letterLabel, out LetterDef letterDef, out LookTargets lookTargets)
+        public override void Interacted(Pawn initiator, Pawn recipient, List<RulePackDef> extraSentencePacks,
+            out string letterText, out string letterLabel, out LetterDef letterDef, out LookTargets lookTargets)
         {
-            base.Interacted(initiator, recipient, extraSentencePacks, out letterText, out letterLabel, out letterDef, out lookTargets);
+            base.Interacted(initiator, recipient, extraSentencePacks, out letterText, out letterLabel, out letterDef,
+                out lookTargets);
             CultUtility.AffectCultMindedness(recipient, Rand.Range(CULTMINDED_EFFECT_MIN, CULTMINDED_EFFECT_MAX));
         }
 
@@ -63,7 +64,7 @@ namespace CultOfCthulhu
             var math = 2f;
             //Subtract the social skill of the initiator by 10.
             //A social skill of 20 will return a 0 chance of this happening.
-            math -= (float)initiator.skills.GetSkill(SkillDefOf.Social).Level / 10;
+            math -= (float) initiator.skills.GetSkill(SkillDefOf.Social).Level / 10;
             //Throw in random chance.
             math += Rand.Range(-0.5f, 0.5f);
 
