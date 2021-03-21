@@ -42,6 +42,11 @@
       <li>Woody</li>
       <li>Stony</li>
     </stuffCategories>
+    <recipeMaker>
+      <researchPrerequisites>
+        <li>Forbidden_Sculptures</li>
+      </researchPrerequisites>
+    </recipeMaker>
     <costStuffCount>320</costStuffCount>
     <researchPrerequisites>
       <li>Forbidden_Sculptures</li>
