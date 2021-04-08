@@ -636,7 +636,7 @@
   <ThingDef ParentName="ObeliskBase">
     <defName>Cults_ObeliskConstructed_Red</defName>
     <category>Building</category>
-    <label>obelisk (red)</label>
+    <label>bright obelisk (red)</label>
     <description>A mysterious upright standing block of stone. It has been specially blessed with a red aura.</description>
     <comps>
       <li Class="CompProperties_Glower">
@@ -647,7 +647,7 @@
   </ThingDef>
   <ThingDef ParentName="ObeliskBase">
     <defName>Cults_ObeliskConstructed_Green</defName>
-    <label>obelisk (green)</label>
+    <label>bright obelisk (green)</label>
     <description>A mysterious upright standing block of stone. It has been specially blessed with a green aura.</description>
     <graphicData>
       <texPath>Building/ObeliskConstructed/ObeliskConstructed_Green</texPath>
@@ -668,7 +668,7 @@
   </ThingDef>
   <ThingDef ParentName="ObeliskBase">
     <defName>Cults_ObeliskConstructed_Blue</defName>
-    <label>obelisk (blue)</label>
+    <label>bright obelisk (blue)</label>
     <description>A mysterious upright standing block of stone. It has been specially blessed with a blue aura.</description>
     <graphicData>
       <texPath>Building/ObeliskConstructed/ObeliskConstructed_Blue</texPath>
@@ -689,7 +689,7 @@
   </ThingDef>
   <ThingDef ParentName="ObeliskBase">
     <defName>Cults_ObeliskConstructed_Yellow</defName>
-    <label>obelisk (yellow)</label>
+    <label>bright obelisk (yellow)</label>
     <description>A mysterious upright standing block of stone. It has been specially blessed with a yellow aura.</description>
     <graphicData>
       <texPath>Building/ObeliskConstructed/ObeliskConstructed_Yellow</texPath>
@@ -697,6 +697,94 @@
       <drawRotated>false</drawRotated>
       <drawSize>(6.0,10.0)</drawSize>
       <shaderType>CutoutComplex</shaderType>
+      <damageData>
+        <rect>(0.35,0.35,0.3,0.3)</rect>
+      </damageData>
+    </graphicData>
+    <comps>
+      <li Class="CompProperties_Glower">
+        <glowRadius>10</glowRadius>
+        <glowColor>(200,200,0,0)</glowColor>
+      </li>
+    </comps>
+  </ThingDef>
+  <ThingDef ParentName="ObeliskBase">
+    <defName>Cults_ObeliskConstructed_DarkRed</defName>
+    <label>dark obelisk (red)</label>
+    <description>A mysterious upright standing block of stone. It has been specially blessed with a dark red aura.</description>
+    <uiIconPath>Building/MonolithNightmare/ObeliskNightmare_UI</uiIconPath>
+    <graphicData>
+      <texPath>Building/MonolithNightmare/ObeliskNightmare</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawRotated>false</drawRotated>
+      <drawSize>(6.0,10.0)</drawSize>
+      <shaderType>TransparentPostLight</shaderType>
+      <damageData>
+        <rect>(0.35,0.35,0.3,0.3)</rect>
+      </damageData>
+    </graphicData>
+    <comps>
+      <li Class="CompProperties_Glower">
+        <glowRadius>10</glowRadius>
+        <glowColor>(200,0,0,0)</glowColor>
+      </li>
+    </comps>
+  </ThingDef>
+  <ThingDef ParentName="ObeliskBase">
+    <defName>Cults_ObeliskConstructed_DarkGreen</defName>
+    <label>dark obelisk (green)</label>
+    <description>A mysterious upright standing block of stone. It has been specially blessed with a dark green aura.</description>
+    <uiIconPath>Building/MonolithNightmare/ObeliskNightmare_UI</uiIconPath>
+    <graphicData>
+      <texPath>Building/MonolithNightmare/ObeliskNightmare_Green</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawRotated>false</drawRotated>
+      <drawSize>(6.0,10.0)</drawSize>
+      <shaderType>TransparentPostLight</shaderType>
+      <damageData>
+        <rect>(0.35,0.35,0.3,0.3)</rect>
+      </damageData>
+    </graphicData>
+    <comps>
+      <li Class="CompProperties_Glower">
+        <glowRadius>10</glowRadius>
+        <glowColor>(0,200,0,0)</glowColor>
+      </li>
+    </comps>
+  </ThingDef>
+  <ThingDef ParentName="ObeliskBase">
+    <defName>Cults_ObeliskConstructed_DarkBlue</defName>
+    <label>dark obelisk (blue)</label>
+    <description>A mysterious upright standing block of stone. It has been specially blessed with a dark blue aura.</description>
+    <uiIconPath>Building/MonolithNightmare/ObeliskNightmare_UI</uiIconPath>
+    <graphicData>
+      <texPath>Building/MonolithNightmare/ObeliskNightmare_Blue</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawRotated>false</drawRotated>
+      <drawSize>(6.0,10.0)</drawSize>
+      <shaderType>TransparentPostLight</shaderType>
+      <damageData>
+        <rect>(0.35,0.35,0.3,0.3)</rect>
+      </damageData>
+    </graphicData>
+    <comps>
+      <li Class="CompProperties_Glower">
+        <glowRadius>10</glowRadius>
+        <glowColor>(0,0,200,0)</glowColor>
+      </li>
+    </comps>
+  </ThingDef>
+  <ThingDef ParentName="ObeliskBase">
+    <defName>Cults_ObeliskConstructed_DarkYellow</defName>
+    <label>dark obelisk (yellow)</label>
+    <description>A mysterious upright standing block of stone. It has been specially blessed with a dark yellow aura.</description>
+    <uiIconPath>Building/MonolithNightmare/ObeliskNightmare_UI</uiIconPath>
+    <graphicData>
+      <texPath>Building/MonolithNightmare/ObeliskNightmare_Yellow</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawRotated>false</drawRotated>
+      <drawSize>(6.0,10.0)</drawSize>
+      <shaderType>TransparentPostLight</shaderType>
       <damageData>
         <rect>(0.35,0.35,0.3,0.3)</rect>
       </damageData>
