@@ -14,5 +14,6 @@
     <li>/</li>
     <li>1.2</li>
     <li IfModActive="CETeam.CombatExtended">CE/1.2</li>
+    <li IfModActive="syrchalis.traitvalue">SYRTraitValue</li>
   </v1.2>
 </loadFolders>

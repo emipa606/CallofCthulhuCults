@@ -26,6 +26,7 @@
     <li>brrainz.harmony</li>
     <li>jecrell.jecstools</li>
     <li>CETeam.CombatExtended</li>
+    <li>syrchalis.traitvalue</li>
   </loadAfter>
   <description>[img]https://i.imgur.com/WAEzk68.png[/img]
 Update of Jecrells mod
@@ -37,6 +38,7 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=815039373
 - Removed the production-tag on altars so they can be used in thronerooms
 - Added an option to make sermons voluntary, making pawns complete some types of jobs before joining
 - Improved the sermon scheduling with some inspiration from the excellent mod [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1565942758]Colony Leadership[/url] Now you can select what days to do sermons and also when they should start in the day.
+- Added support for [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2451324814][SYR] Trait Value[/url]
 
 [img]https://i.imgur.com/7Gzt3Rg.png[/img]
 
