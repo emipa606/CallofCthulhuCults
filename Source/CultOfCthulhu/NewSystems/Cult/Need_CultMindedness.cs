@@ -74,6 +74,21 @@ namespace CultOfCthulhu
                 return;
             }
 
+            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Talking))
+            {
+                return;
+            }
+
+            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Hearing))
+            {
+                return;
+            }
+
+            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Moving))
+            {
+                return;
+            }
+
             if (!baseSet)
             {
                 if (ticksUntilBaseSet <= 0)

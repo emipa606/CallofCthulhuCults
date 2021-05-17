@@ -50,9 +50,9 @@ namespace CallOfCthulhu
                 buttonAText = "OK".Translate();
             }
 
-            if (entity.Def.Portrait != "")
+            if (entity.Def.portrait != "")
             {
-                image = ContentFinder<Texture2D>.Get(entity.Def.Portrait);
+                image = ContentFinder<Texture2D>.Get(entity.Def.portrait);
             }
 
             forcePause = true;

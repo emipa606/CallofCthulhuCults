@@ -41,11 +41,11 @@ namespace CultOfCthulhu
         private const float MODIFIER_ANIMAL = 0.2f;
         private const float DIVIDER_HUMAN = 300f;
         private const float DIVIDER_FOOD = 700f;
-        public bool discovered;
-        private float favor;
         public readonly List<ThingDef> favoredApparel = new List<ThingDef>();
 
         private readonly float favorMax = 50f;
+        public bool discovered;
+        private float favor;
 
         public IncidentDef finalSpell;
 
@@ -195,7 +195,6 @@ namespace CultOfCthulhu
                 var i = currentDef.Version;
                 Utility.DebugReport(Label + " version retrieved " + i);
                 return i;
-
             }
         }
 
@@ -420,12 +419,12 @@ namespace CultOfCthulhu
         public string Info()
         {
             var s = new StringBuilder();
-            s.AppendLine("Box_Titles".Translate() + ": " + Def.Titles);
+            s.AppendLine("Box_Titles".Translate() + ": " + Def.titles);
             s.AppendLine();
-            s.AppendLine("Box_Domains".Translate() + ": " + Def.Domains);
+            s.AppendLine("Box_Domains".Translate() + ": " + Def.domains);
             s.AppendLine();
             s.AppendLine("Box_Description".Translate() + ": ");
-            s.AppendLine(Def.DescriptionLong);
+            s.AppendLine(Def.descriptionLong);
             return s.ToString();
         }
 
