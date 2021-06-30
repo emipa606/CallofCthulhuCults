@@ -39,19 +39,13 @@ namespace CultOfCthulhu
             return true;
         }
 
-        public override void ExposeData()
-        {
-            base.ExposeData();
-        }
-
         protected override IEnumerable<Toil> MakeNewToils()
         {
             this.EndOnDespawnedOrNull(InvestigatorIndex);
             this.EndOnDespawnedOrNull(InvestigateeIndex);
             //this.EndOnDespawnedOrNull(Build, JobCondition.Incompletable);
             yield return Toils_Reserve.Reserve(InvestigateeIndex, job.def.joyMaxParticipants);
-            Toil gotoInvestigatee;
-            gotoInvestigatee = Toils_Goto.GotoThing(InvestigateeIndex, PathEndMode.ClosestTouch);
+            var gotoInvestigatee = Toils_Goto.GotoThing(InvestigateeIndex, PathEndMode.ClosestTouch);
             yield return gotoInvestigatee;
 
             yield return Toils_Goto.GotoCell(Investigatee.InteractionCell, PathEndMode.OnCell);
@@ -74,11 +68,13 @@ namespace CultOfCthulhu
             AddFinishAction(() =>
             {
                 //When the investigation is finished, apply effects.
-                if (Map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedState == CultSeedState.FinishedSeeing)
+                if (Map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedState != CultSeedState.FinishedSeeing)
                 {
-                    CultUtility.InvestigatedCultSeed(Investigator, Investigatee);
-                    Utility.DebugReport("Called end tick check");
+                    return;
                 }
+
+                CultUtility.InvestigatedCultSeed(Investigator, Investigatee);
+                Utility.DebugReport("Called end tick check");
 
                 //if (this.TargetB.HasThing)
                 //{

@@ -68,30 +68,34 @@ namespace CultOfCthulhu
 
             while (pointsLeft > 0f)
             {
-                if ((from cell in GenAdj.CellsAdjacent8Way(this)
+                if (!(from cell in GenAdj.CellsAdjacent8Way(this)
                     where cell.Walkable(Map)
                     select cell).TryRandomElement(out var center))
                 {
-                    var request = new PawnGenerationRequest(CultsDefOf.Cults_Sailor, faction,
-                        PawnGenerationContext.NonPlayer, Map.Tile, false, false, false, false, true, true, 20f, false,
-                        true, true, false, false, false, false, false, 0, null, 0);
-                    var pawn = PawnGenerator.GeneratePawn(request);
-                    if (GenPlace.TryPlaceThing(pawn, center, Map, ThingPlaceMode.Near))
-                    {
-                        if (pawn.GetLord() != null)
-                        {
-                            pawn.GetLord().Cleanup();
-                            pawn.GetLord().CurLordToil.Cleanup();
-                            pawn.GetLord().LordJob.Cleanup();
-                        }
-
-                        lord.AddPawn(pawn);
-                        pointsLeft -= pawn.kindDef.combatPower;
-                        Utility.ApplySanityLoss(pawn, 1f);
-                    }
-
-                    //Find.WorldPawns.PassToWorld(pawn, PawnDiscardDecideMode.Discard);
+                    continue;
                 }
+
+                var request = new PawnGenerationRequest(CultsDefOf.Cults_Sailor, faction,
+                    PawnGenerationContext.NonPlayer, Map.Tile, false, false, false, false, true, true, 20f, false,
+                    true, true, false, false, false, false, false, 0, null, 0);
+                var pawn = PawnGenerator.GeneratePawn(request);
+                if (!GenPlace.TryPlaceThing(pawn, center, Map, ThingPlaceMode.Near))
+                {
+                    continue;
+                }
+
+                if (pawn.GetLord() != null)
+                {
+                    pawn.GetLord().Cleanup();
+                    pawn.GetLord().CurLordToil.Cleanup();
+                    pawn.GetLord().LordJob.Cleanup();
+                }
+
+                lord.AddPawn(pawn);
+                pointsLeft -= pawn.kindDef.combatPower;
+                Utility.ApplySanityLoss(pawn, 1f);
+
+                //Find.WorldPawns.PassToWorld(pawn, PawnDiscardDecideMode.Discard);
             }
 
             pointsLeft = 0f;

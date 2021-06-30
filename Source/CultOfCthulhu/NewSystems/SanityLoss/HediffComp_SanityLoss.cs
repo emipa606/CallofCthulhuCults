@@ -7,23 +7,22 @@ namespace CultOfCthulhu
     {
         public override void CompPostTick(ref float severityAdjustment)
         {
-            if (Pawn != null)
+            if (Pawn?.RaceProps != null)
             {
-                if (Pawn.RaceProps != null)
-                {
-                    if (Pawn.RaceProps.IsMechanoid)
-                    {
-                        MakeSane();
-                    }
-                }
-            }
-
-            if (Utility.IsCosmicHorrorsLoaded())
-            {
-                if (Pawn.GetType().ToString() == "CosmicHorrorPawn")
+                if (Pawn.RaceProps.IsMechanoid)
                 {
                     MakeSane();
                 }
+            }
+
+            if (!Utility.IsCosmicHorrorsLoaded())
+            {
+                return;
+            }
+
+            if (Pawn?.GetType().ToString() == "CosmicHorrorPawn")
+            {
+                MakeSane();
             }
         }
 

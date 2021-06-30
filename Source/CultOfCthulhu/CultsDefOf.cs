@@ -7,18 +7,22 @@
 // ----------------------------------------------------------------------
 // Always needed
 //using VerseBase;         // Material/Graphics handling functions are found here
-using Verse;               // RimWorld universal objects are here (like 'Building')
-using Verse.AI;          // Needed when you do something with the AI
+
+using RimWorld;
+using Verse;
+using Verse.AI;
+using AbilityDef = AbilityUser.AbilityDef;
+// RimWorld universal objects are here (like 'Building')
+// Needed when you do something with the AI
 // Needed when you do something with Sound
 // Needed when you do something with Noises
-using RimWorld;            // RimWorld specific functions are found here (like 'Building_Battery')
+// RimWorld specific functions are found here (like 'Building_Battery')
 // RimWorld specific functions for world creation
 
 //using RimWorld.SquadAI;  // RimWorld specific functions for squad brains 
 
 namespace CultOfCthulhu
 {
-
     [DefOf]
     public class CultsDefOf
     {
@@ -28,15 +32,14 @@ namespace CultOfCthulhu
         public static ThingDef Cults_BlackIchorMeal;
         public static ThingDef Cults_SignOfDagon;
         public static DamageDef Cults_Psionic;
-        public static AbilityUser.AbilityDef Cults_PsionicBlast;
-        public static AbilityUser.AbilityDef Cults_PsionicShock;
-        public static AbilityUser.AbilityDef Cults_PsionicBurn;
+        public static AbilityDef Cults_PsionicBlast;
+        public static AbilityDef Cults_PsionicShock;
+        public static AbilityDef Cults_PsionicBurn;
         public static RoomRoleDef Cults_Temple;
         public static ThingDef Cults_ForbiddenKnowledgeCenter;
         public static LetterDef Cults_StandardMessage;
         public static ThoughtDef Cults_PrayedInImpressiveTemple;
         public static ThingDef Cults_TransmogAura;
-
 
 
         // ============ GAME CONDITIONS =======
@@ -224,11 +227,11 @@ namespace CultOfCthulhu
         public static GameConditionDef Cults_Aurora;
 
         // ============= CORE REFERENCES ==============
-        
+
         public static ThingDef Penoxycyline;
 
         public static ThingDef BlocksSlate;
-        
+
         public static ThingDef BlocksLimestone;
 
         public static ThingDef BlocksMarble;
@@ -236,9 +239,9 @@ namespace CultOfCthulhu
         public static ThingDef Neutroamine;
 
         public static PawnKindDef Rat;
-        
+
         public static MentalStateDef FireStartingSpree;
-        
+
         public static ResearchProjectDef Forbidden_Reports;
     }
 }

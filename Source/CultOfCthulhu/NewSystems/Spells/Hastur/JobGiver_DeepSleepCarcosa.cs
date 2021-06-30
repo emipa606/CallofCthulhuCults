@@ -22,16 +22,16 @@ namespace CultOfCthulhu
                 return null;
             }
 
-            if (!pawn.CanReach(forcedGotoPosition, PathEndMode.ClosestTouch, Danger.Deadly))
+            if (pawn.CanReach(forcedGotoPosition, PathEndMode.ClosestTouch, Danger.Deadly))
             {
-                pawn.mindState.forcedGotoPosition = IntVec3.Invalid;
-                return null;
+                return new Job(JobDefOf.LayDown, forcedGotoPosition)
+                {
+                    locomotionUrgency = LocomotionUrgency.Walk
+                };
             }
 
-            return new Job(JobDefOf.LayDown, forcedGotoPosition)
-            {
-                locomotionUrgency = LocomotionUrgency.Walk
-            };
+            pawn.mindState.forcedGotoPosition = IntVec3.Invalid;
+            return null;
         }
     }
 }

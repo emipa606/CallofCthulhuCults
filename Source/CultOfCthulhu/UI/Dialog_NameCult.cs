@@ -18,14 +18,9 @@ namespace CultOfCthulhu
             {
                 if (map.mapPawns.FreeColonistsCount != 0)
                 {
-                    if (map.mapPawns.FreeColonistsSpawnedCount != 0)
-                    {
-                        suggestingPawn = map.mapPawns.FreeColonistsSpawned.RandomElement();
-                    }
-                    else
-                    {
-                        suggestingPawn = map.mapPawns.FreeColonists.RandomElement();
-                    }
+                    suggestingPawn = map.mapPawns.FreeColonistsSpawnedCount != 0
+                        ? map.mapPawns.FreeColonistsSpawned.RandomElement()
+                        : map.mapPawns.FreeColonists.RandomElement();
                 }
                 else
                 {
@@ -64,32 +59,34 @@ namespace CultOfCthulhu
             }
 
             curName = Widgets.TextField(new Rect(0f, rect.height - 35f, (rect.width / 2f) - 20f, 35f), curName);
-            if (Widgets.ButtonText(new Rect((rect.width / 2f) + 20f, rect.height - 35f, (rect.width / 2f) - 20f, 35f),
-                "OK".Translate(), true, false) || flag)
+            if (!Widgets.ButtonText(new Rect((rect.width / 2f) + 20f, rect.height - 35f, (rect.width / 2f) - 20f, 35f),
+                "OK".Translate(), true, false) && !flag)
             {
-                if (IsValidCultName(curName))
+                return;
+            }
+
+            if (IsValidCultName(curName))
+            {
+                if (map != null)
                 {
-                    if (map != null)
-                    {
-                        CultTracker.Get.PlayerCult.name = curName;
-                        //Faction.OfPlayer.Name = this.curName;
-                        Find.WindowStack.TryRemove(this);
-                        Messages.Message("CultGainsName".Translate(
-                            curName
-                        ), MessageTypeDefOf.PositiveEvent);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException();
-                    }
+                    CultTracker.Get.PlayerCult.name = curName;
+                    //Faction.OfPlayer.Name = this.curName;
+                    Find.WindowStack.TryRemove(this);
+                    Messages.Message("CultGainsName".Translate(
+                        curName
+                    ), MessageTypeDefOf.PositiveEvent);
                 }
                 else
                 {
-                    Messages.Message("ColonyNameIsInvalid".Translate(), MessageTypeDefOf.RejectInput);
+                    throw new InvalidOperationException();
                 }
-
-                Event.current.Use();
             }
+            else
+            {
+                Messages.Message("ColonyNameIsInvalid".Translate(), MessageTypeDefOf.RejectInput);
+            }
+
+            Event.current.Use();
         }
 
         private bool IsValidCultName(string s)

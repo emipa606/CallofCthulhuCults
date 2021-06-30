@@ -63,14 +63,14 @@ namespace CultOfCthulhu
             var map = parms.target as Map;
             float chance = Rand.Range(1, 100);
             var container = new List<Thing>();
-            string label = "LetterLabelRefugeePodCrash".Translate();
-            string text = "RefugeePodCrash".Translate();
+            string label;
+            string text;
 
 
             //Get a random cell.
             var intVec = DropCellFinder.RandomDropSpot(map);
             //Set the faction of the dude.
-            var faction = Find.FactionManager.FirstFactionOfDef(FactionDefOf.Ancients
+            var unused = Find.FactionManager.FirstFactionOfDef(FactionDefOf.Ancients
             );
             ////Chance of generating soldiers
             //for (int i = 0; i < (int)Rand.Range(0, 2); i++)
@@ -126,20 +126,20 @@ namespace CultOfCthulhu
                     if (!(from t in DefDatabase<ThingDef>.AllDefs
                         where t.IsRangedWeapon && t.tradeability != Tradeability.None &&
                               t.techLevel <= TechLevel.Archotech && t.BaseMarketValue <= 500
-                        select t).TryRandomElement(out var def))
+                        select t).TryRandomElement(out var thingDef))
                     {
                         break;
                     }
 
                     ThingDef stuff = null;
-                    if (def.MadeFromStuff)
+                    if (thingDef.MadeFromStuff)
                     {
                         stuff = (from st in DefDatabase<ThingDef>.AllDefs
-                            where st.IsStuff && st.stuffProps.CanMake(def)
+                            where st.IsStuff && st.stuffProps.CanMake(thingDef)
                             select st).RandomElementByWeight(st => st.stuffProps.commonality);
                     }
 
-                    var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(def, stuff);
+                    var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(thingDef, stuff);
                     container.Add(thingWithComps);
                 }
 
@@ -150,20 +150,20 @@ namespace CultOfCthulhu
                     if (!(from t in DefDatabase<ThingDef>.AllDefs
                         where t.IsRangedWeapon && t.tradeability != Tradeability.None &&
                               t.techLevel <= TechLevel.Archotech
-                        select t).TryRandomElement(out var def))
+                        select t).TryRandomElement(out var thingDef))
                     {
                         break;
                     }
 
                     ThingDef stuff = null;
-                    if (def.MadeFromStuff)
+                    if (thingDef.MadeFromStuff)
                     {
                         stuff = (from st in DefDatabase<ThingDef>.AllDefs
-                            where st.IsStuff && st.stuffProps.CanMake(def)
+                            where st.IsStuff && st.stuffProps.CanMake(thingDef)
                             select st).RandomElementByWeight(st => st.stuffProps.commonality);
                     }
 
-                    var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(def, stuff);
+                    var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(thingDef, stuff);
                     container.Add(thingWithComps);
                 }
 
@@ -176,20 +176,20 @@ namespace CultOfCthulhu
                               t.techLevel <= TechLevel.Archotech &&
                               (t.GetStatValueAbstract(StatDefOf.ArmorRating_Blunt) > 0.15f ||
                                t.GetStatValueAbstract(StatDefOf.ArmorRating_Sharp) > 0.15f)
-                        select t).TryRandomElement(out var def))
+                        select t).TryRandomElement(out var thingDef))
                     {
                         break;
                     }
 
                     ThingDef stuff = null;
-                    if (def.MadeFromStuff)
+                    if (thingDef.MadeFromStuff)
                     {
                         stuff = (from st in DefDatabase<ThingDef>.AllDefs
-                            where st.IsStuff && st.stuffProps.CanMake(def)
+                            where st.IsStuff && st.stuffProps.CanMake(thingDef)
                             select st).RandomElementByWeight(st => st.stuffProps.commonality);
                     }
 
-                    var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(def, stuff);
+                    var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(thingDef, stuff);
                     container.Add(thingWithComps);
                 }
 
@@ -199,20 +199,20 @@ namespace CultOfCthulhu
                 {
                     if (!(from t in DefDatabase<ThingDef>.AllDefs
                         where t.IsApparel && t.tradeability != Tradeability.None && t.techLevel <= TechLevel.Archotech
-                        select t).TryRandomElement(out var def))
+                        select t).TryRandomElement(out var thingDef))
                     {
                         break;
                     }
 
                     ThingDef stuff = null;
-                    if (def.MadeFromStuff)
+                    if (thingDef.MadeFromStuff)
                     {
                         stuff = (from st in DefDatabase<ThingDef>.AllDefs
-                            where st.IsStuff && st.stuffProps.CanMake(def)
+                            where st.IsStuff && st.stuffProps.CanMake(thingDef)
                             select st).RandomElementByWeight(st => st.stuffProps.commonality);
                     }
 
-                    var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(def, stuff);
+                    var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(thingDef, stuff);
                     container.Add(thingWithComps);
                 }
             }
@@ -319,20 +319,20 @@ namespace CultOfCthulhu
             {
                 if (!(from t in DefDatabase<ThingDef>.AllDefs
                     where t.tradeTags != null && t.tradeTags.Contains(tag)
-                    select t).TryRandomElement(out var def))
+                    select t).TryRandomElement(out var thingDef))
                 {
                     break;
                 }
 
                 ThingDef stuff = null;
-                if (def.MadeFromStuff)
+                if (thingDef.MadeFromStuff)
                 {
                     stuff = (from st in DefDatabase<ThingDef>.AllDefs
-                        where st.IsStuff && st.stuffProps.CanMake(def)
+                        where st.IsStuff && st.stuffProps.CanMake(thingDef)
                         select st).RandomElementByWeight(st => st.stuffProps.commonality);
                 }
 
-                var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(def, stuff);
+                var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(thingDef, stuff);
                 container.Add(thingWithComps);
             }
         }

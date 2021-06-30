@@ -39,13 +39,20 @@ namespace CultOfCthulhu
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             var map = parms.target as Map;
-            Pawn pawn = null;
             var listeners =
-                map.mapPawns.AllPawnsSpawned.FindAll(x => x.RaceProps.intelligence == Intelligence.Humanlike);
-            var flag = new bool[listeners.Count];
-            for (var i = 0; i < listeners.Count; i++)
+                map?.mapPawns.AllPawnsSpawned.FindAll(x => x.RaceProps.intelligence == Intelligence.Humanlike);
+            if (listeners != null)
             {
-                pawn = listeners[i];
+                var unused = new bool[listeners.Count];
+            }
+
+            if (listeners == null)
+            {
+                return true;
+            }
+
+            foreach (var pawn in listeners)
+            {
                 if (pawn.Faction == Faction.OfPlayer || !pawn.Faction.HostileTo(Faction.OfPlayer) ||
                     pawn.guest.IsPrisoner)
                 {

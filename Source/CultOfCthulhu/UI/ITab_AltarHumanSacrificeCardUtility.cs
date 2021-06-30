@@ -2,7 +2,6 @@
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
@@ -308,14 +307,15 @@ namespace CultOfCthulhu
                 {
                     foreach (var spell in altar.tempCurrentSacrificeDeity.tier1Spells)
                     {
-                        Action action;
                         var localSpell = spell;
-                        action = delegate
+
+                        void Action()
                         {
                             altar.Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
                             altar.tempCurrentSpell = localSpell;
-                        };
-                        list.Add(new FloatMenuOption(localSpell.LabelCap, action));
+                        }
+
+                        list.Add(new FloatMenuOption(localSpell.LabelCap, Action));
                     }
                 }
 
@@ -324,14 +324,15 @@ namespace CultOfCthulhu
                 {
                     foreach (var spell in altar.tempCurrentSacrificeDeity.tier2Spells)
                     {
-                        Action action2;
                         var localSpell = spell;
-                        action2 = delegate
+
+                        void Action2()
                         {
                             altar.Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
                             altar.tempCurrentSpell = localSpell;
-                        };
-                        list.Add(new FloatMenuOption(localSpell.LabelCap, action2));
+                        }
+
+                        list.Add(new FloatMenuOption(localSpell.LabelCap, Action2));
                     }
                 }
 
@@ -340,28 +341,30 @@ namespace CultOfCthulhu
                 {
                     foreach (var spell in altar.tempCurrentSacrificeDeity.tier3Spells)
                     {
-                        Action action3;
                         var localSpell = spell;
-                        action3 = delegate
+
+                        void Action3()
                         {
                             altar.Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
                             altar.tempCurrentSpell = localSpell;
-                        };
-                        list.Add(new FloatMenuOption(localSpell.LabelCap, action3));
+                        }
+
+                        list.Add(new FloatMenuOption(localSpell.LabelCap, Action3));
                     }
                 }
 
                 if (altar.tempCurrentSacrificeDeity.finalSpell != null &&
                     altar.tempCurrentSacrificeDeity.PlayerTier > CosmicEntity.Tier.Three)
                 {
-                    Action action4;
                     var localSpell = altar.tempCurrentSacrificeDeity.finalSpell;
-                    action4 = delegate
+
+                    void Action4()
                     {
                         altar.Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
                         altar.tempCurrentSpell = localSpell;
-                    };
-                    list.Add(new FloatMenuOption(localSpell.LabelCap, action4));
+                    }
+
+                    list.Add(new FloatMenuOption(localSpell.LabelCap, Action4));
                 }
             }
 

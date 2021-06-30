@@ -31,17 +31,15 @@ namespace CultOfCthulhu
 {
     public partial class Building_SacrificialAltar : Building, IBillGiver
     {
-        public bool UsableForBillsAfterFueling()
-        {
-            return CurrentlyUsableForBills();
-        }
-
-        #region Worship
-
         public enum ChangeWorshipType
         {
             MorningWorship,
             EveningWorship
+        }
+
+        public bool UsableForBillsAfterFueling()
+        {
+            return CurrentlyUsableForBills();
         }
 
         public void TryChangeWorshipValues(ChangeWorshipType type, bool value)
@@ -68,60 +66,66 @@ namespace CultOfCthulhu
             foreach (var bld in Map.listerBuildings.allBuildingsColonist)
             {
                 //Check all other altars
-                if (bld is Building_SacrificialAltar)
+                if (bld is not Building_SacrificialAltar)
                 {
-                    var altar2 = bld as Building_SacrificialAltar;
-                    //You want to enable evening worship here?
-                    if (type == ChangeWorshipType.EveningWorship)
-                    {
-                        if (altar2.OptionEvening)
-                        {
-                            canChange = false;
-                        }
-                    }
+                    continue;
+                }
 
-                    if (type == ChangeWorshipType.MorningWorship)
+                var altar2 = bld as Building_SacrificialAltar;
+                //You want to enable evening worship here?
+                if (type == ChangeWorshipType.EveningWorship)
+                {
+                    if (altar2.OptionEvening)
                     {
-                        if (altar2.OptionMorning)
-                        {
-                            canChange = false;
-                        }
+                        canChange = false;
                     }
+                }
+
+                if (type != ChangeWorshipType.MorningWorship)
+                {
+                    continue;
+                }
+
+                if (altar2.OptionMorning)
+                {
+                    canChange = false;
                 }
             }
 
-            if (canChange)
+            if (!canChange)
             {
-                if (type == ChangeWorshipType.MorningWorship)
-                {
-                    OptionMorning = true;
-                }
+                return;
+            }
 
-                if (type == ChangeWorshipType.EveningWorship)
-                {
-                    OptionEvening = true;
-                }
+            if (type == ChangeWorshipType.MorningWorship)
+            {
+                OptionMorning = true;
+            }
+
+            if (type == ChangeWorshipType.EveningWorship)
+            {
+                OptionEvening = true;
             }
         }
 
 
         private void CancelWorship()
         {
-            Pawn pawn = null;
             var listeners =
                 Map.mapPawns.AllPawnsSpawned.FindAll(x => x.RaceProps.intelligence == Intelligence.Humanlike);
             var flag = new bool[listeners.Count];
-            for (var i = 0; i < listeners.Count; i++)
+            foreach (var pawn in listeners)
             {
-                pawn = listeners[i];
-                if (pawn.Faction == Faction.OfPlayer)
+                if (pawn.Faction != Faction.OfPlayer)
                 {
-                    if (pawn.CurJob.def == CultsDefOf.Cults_HoldWorship ||
-                        pawn.CurJob.def == CultsDefOf.Cults_AttendWorship ||
-                        pawn.CurJob.def == CultsDefOf.Cults_ReflectOnWorship)
-                    {
-                        pawn.jobs.StopAll();
-                    }
+                    continue;
+                }
+
+                if (pawn.CurJob.def == CultsDefOf.Cults_HoldWorship ||
+                    pawn.CurJob.def == CultsDefOf.Cults_AttendWorship ||
+                    pawn.CurJob.def == CultsDefOf.Cults_ReflectOnWorship)
+                {
+                    pawn.jobs.StopAll();
                 }
             }
 
@@ -165,34 +169,36 @@ namespace CultOfCthulhu
 
         private void TryWorship(bool forced = false)
         {
-            if (CanGatherToWorshipNow())
+            if (!CanGatherToWorshipNow())
             {
-                switch (currentWorshipState)
-                {
-                    case WorshipState.finished:
-                    case WorshipState.off:
-                        if (IsSacrificing())
-                        {
-                            string timeOfDay = "Cults_Morning".Translate();
-                            if (Utility.IsEvening(Map))
-                            {
-                                timeOfDay = "Cults_Evening".Translate();
-                            }
+                return;
+            }
 
-                            Messages.Message("Cults_MorningEveningSermonInterrupted".Translate(timeOfDay),
-                                MessageTypeDefOf.RejectInput);
+            switch (currentWorshipState)
+            {
+                case WorshipState.finished:
+                case WorshipState.off:
+                    if (IsSacrificing())
+                    {
+                        string timeOfDay = "Cults_Morning".Translate();
+                        if (Utility.IsEvening(Map))
+                        {
+                            timeOfDay = "Cults_Evening".Translate();
                         }
 
-                        StartToWorship(forced);
-                        return;
-
-                    case WorshipState.started:
-                    case WorshipState.gathering:
-                    case WorshipState.finishing:
-                        Messages.Message("Cults_AlreadyGatheringForASermon".Translate(), TargetInfo.Invalid,
+                        Messages.Message("Cults_MorningEveningSermonInterrupted".Translate(timeOfDay),
                             MessageTypeDefOf.RejectInput);
-                        return;
-                }
+                    }
+
+                    StartToWorship(forced);
+                    return;
+
+                case WorshipState.started:
+                case WorshipState.gathering:
+                case WorshipState.finishing:
+                    Messages.Message("Cults_AlreadyGatheringForASermon".Translate(), TargetInfo.Invalid,
+                        MessageTypeDefOf.RejectInput);
+                    return;
             }
         }
 
@@ -283,14 +289,16 @@ namespace CultOfCthulhu
             _ = Faction;
             _ = this.GetRoom();
 
-            if (AvailableWorshippers != null && AvailableWorshippers.Count > 0)
+            if (AvailableWorshippers == null || AvailableWorshippers.Count <= 0)
             {
-                foreach (var p in AvailableWorshippers)
+                return;
+            }
+
+            foreach (var p in AvailableWorshippers)
+            {
+                if (CultUtility.ShouldAttendWorship(p, this))
                 {
-                    if (CultUtility.ShouldAttendWorship(p, this))
-                    {
-                        CultUtility.GiveAttendWorshipJob(this, p);
-                    }
+                    CultUtility.GiveAttendWorshipJob(this, p);
                 }
             }
         }
@@ -306,7 +314,5 @@ namespace CultOfCthulhu
 
             return Rand.RangeInclusive(0, 15) + num >= 20;
         }
-
-        #endregion Worship
     }
 }

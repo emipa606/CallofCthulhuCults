@@ -18,6 +18,15 @@ namespace CultOfCthulhu
         public string name = "Unnamed Cult";
         public int numHumanSacrifices;
 
+        public Cult()
+        {
+        }
+
+        public Cult(Pawn newFounder)
+        {
+            InitializeCult(newFounder);
+        }
+
         public void ExposeData()
         {
             Scribe_Values.Look(ref name, "name", "Unnamed Cult");
@@ -43,22 +52,22 @@ namespace CultOfCthulhu
             return result;
         }
 
-        public bool IsMember(Pawn pawn)
+        private bool IsMember(Pawn pawn)
         {
-            if (active && members != null && members.Count > 0)
+            if (!active || members == null || members.Count <= 0)
             {
-                if (members.Contains(pawn))
-                {
-                    return true;
-                }
+                return false;
+            }
+
+            if (members.Contains(pawn))
+            {
+                return true;
             }
 
             return false;
         }
 
-        #region Letters
-
-        public void SendCultLetterDismantled()
+        private void SendCultLetterDismantled()
         {
             Find.LetterStack.ReceiveLetter("Cults_DismantledACultLabel".Translate(),
                 "Cults_DismantledACultDesc".Translate(
@@ -66,7 +75,7 @@ namespace CultOfCthulhu
                 ), CultsDefOf.Cults_StandardMessage);
         }
 
-        public void SendCultLetterFounded(Pawn newFounder)
+        private void SendCultLetterFounded(Pawn newFounder)
         {
             Find.LetterStack.ReceiveLetter("Cults_FoundedACultLabel".Translate(), "Cults_FoundedACultDesc".Translate(
                 newFounder.LabelShort
@@ -77,20 +86,7 @@ namespace CultOfCthulhu
             }
         }
 
-        #endregion Letters
-
-        #region Basics
-
-        public Cult()
-        {
-        }
-
-        public Cult(Pawn newFounder)
-        {
-            InitializeCult(newFounder);
-        }
-
-        public void InitializeCult(Pawn newFounder)
+        private void InitializeCult(Pawn newFounder)
         {
             var map = newFounder.Map;
             founder = newFounder;
@@ -100,37 +96,32 @@ namespace CultOfCthulhu
             influences = new List<CultInfluence>();
             foreach (var set in Find.WorldObjects.Settlements)
             {
-                if (set == foundingCity)
-                {
-                    influences.Add(new CultInfluence(set, 1.0f));
-                }
-                else
-                {
-                    influences.Add(new CultInfluence(set, 0.0f));
-                }
+                influences.Add(set == foundingCity ? new CultInfluence(set, 1.0f) : new CultInfluence(set, 0.0f));
             }
 
             active = true;
             Find.World.GetComponent<WorldComponent_GlobalCultTracker>().worldCults.Add(this);
 
-            if (foundingFaction == Faction.OfPlayerSilentFail)
+            if (foundingFaction != Faction.OfPlayerSilentFail)
             {
-                SendCultLetterFounded(newFounder);
-
-                //It's a day to remember
-                var taleToAdd = TaleDef.Named("FoundedCult");
-                if ((newFounder.IsColonist || newFounder.HostFaction == Faction.OfPlayer) && taleToAdd != null)
-                {
-                    TaleRecorder.RecordTale(taleToAdd, newFounder);
-                }
-
-                //The founder will remember that, too.
-                newFounder.needs.mood.thoughts.memories.TryGainMemory(CultsDefOf.Cults_FoundedCult);
-                map.GetComponent<MapComponent_LocalCultTracker>().ResolveTerribleCultFounder(newFounder);
+                return;
             }
+
+            SendCultLetterFounded(newFounder);
+
+            //It's a day to remember
+            var taleToAdd = TaleDef.Named("FoundedCult");
+            if ((newFounder.IsColonist || newFounder.HostFaction == Faction.OfPlayer) && taleToAdd != null)
+            {
+                TaleRecorder.RecordTale(taleToAdd, newFounder);
+            }
+
+            //The founder will remember that, too.
+            newFounder.needs.mood.thoughts.memories.TryGainMemory(CultsDefOf.Cults_FoundedCult);
+            map.GetComponent<MapComponent_LocalCultTracker>().ResolveTerribleCultFounder(newFounder);
         }
 
-        public void DismantleCult()
+        private void DismantleCult()
         {
             SendCultLetterDismantled();
             if (influences != null && influences.Count > 0)
@@ -142,13 +133,9 @@ namespace CultOfCthulhu
             active = false;
         }
 
-        #endregion Basics
-
-        #region Members
-
         public void SetMember(Pawn cultMember)
         {
-            /// Is the list missing? Let's fix that.
+            // Is the list missing? Let's fix that.
             if (members == null)
             {
                 members = new List<Pawn>();
@@ -197,17 +184,17 @@ namespace CultOfCthulhu
             var tempList = new List<Pawn>(members);
             foreach (var current in tempList)
             {
-                if (current == cultMember)
+                if (current != cultMember)
                 {
-                    members.Remove(cultMember);
-                    if (members.Count == 0)
-                    {
-                        DismantleCult();
-                    }
+                    continue;
+                }
+
+                members.Remove(cultMember);
+                if (members.Count == 0)
+                {
+                    DismantleCult();
                 }
             }
         }
-
-        #endregion Members
     }
 }

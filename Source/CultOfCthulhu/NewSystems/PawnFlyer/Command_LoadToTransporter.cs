@@ -27,18 +27,22 @@ namespace CultOfCthulhu
             }
 
             _ = transComp.Launchable;
-            for (var j = 0; j < transporters.Count; j++)
+            foreach (var compTransporterPawn in transporters)
             {
-                if (transporters[j] != transComp)
+                if (compTransporterPawn == transComp)
                 {
-                    if (!transComp.Map.reachability.CanReach(transComp.parent.Position, transporters[j].parent,
-                        PathEndMode.Touch, TraverseParms.For(TraverseMode.PassDoors)))
-                    {
-                        Messages.Message("MessageTransporterUnreachable".Translate(), transporters[j].parent,
-                            MessageTypeDefOf.RejectInput);
-                        return;
-                    }
+                    continue;
                 }
+
+                if (transComp.Map.reachability.CanReach(transComp.parent.Position, compTransporterPawn.parent,
+                    PathEndMode.Touch, TraverseParms.For(TraverseMode.PassDoors)))
+                {
+                    continue;
+                }
+
+                Messages.Message("MessageTransporterUnreachable".Translate(), compTransporterPawn.parent,
+                    MessageTypeDefOf.RejectInput);
+                return;
             }
 
             Find.WindowStack.Add(new Dialog_LoadTransportersPawn(transComp.Map, transporters));

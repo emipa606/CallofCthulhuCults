@@ -26,9 +26,9 @@ namespace CultOfCthulhu
                 where pawns is PawnFlyer
                 select pawns;
             var list = new List<Pawn>(listSel);
-            for (var i = 0; i < list.Count; i++)
+            foreach (var pawn in list)
             {
-                var compTransporter = list[i].TryGetComp<CompTransporterPawn>();
+                var compTransporter = pawn.TryGetComp<CompTransporterPawn>();
                 if (compTransporter.groupID == transportersGroup)
                 {
                     //Cthulhu.Utility.DebugReport("Added Transporter: " + list[i].Label);
@@ -52,23 +52,27 @@ namespace CultOfCthulhu
 
         private CompTransporterPawn FindMyTransporter(List<CompTransporterPawn> transporters, Pawn me)
         {
-            for (var i = 0; i < transporters.Count; i++)
+            foreach (var compTransporterPawn in transporters)
             {
-                var leftToLoad = transporters[i].leftToLoad;
-                if (leftToLoad != null)
+                var leftToLoad = compTransporterPawn.leftToLoad;
+                if (leftToLoad == null)
                 {
-                    for (var j = 0; j < leftToLoad.Count; j++)
+                    continue;
+                }
+
+                foreach (var transferableOneWay in leftToLoad)
+                {
+                    if (transferableOneWay.AnyThing is not Pawn)
                     {
-                        if (leftToLoad[j].AnyThing is Pawn)
+                        continue;
+                    }
+
+                    var things = transferableOneWay.things;
+                    foreach (var thing in things)
+                    {
+                        if (thing == me)
                         {
-                            var things = leftToLoad[j].things;
-                            for (var k = 0; k < things.Count; k++)
-                            {
-                                if (things[k] == me)
-                                {
-                                    return transporters[i];
-                                }
-                            }
+                            return compTransporterPawn;
                         }
                     }
                 }

@@ -48,18 +48,22 @@ namespace CultOfCthulhu
                 return;
             }
 
-            if (Find.TickManager.TicksGame > 200)
+            if (Find.TickManager.TicksGame <= 200)
             {
-                if (IsPsionic)
-                {
-                    if (!firstTick)
-                    {
-                        PostInitializeTick();
-                    }
-
-                    base.CompTick();
-                }
+                return;
             }
+
+            if (!IsPsionic)
+            {
+                return;
+            }
+
+            if (!firstTick)
+            {
+                PostInitializeTick();
+            }
+
+            base.CompTick();
         }
 
         /// <summary>
@@ -79,12 +83,14 @@ namespace CultOfCthulhu
             }
 
             firstTick = true;
-            if (!gaveAbilities)
+            if (gaveAbilities)
             {
-                gaveAbilities = true;
-                Initialize();
-                AddPawnAbility(CultsDefOf.Cults_PsionicBlast);
+                return;
             }
+
+            gaveAbilities = true;
+            Initialize();
+            AddPawnAbility(CultsDefOf.Cults_PsionicBlast);
         }
 
         //Use this area to store any extra data you want to load

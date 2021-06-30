@@ -1,5 +1,8 @@
 # Changelog for CallofCthulhuCults
 
+1.0.20.0 - refactored the code and optimized the RevealDeityCheck
+
+
 1.0.19.0 - Pawns that cannot move, speak or hear should not loose/gain cult-mindedness
 
 

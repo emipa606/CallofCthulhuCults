@@ -24,12 +24,37 @@ namespace CultOfCthulhu
 
     public class WorldComponent_GlobalCultTracker : WorldComponent
     {
+        public readonly List<ResearchProjectDef> cultResearch = new List<ResearchProjectDef>
+        {
+            ResearchProjectDef.Named("Forbidden_Studies"),
+            ResearchProjectDef.Named("Forbidden_Deities"),
+            ResearchProjectDef.Named("Forbidden_Lore"),
+            ResearchProjectDef.Named("Forbidden_Sculptures"),
+            ResearchProjectDef.Named("Forbidden_Attire"),
+            ResearchProjectDef.Named("Forbidden_Altar"),
+            ResearchProjectDef.Named("Forbidden_Sacrifice"),
+            ResearchProjectDef.Named("Forbidden_Human"),
+            ResearchProjectDef.Named("Forbidden_Obelisks"),
+            ResearchProjectDef.Named("Forbidden_Reports")
+        };
+
+        public List<Pawn> antiCultists = new List<Pawn>();
+        public Dictionary<Pawn, CultistExperience> cultistExperiences = new Dictionary<Pawn, CultistExperience>();
+        public CultSeedState currentSeedState = CultSeedState.NeedSeed;
         public bool doingInquisition = false;
         public bool exposedToCults;
         public bool needPreacher = false;
+        public int numHumanSacrifices = 0;
         private List<CultistExperience> workingInts = new List<CultistExperience>();
 
         private List<Pawn> workingPawns = new List<Pawn>();
+
+        public List<Cult> worldCults;
+
+        public WorldComponent_GlobalCultTracker(World world) : base(world)
+        {
+            worldCults = new List<Cult>();
+        }
 
         public bool ExposedToCults
         {
@@ -43,6 +68,20 @@ namespace CultOfCthulhu
                 }
 
                 exposedToCults = value;
+            }
+        }
+
+        public Cult PlayerCult
+        {
+            get
+            {
+                Cult result = null;
+                if (worldCults != null && worldCults.Count > 0)
+                {
+                    result = worldCults.FirstOrDefault(x => x.foundingFaction == Faction.OfPlayerSilentFail);
+                }
+
+                return result;
             }
         }
 
@@ -79,43 +118,6 @@ namespace CultOfCthulhu
             for (var i = 0; i < workingPawns.Count; i++)
             {
                 cultistExperiences.Add(workingPawns[i], workingInts[i]);
-            }
-        }
-
-
-        #region stuff
-
-        public List<ResearchProjectDef> cultResearch = new List<ResearchProjectDef>
-        {
-            ResearchProjectDef.Named("Forbidden_Studies"),
-            ResearchProjectDef.Named("Forbidden_Deities"),
-            ResearchProjectDef.Named("Forbidden_Lore"),
-            ResearchProjectDef.Named("Forbidden_Sculptures"),
-            ResearchProjectDef.Named("Forbidden_Attire"),
-            ResearchProjectDef.Named("Forbidden_Altar"),
-            ResearchProjectDef.Named("Forbidden_Sacrifice"),
-            ResearchProjectDef.Named("Forbidden_Human"),
-            ResearchProjectDef.Named("Forbidden_Obelisks"),
-            ResearchProjectDef.Named("Forbidden_Reports")
-        };
-
-        public List<Cult> worldCults;
-        public List<Pawn> antiCultists = new List<Pawn>();
-        public CultSeedState currentSeedState = CultSeedState.NeedSeed;
-        public Dictionary<Pawn, CultistExperience> cultistExperiences = new Dictionary<Pawn, CultistExperience>();
-        public int numHumanSacrifices = 0;
-
-        public Cult PlayerCult
-        {
-            get
-            {
-                Cult result = null;
-                if (worldCults != null && worldCults.Count > 0)
-                {
-                    result = worldCults.FirstOrDefault(x => x.foundingFaction == Faction.OfPlayerSilentFail);
-                }
-
-                return result;
             }
         }
 
@@ -160,21 +162,18 @@ namespace CultOfCthulhu
         {
             Cult result = null;
             var settlement = Find.WorldObjects.SettlementAt(map.Tile);
-            if (settlement != null)
+            if (settlement == null)
             {
-                if (worldCults.Count > 0)
-                {
-                    result = worldCults.FirstOrDefault(x =>
-                        x.influences.FirstOrDefault(y => y.settlement == settlement && y.dominant) != null);
-                }
+                return null;
+            }
+
+            if (worldCults.Count > 0)
+            {
+                result = worldCults.FirstOrDefault(x =>
+                    x.influences.FirstOrDefault(y => y.settlement == settlement && y.dominant) != null);
             }
 
             return result;
-        }
-
-        public WorldComponent_GlobalCultTracker(World world) : base(world)
-        {
-            worldCults = new List<Cult>();
         }
 
         public void RemoveInquisitor(Pawn inquisitor)
@@ -201,7 +200,7 @@ namespace CultOfCthulhu
 
         public void SetInquisitor(Pawn antiCultist)
         {
-            /// Is the list missing? Let's fix that.
+            // Is the list missing? Let's fix that.
             if (antiCultists == null)
             {
                 antiCultists = new List<Pawn>();
@@ -233,7 +232,5 @@ namespace CultOfCthulhu
                 "Cults_InquisitionPlotBegins".Translate(antiCultist.LabelShort, PlayerCult.name),
                 MessageTypeDefOf.PositiveEvent);
         }
-
-        #endregion stuff
     }
 }

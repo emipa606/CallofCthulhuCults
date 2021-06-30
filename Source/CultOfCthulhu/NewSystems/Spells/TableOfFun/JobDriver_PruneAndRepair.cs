@@ -47,17 +47,19 @@ namespace CultOfCthulhu
                 actor.skills.Learn(SkillDefOf.Plants, 0.5f);
                 var statValue = actor.GetStatValue(StatDefOf.ConstructionSpeed);
                 ticksToNextRepair -= statValue;
-                if (ticksToNextRepair <= 0f)
+                if (!(ticksToNextRepair <= 0f))
                 {
-                    ticksToNextRepair += 16f;
-                    TargetThingA.HitPoints++;
-                    TargetThingA.HitPoints = Mathf.Min(TargetThingA.HitPoints, TargetThingA.MaxHitPoints);
-                    //if (this.TargetThingA.HitPoints == this.TargetThingA.MaxHitPoints)
-                    //{
-                    //    actor.records.Increment(RecordDefOf.ThingsRepaired);
-                    //    actor.jobs.EndCurrentJob(JobCondition.Succeeded, true);
-                    //}
+                    return;
                 }
+
+                ticksToNextRepair += 16f;
+                TargetThingA.HitPoints++;
+                TargetThingA.HitPoints = Mathf.Min(TargetThingA.HitPoints, TargetThingA.MaxHitPoints);
+                //if (this.TargetThingA.HitPoints == this.TargetThingA.MaxHitPoints)
+                //{
+                //    actor.records.Increment(RecordDefOf.ThingsRepaired);
+                //    actor.jobs.EndCurrentJob(JobCondition.Succeeded, true);
+                //}
             };
             toil.WithEffect(TargetThingA.def.repairEffect, TargetIndex.A);
             toil.defaultCompleteMode = ToilCompleteMode.Delay;
@@ -70,12 +72,12 @@ namespace CultOfCthulhu
             //Toil 4: Transform the altar once again.
             yield return new Toil
             {
-                initAction = delegate { PruneResult(); },
+                initAction = PruneResult,
                 defaultCompleteMode = ToilCompleteMode.Instant
             };
         }
 
-        public void PruneResult()
+        private void PruneResult()
         {
             Altar.NightmarePruned(pawn);
         }

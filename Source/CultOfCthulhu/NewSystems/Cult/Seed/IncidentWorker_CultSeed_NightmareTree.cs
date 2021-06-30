@@ -9,11 +9,9 @@ namespace CultOfCthulhu
         public static bool TryFindRandomSpawnCellForPawnNear(IntVec3 root, Map map, out IntVec3 result,
             int firstTryWithRadius = 4)
         {
-            bool result2;
             if (root.Standable(map) && root.GetFirstPawn(map) == null)
             {
                 result = root;
-                result2 = true;
             }
             else
             {
@@ -43,16 +41,18 @@ namespace CultOfCthulhu
 
                     num *= 2;
                 }
-
-                result2 = true;
             }
 
-            return result2;
+            return true;
         }
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            if (!(parms.target is Map map))
+            {
+                return false;
+            }
+
             //Create a spawn point for our nightmare Tree
             if (!Utility.TryFindSpawnCell(CultsDefOf.Cults_MonolithNightmare, map.Center, map, 60, out var intVec))
             {

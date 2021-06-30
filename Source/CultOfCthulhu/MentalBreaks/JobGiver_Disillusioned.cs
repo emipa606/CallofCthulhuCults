@@ -15,7 +15,7 @@ namespace CultOfCthulhu
 
         protected override IntVec3 GetWanderRoot(Pawn pawn)
         {
-            return pawn.ownership.OwnedBed != null ? pawn.ownership.OwnedBed.Position : pawn.Position;
+            return pawn.ownership.OwnedBed?.Position ?? pawn.Position;
         }
     }
 }

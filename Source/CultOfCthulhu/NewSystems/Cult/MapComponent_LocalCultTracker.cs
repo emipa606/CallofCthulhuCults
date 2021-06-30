@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Cthulhu;
 using RimWorld;
 using Verse;
@@ -11,7 +10,15 @@ namespace CultOfCthulhu
     {
         public const int OneMinute = 3600;
         public const int OneDay = 60000;
+
         public const int ThreeDays = 180000;
+        //public int ticksToSpawnCultSeed = (OneMinute + 1000) + Rand.Range(-OneMinute, OneMinute); //Between 2-4 days. 1 day = 60000
+
+        public readonly List<IncidentDef> seedIncidents = new List<IncidentDef>
+        {
+            IncidentDef.Named("CultSeedIncident_TreeOfNightmares"),
+            IncidentDef.Named("CultSeedIncident_NightmareMonolith")
+        };
 
         //Cult seed stuff
         public Pawn CurrentSeedPawn;
@@ -19,13 +26,6 @@ namespace CultOfCthulhu
         public bool doingInquisition;
 
         public bool needPreacher;
-        //public int ticksToSpawnCultSeed = (OneMinute + 1000) + Rand.Range(-OneMinute, OneMinute); //Between 2-4 days. 1 day = 60000
-
-        public List<IncidentDef> seedIncidents = new List<IncidentDef>
-        {
-            IncidentDef.Named("CultSeedIncident_TreeOfNightmares"),
-            IncidentDef.Named("CultSeedIncident_NightmareMonolith")
-        };
 
         public int ticksToCheckCultists;
         public int ticksToSpawnCultSeed = ThreeDays + Rand.Range(-OneDay, OneDay); //Between 2-4 days. 1 day = 60000
@@ -76,47 +76,49 @@ namespace CultOfCthulhu
         }
 
 
-        public bool TryFindPreacher(out Pawn preacher)
+        private bool TryFindPreacher(out Pawn preacher)
         {
             preacher = null;
-            if (CultTracker.Get.PlayerCult != null)
+            if (CultTracker.Get.PlayerCult == null)
             {
-                var tempList = new List<Pawn>(CultTracker.Get.PlayerCult.members);
-                foreach (var current in tempList.InRandomOrder())
+                return false;
+            }
+
+            var tempList = new List<Pawn>(CultTracker.Get.PlayerCult.members);
+            foreach (var current in tempList.InRandomOrder())
+            {
+                if (current == null)
                 {
-                    if (current == null)
-                    {
-                        continue;
-                    }
-
-                    if (current.Dead)
-                    {
-                        CultTracker.Get.PlayerCult.RemoveMember(current);
-                        continue;
-                    }
-
-                    if (preacher == null)
-                    {
-                        preacher = current;
-                    }
-
-                    if (current.skills.GetSkill(SkillDefOf.Social).Level >
-                        preacher.skills.GetSkill(SkillDefOf.Social).Level)
-                    {
-                        preacher = current;
-                    }
+                    continue;
                 }
 
-                if (preacher != null)
+                if (current.Dead)
                 {
-                    return true;
+                    CultTracker.Get.PlayerCult.RemoveMember(current);
+                    continue;
                 }
+
+                if (preacher == null)
+                {
+                    preacher = current;
+                }
+
+                if (current.skills.GetSkill(SkillDefOf.Social).Level >
+                    preacher.skills.GetSkill(SkillDefOf.Social).Level)
+                {
+                    preacher = current;
+                }
+            }
+
+            if (preacher != null)
+            {
+                return true;
             }
 
             return false;
         }
 
-        public void PreacherCheck()
+        private void PreacherCheck()
         {
             if (!needPreacher)
             {
@@ -139,32 +141,39 @@ namespace CultOfCthulhu
         }
 
 
-        public void ResetResearchCheck()
+        private void ResetResearchCheck()
         {
             try
             {
                 var repeatableResearch = ResearchProjectDef.Named("Forbidden_Lore");
 
-                if (repeatableResearch != null)
+                if (repeatableResearch == null)
                 {
-                    if (ModSettings_Data.cultsStudySuccessfulCultsIsRepeatable)
-                    {
-                        if (repeatableResearch.IsFinished)
-                        {
-                            Utility.ChangeResearchProgress(repeatableResearch, 0f, true);
-                            Messages.Message("RepeatableResearch".Translate(
-                                repeatableResearch.LabelCap
-                            ), MessageTypeDefOf.PositiveEvent);
-                        }
-                    }
+                    return;
                 }
+
+                if (!ModSettings_Data.cultsStudySuccessfulCultsIsRepeatable)
+                {
+                    return;
+                }
+
+                if (!repeatableResearch.IsFinished)
+                {
+                    return;
+                }
+
+                Utility.ChangeResearchProgress(repeatableResearch, 0f, true);
+                Messages.Message("RepeatableResearch".Translate(
+                    repeatableResearch.LabelCap
+                ), MessageTypeDefOf.PositiveEvent);
             }
-            catch (NullReferenceException)
+            catch
             {
+                // ignored
             }
         }
 
-        public void NewCultistCheck()
+        private void NewCultistCheck()
         {
             if (CurrentSeedState < CultSeedState.FinishedWriting)
             {
@@ -186,7 +195,7 @@ namespace CultOfCthulhu
 
             var spawnedColonyMembers = new List<Pawn>(map.mapPawns.FreeColonistsAndPrisonersSpawned);
             var playerCult = CultTracker.Get.PlayerCult;
-            if (spawnedColonyMembers == null || spawnedColonyMembers.Count == 0)
+            if (spawnedColonyMembers.Count == 0)
             {
                 return;
             }
@@ -198,67 +207,68 @@ namespace CultOfCthulhu
                     colonist.RaceProps.intelligence != Intelligence.Humanlike ||
                     colonist.Dead)
                 {
-                    if (playerCult != null)
-                    {
-                        playerCult.RemoveMember(colonist);
-                    }
+                    playerCult?.RemoveMember(colonist);
 
                     CultTracker.Get.RemoveInquisitor(colonist);
                     continue;
                 }
 
-                if (colonist.needs.TryGetNeed<Need_CultMindedness>() is Need_CultMindedness cultMind)
+                if (colonist.needs.TryGetNeed<Need_CultMindedness>() is not Need_CultMindedness cultMind)
                 {
-                    //Cult-Mindedness Above 70%? You will join the cult.
-                    if (cultMind.CurLevelPercentage > CultLevel.Cultist)
-                    {
-                        if (playerCult == null)
-                        {
-                            playerCult = new Cult(colonist);
-                        }
+                    continue;
+                }
 
-                        playerCult.SetMember(colonist);
-                    }
-                    //Otherwise, you will be removed from the cult.
-                    else if (cultMind.CurInstantLevelPercentage > CultLevel.AntiCultist &&
-                             cultMind.CurInstantLevelPercentage < CultLevel.Cultist)
+                //Cult-Mindedness Above 70%? You will join the cult.
+                if (cultMind.CurLevelPercentage > CultLevel.Cultist)
+                {
+                    if (playerCult == null)
                     {
-                        if (playerCult != null)
-                        {
-                            playerCult.RemoveMember(colonist);
-                            CultTracker.Get.RemoveInquisitor(colonist);
-                        }
+                        playerCult = new Cult(colonist);
                     }
-                    //Those with cult mindedness below 30% will be inquisitors.
-                    else if (cultMind.CurInstantLevelPercentage < CultLevel.AntiCultist)
+
+                    playerCult.SetMember(colonist);
+                }
+                //Otherwise, you will be removed from the cult.
+                else if (cultMind.CurInstantLevelPercentage > CultLevel.AntiCultist &&
+                         cultMind.CurInstantLevelPercentage < CultLevel.Cultist)
+                {
+                    if (playerCult == null)
                     {
-                        CultTracker.Get.SetInquisitor(colonist);
+                        continue;
                     }
+
+                    playerCult.RemoveMember(colonist);
+                    CultTracker.Get.RemoveInquisitor(colonist);
+                }
+                //Those with cult mindedness below 30% will be inquisitors.
+                else if (cultMind.CurInstantLevelPercentage < CultLevel.AntiCultist)
+                {
+                    CultTracker.Get.SetInquisitor(colonist);
                 }
             }
         }
 
-        public bool CanDoJob(JobDef job, Pawn pawn, Thing target = null, bool targetRequired = false)
+        private void CanDoJob(JobDef job, Pawn pawn, Thing target = null, bool targetRequired = false)
         {
             if (pawn == null)
             {
-                return false;
+                return;
             }
 
             if (target == null && targetRequired)
             {
-                return false;
+                return;
             }
 
             if (ModSettings_Data.cultsForcedInvestigation == false && job != CultsDefOf.Cults_WriteTheBook)
             {
-                return false;
+                return;
             }
 
             //Toxic Fallout? Let's not force the colonist to do this job.
             if (map.GameConditionManager.GetActiveCondition(GameConditionDefOf.ToxicFallout) != null)
             {
-                return false;
+                return;
             }
 
             if (ticksToSpawnCultSeed > 0)
@@ -266,22 +276,20 @@ namespace CultOfCthulhu
                 ticksToTryJobAgain -= 1;
             }
 
-            if (CurrentSeedPawn.CurJob.def != job &&
-                ticksToTryJobAgain <= 0)
+            if (CurrentSeedPawn.CurJob.def == job || ticksToTryJobAgain > 0)
             {
-                var J = new Job(job, pawn);
-                if (CurrentSeedTarget != null)
-                {
-                    J.SetTarget(TargetIndex.B, target);
-                }
-
-                pawn.jobs.TryTakeOrderedJob(J);
-                //pawn.CurJob.EndCurrentJob(JobCondition.InterruptForced);
-                ticksToTryJobAgain = OneMinute;
-                return true;
+                return;
             }
 
-            return false;
+            var J = new Job(job, pawn);
+            if (CurrentSeedTarget != null)
+            {
+                J.SetTarget(TargetIndex.B, target);
+            }
+
+            pawn.jobs.TryTakeOrderedJob(J);
+            //pawn.CurJob.EndCurrentJob(JobCondition.InterruptForced);
+            ticksToTryJobAgain = OneMinute;
         }
 
         public override void ExposeData()

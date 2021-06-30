@@ -71,7 +71,7 @@ namespace Cthulhu
                     });
                 }
             }
-            catch (Exception)
+            catch
             {
                 // ignored
             }

@@ -51,13 +51,15 @@ namespace CultOfCthulhu
                     return Altar.SacrificeData.Executioner;
                 }
 
-                foreach (var pawn in pawn.Map.mapPawns.FreeColonistsSpawned)
+                foreach (var executionerPawn in pawn.Map.mapPawns.FreeColonistsSpawned)
                 {
-                    if (pawn.CurJob.def == CultsDefOf.Cults_HoldSacrifice)
+                    if (executionerPawn.CurJob.def != CultsDefOf.Cults_HoldSacrifice)
                     {
-                        setExecutioner = pawn;
-                        return pawn;
+                        continue;
                     }
+
+                    setExecutioner = executionerPawn;
+                    return executionerPawn;
                 }
 
                 return null;
@@ -87,12 +89,7 @@ namespace CultOfCthulhu
 
             AddEndCondition(delegate
             {
-                if (ExecutionerPawn == null)
-                {
-                    return JobCondition.Incompletable;
-                }
-
-                if (ExecutionerPawn.CurJob == null)
+                if (ExecutionerPawn?.CurJob == null)
                 {
                     return JobCondition.Incompletable;
                 }
@@ -117,15 +114,9 @@ namespace CultOfCthulhu
             yield return Toils_Reserve.Reserve(Spot);
 
             //Toil 1: Go to the locations
-            Toil gotoExecutioner;
-            if (TargetC.HasThing)
-            {
-                gotoExecutioner = Toils_Goto.GotoThing(Spot, PathEndMode.OnCell);
-            }
-            else
-            {
-                gotoExecutioner = Toils_Goto.GotoCell(Spot, PathEndMode.OnCell);
-            }
+            var gotoExecutioner = TargetC.HasThing
+                ? Toils_Goto.GotoThing(Spot, PathEndMode.OnCell)
+                : Toils_Goto.GotoCell(Spot, PathEndMode.OnCell);
 
             yield return gotoExecutioner;
 
@@ -144,15 +135,14 @@ namespace CultOfCthulhu
                     report = "Cults_AttendingSacrifice".Translate();
                 }
 
-                if (ExecutionerPawn != null)
+                if (ExecutionerPawn?.CurJob == null)
                 {
-                    if (ExecutionerPawn.CurJob != null)
-                    {
-                        if (ExecutionerPawn.CurJob.def != CultsDefOf.Cults_HoldSacrifice)
-                        {
-                            ReadyForNextToil();
-                        }
-                    }
+                    return;
+                }
+
+                if (ExecutionerPawn.CurJob.def != CultsDefOf.Cults_HoldSacrifice)
+                {
+                    ReadyForNextToil();
                 }
             });
             altarToil.JumpIf(() => ExecutionerPawn.CurJob.def == CultsDefOf.Cults_HoldSacrifice, altarToil);
@@ -182,13 +172,15 @@ namespace CultOfCthulhu
             {
                 initAction = delegate
                 {
-                    if (Altar != null)
+                    if (Altar == null)
                     {
-                        if (Altar.currentSacrificeState != Building_SacrificialAltar.SacrificeState.finished)
-                        {
-                            Altar.ChangeState(Building_SacrificialAltar.State.sacrificing,
-                                Building_SacrificialAltar.SacrificeState.finished);
-                        }
+                        return;
+                    }
+
+                    if (Altar.currentSacrificeState != Building_SacrificialAltar.SacrificeState.finished)
+                    {
+                        Altar.ChangeState(Building_SacrificialAltar.State.sacrificing,
+                            Building_SacrificialAltar.SacrificeState.finished);
                     }
                 },
                 defaultCompleteMode = ToilCompleteMode.Instant

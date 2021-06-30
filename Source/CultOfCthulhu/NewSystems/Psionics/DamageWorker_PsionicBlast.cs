@@ -33,12 +33,14 @@ namespace CultOfCthulhu
                 }
                 else
                 {
-                    if (thingToPush is Pawn)
+                    if (thingToPush is not Pawn)
                     {
-                        //target.TakeDamage(new DamageInfo(DamageDefOf.Blunt, Rand.Range(3, 6), -1, null, null, null));
-                        collisionResult = true;
-                        break;
+                        continue;
                     }
+
+                    //target.TakeDamage(new DamageInfo(DamageDefOf.Blunt, Rand.Range(3, 6), -1, null, null, null));
+                    collisionResult = true;
+                    break;
                 }
             }
 
@@ -49,21 +51,23 @@ namespace CultOfCthulhu
         public void PushEffect(Thing target, Thing instigator, int distance, bool damageOnCollision = false)
         {
             var Caster = instigator as Pawn;
-            if (target != null && target is Pawn)
+            if (target is not Pawn)
             {
-                var loc = PushResult(target, Caster, distance, out var applyDamage);
-                //if (((Pawn)target).RaceProps.Humanlike) ((Pawn)target).needs.mood.thoughts.memories.TryGainMemory(ThoughtDef.Named("PJ_ThoughtPush"), null);
-                var flyingObject = (FlyingObject) GenSpawn.Spawn(ThingDef.Named("Cults_PFlyingObject"), target.Position,
-                    target.Map);
-                if (applyDamage && damageOnCollision)
-                {
-                    flyingObject.Launch(Caster, new LocalTargetInfo(loc.ToIntVec3()), target,
-                        new DamageInfo(DamageDefOf.Blunt, Rand.Range(8, 10)));
-                }
-                else
-                {
-                    flyingObject.Launch(Caster, new LocalTargetInfo(loc.ToIntVec3()), target);
-                }
+                return;
+            }
+
+            var loc = PushResult(target, Caster, distance, out var applyDamage);
+            //if (((Pawn)target).RaceProps.Humanlike) ((Pawn)target).needs.mood.thoughts.memories.TryGainMemory(ThoughtDef.Named("PJ_ThoughtPush"), null);
+            var flyingObject = (FlyingObject) GenSpawn.Spawn(ThingDef.Named("Cults_PFlyingObject"), target.Position,
+                target.Map);
+            if (applyDamage && damageOnCollision)
+            {
+                flyingObject.Launch(Caster, new LocalTargetInfo(loc.ToIntVec3()), target,
+                    new DamageInfo(DamageDefOf.Blunt, Rand.Range(8, 10)));
+            }
+            else
+            {
+                flyingObject.Launch(Caster, new LocalTargetInfo(loc.ToIntVec3()), target);
             }
         }
 

@@ -29,12 +29,14 @@ namespace CultOfCthulhu
         protected Building_ResearchBench ResearchStation(Map map)
         {
             var benches = map.listerBuildings.AllBuildingsColonistOfClass<Building_ResearchBench>();
-            if (benches != null)
+            if (benches == null)
             {
-                if (benches.TryRandomElement(out var bench))
-                {
-                    return bench;
-                }
+                return null;
+            }
+
+            if (benches.TryRandomElement(out var bench))
+            {
+                return bench;
             }
 
             return null;
@@ -47,11 +49,7 @@ namespace CultOfCthulhu
 
         public override bool CanSummonNow(Map map)
         {
-            var flag = false;
-            if (ResearchStation(map) != null && ResearchProject() != null)
-            {
-                flag = true;
-            }
+            var flag = ResearchStation(map) != null && ResearchProject() != null;
 
             if (ResearchStation(map) == null)
             {
@@ -93,7 +91,10 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            if (!(parms.target is Map map))
+            {
+                return false;
+            }
 
             //Set up variables
             var researchFinishedValue = ResearchProject().baseCost;

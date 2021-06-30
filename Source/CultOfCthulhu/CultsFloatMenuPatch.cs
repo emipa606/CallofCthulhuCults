@@ -64,7 +64,6 @@ namespace CultOfCthulhu
                 opts.Add(new FloatMenuOption("ROM_TradeSanityForMadness".Translate(), action,
                     MenuOptionPriority.High, null, target));
                 return opts;
-
             }
 
             var curSec =

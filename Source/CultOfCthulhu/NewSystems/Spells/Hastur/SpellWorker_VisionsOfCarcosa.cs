@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -15,9 +14,12 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            if (!(parms.target is Map map))
+            {
+                return false;
+            }
 
-            var colonistCount = (float) map.mapPawns.FreeColonistsSpawned.Count();
+            var colonistCount = (float) map.mapPawns.FreeColonistsSpawned.Count;
             var sleeperPercent = 0.8f;
             var math = colonistCount * sleeperPercent;
             var numberToSleep = Mathf.CeilToInt(Mathf.Clamp(math, 1, colonistCount));

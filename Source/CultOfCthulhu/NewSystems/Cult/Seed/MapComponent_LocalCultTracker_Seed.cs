@@ -6,7 +6,7 @@ namespace CultOfCthulhu
 {
     internal partial class MapComponent_LocalCultTracker : MapComponent
     {
-        public void CultSeedCheck()
+        private void CultSeedCheck()
         {
             //Check for god-mode spawned things.
             if (CurrentSeedState < CultSeedState.FinishedWriting)
@@ -46,7 +46,7 @@ namespace CultOfCthulhu
             }
         }
 
-        public void NeedSeedCountDown()
+        private void NeedSeedCountDown()
         {
             if (ticksToSpawnCultSeed > 0)
             {

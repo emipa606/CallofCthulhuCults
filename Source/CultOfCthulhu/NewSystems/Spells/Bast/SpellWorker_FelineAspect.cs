@@ -13,15 +13,15 @@ namespace BastCult
         {
             var felineProps = def.GetModExtension<FelineAspectProperties>();
 
-            if (felineProps != null)
+            if (felineProps == null)
             {
-                //Get executioner.
-                var executioner = altar(map).tempExecutioner;
-
-                return ExecutionerIsValid(executioner, felineProps);
+                return false;
             }
 
-            return false;
+            //Get executioner.
+            var executioner = altar(map).tempExecutioner;
+
+            return ExecutionerIsValid(executioner, felineProps);
         }
 
         protected override bool TryExecuteWorker(IncidentParms parms)
@@ -30,29 +30,35 @@ namespace BastCult
 
             var felineProps = def.GetModExtension<FelineAspectProperties>();
 
-            if (felineProps != null)
+            if (felineProps == null)
             {
-                //Get executioner.
-                var executioner = altar(map).tempExecutioner;
+                return true;
+            }
 
-                if (ExecutionerIsValid(executioner, felineProps))
+            //Get executioner.
+            var executioner = altar(map).tempExecutioner;
+
+            if (!ExecutionerIsValid(executioner, felineProps))
+            {
+                return true;
+            }
+
+            //Apply Hediffs
+            //To body
+            executioner.health.AddHediff(felineProps.hediffToApplyToBody);
+
+            //To hands
+            foreach (var hand in felineProps.handDefs)
+            {
+                var records = executioner.RaceProps.body.AllParts.FindAll(part => part.def == hand);
+                if (!(records.Count > 0))
                 {
-                    //Apply Hediffs
-                    //To body
-                    executioner.health.AddHediff(felineProps.hediffToApplyToBody);
+                    continue;
+                }
 
-                    //To hands
-                    foreach (var hand in felineProps.handDefs)
-                    {
-                        var records = executioner.RaceProps.body.AllParts.FindAll(part => part.def == hand);
-                        if (records?.Count > 0)
-                        {
-                            foreach (var record in records)
-                            {
-                                executioner.health.AddHediff(felineProps.hediffToApplyToHands, record);
-                            }
-                        }
-                    }
+                foreach (var record in records)
+                {
+                    executioner.health.AddHediff(felineProps.hediffToApplyToHands, record);
                 }
             }
 

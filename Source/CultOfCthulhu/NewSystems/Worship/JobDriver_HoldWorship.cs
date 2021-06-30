@@ -194,14 +194,16 @@ namespace CultOfCthulhu
             {
                 initAction = delegate
                 {
-                    if (DropAltar != null)
+                    if (DropAltar == null)
                     {
-                        if (DropAltar.currentWorshipState != Building_SacrificialAltar.WorshipState.finished)
-                        {
-                            DropAltar.ChangeState(Building_SacrificialAltar.State.worshipping,
-                                Building_SacrificialAltar.WorshipState.finished);
-                            //Map.GetComponent<MapComponent_SacrificeTracker>().ClearVariables();
-                        }
+                        return;
+                    }
+
+                    if (DropAltar.currentWorshipState != Building_SacrificialAltar.WorshipState.finished)
+                    {
+                        DropAltar.ChangeState(Building_SacrificialAltar.State.worshipping,
+                            Building_SacrificialAltar.WorshipState.finished);
+                        //Map.GetComponent<MapComponent_SacrificeTracker>().ClearVariables();
                     }
                 },
                 defaultCompleteMode = ToilCompleteMode.Instant
@@ -211,12 +213,14 @@ namespace CultOfCthulhu
             AddFinishAction(() =>
             {
                 //When the ritual is finished -- then let's give the thoughts
-                if (DropAltar.currentWorshipState == Building_SacrificialAltar.WorshipState.finishing ||
-                    DropAltar.currentWorshipState == Building_SacrificialAltar.WorshipState.finished)
+                if (DropAltar.currentWorshipState != Building_SacrificialAltar.WorshipState.finishing &&
+                    DropAltar.currentWorshipState != Building_SacrificialAltar.WorshipState.finished)
                 {
-                    Utility.DebugReport("Called end tick check");
-                    CultUtility.HoldWorshipTickCheckEnd(pawn);
+                    return;
                 }
+
+                Utility.DebugReport("Called end tick check");
+                CultUtility.HoldWorshipTickCheckEnd(pawn);
             });
         }
     }

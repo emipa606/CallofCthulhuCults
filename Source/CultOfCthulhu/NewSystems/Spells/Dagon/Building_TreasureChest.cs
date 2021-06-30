@@ -90,46 +90,44 @@ namespace CultOfCthulhu
                 storageSettings.CopyFrom(def.building.defaultStorageSettings);
             }
 
-            if (SpawnedStorage == false)
+            if (SpawnedStorage)
             {
-                SpawnedStorage = true;
-                if (def == CultsDefOf.Cults_TreasureChest)
+                return;
+            }
+
+            SpawnedStorage = true;
+            if (def == CultsDefOf.Cults_TreasureChest)
+            {
+                for (var i = 0; i < 5; i++)
                 {
-                    for (var i = 0; i < 5; i++)
-                    {
-                        var thing1 = ThingMaker.MakeThing(ThingDefOf.Gold);
-                        thing1.stackCount = Rand.Range(20, 40);
-                        GetDirectlyHeldThings().TryAdd(thing1);
+                    var thing1 = ThingMaker.MakeThing(ThingDefOf.Gold);
+                    thing1.stackCount = Rand.Range(20, 40);
+                    GetDirectlyHeldThings().TryAdd(thing1);
 
-                        var thing2 = ThingMaker.MakeThing(ThingDefOf.Silver);
-                        thing2.stackCount = Rand.Range(40, 60);
-                        GetDirectlyHeldThings().TryAdd(thing2);
+                    var thing2 = ThingMaker.MakeThing(ThingDefOf.Silver);
+                    thing2.stackCount = Rand.Range(40, 60);
+                    GetDirectlyHeldThings().TryAdd(thing2);
 
-                        var thing3 = ThingMaker.MakeThing(ThingDef.Named("Jade"));
-                        thing3.stackCount = Rand.Range(10, 40);
-                        GetDirectlyHeldThings().TryAdd(thing3);
-                    }
-
-                    if (Rand.Value > 0.8f)
-                    {
-                        var thing4 = ThingMaker.MakeThing(ThingDef.Named("SculptureSmall"), ThingDefOf.Gold);
-                        thing4.stackCount = 1;
-                        GetDirectlyHeldThings().TryAdd(thing4);
-                    }
+                    var thing3 = ThingMaker.MakeThing(ThingDef.Named("Jade"));
+                    thing3.stackCount = Rand.Range(10, 40);
+                    GetDirectlyHeldThings().TryAdd(thing3);
                 }
 
-                if (def == CultsDefOf.Cults_TreasureChest_Relic)
+                if (Rand.Value > 0.8f)
                 {
-                    if (Rand.Range(1, 100) > 50)
-                    {
-                        GetDirectlyHeldThings().TryAdd(GenerateLegendaryWeapon());
-                    }
-                    else
-                    {
-                        GetDirectlyHeldThings().TryAdd(GenerateLegendaryArmor());
-                    }
+                    var thing4 = ThingMaker.MakeThing(ThingDef.Named("SculptureSmall"), ThingDefOf.Gold);
+                    thing4.stackCount = 1;
+                    GetDirectlyHeldThings().TryAdd(thing4);
                 }
             }
+
+            if (def != CultsDefOf.Cults_TreasureChest_Relic)
+            {
+                return;
+            }
+
+            GetDirectlyHeldThings()
+                .TryAdd(Rand.Range(1, 100) > 50 ? GenerateLegendaryWeapon() : GenerateLegendaryArmor());
         }
 
         //Selects a random weapon type and improves it to a legendary status
@@ -137,12 +135,12 @@ namespace CultOfCthulhu
         {
             if (!(from td in DefDatabase<ThingDef>.AllDefs
                 where HandlesWeaponDefs(td)
-                select td).TryRandomElement(out var def))
+                select td).TryRandomElement(out var thingDef))
             {
                 return null;
             }
 
-            var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(def);
+            var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(thingDef);
             var compQuality = thingWithComps.TryGetComp<CompQuality>();
             compQuality.SetQuality(QualityCategory.Legendary, ArtGenerationContext.Outsider);
             return thingWithComps;
@@ -160,12 +158,12 @@ namespace CultOfCthulhu
         {
             if (!(from td in DefDatabase<ThingDef>.AllDefs
                 where HandlesArmorDefs(td)
-                select td).TryRandomElement(out var def))
+                select td).TryRandomElement(out var thingDef))
             {
                 return null;
             }
 
-            var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(def);
+            var thingWithComps = (ThingWithComps) ThingMaker.MakeThing(thingDef);
             thingWithComps.stackCount = 1;
             var compQuality = thingWithComps.TryGetComp<CompQuality>();
             compQuality.SetQuality(QualityCategory.Legendary, ArtGenerationContext.Outsider);
@@ -213,20 +211,20 @@ namespace CultOfCthulhu
 
         public override bool ClaimableBy(Faction fac)
         {
-            if (innerContainer.Any)
+            if (!innerContainer.Any)
             {
-                for (var i = 0; i < innerContainer.Count; i++)
-                {
-                    if (innerContainer[i].Faction == fac)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
+                return base.ClaimableBy(fac);
             }
 
-            return base.ClaimableBy(fac);
+            foreach (var thing in innerContainer)
+            {
+                if (thing.Faction == fac)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public virtual bool Accepts(Thing thing)
@@ -252,17 +250,17 @@ namespace CultOfCthulhu
                 flag = innerContainer.TryAdd(thing);
             }
 
-            if (flag)
+            if (!flag)
             {
-                if (thing.Faction != null && thing.Faction.IsPlayer)
-                {
-                    contentsKnown = true;
-                }
-
-                return true;
+                return false;
             }
 
-            return false;
+            if (thing.Faction != null && thing.Faction.IsPlayer)
+            {
+                contentsKnown = true;
+            }
+
+            return true;
         }
 
         public override void Destroy(DestroyMode mode = DestroyMode.Vanish)

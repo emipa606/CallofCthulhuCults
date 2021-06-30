@@ -23,12 +23,7 @@ namespace CultOfCthulhu
                 return false;
             }
 
-            if (cultMind.CurLevel > 0.8)
-            {
-                return true;
-            }
-
-            return false;
+            return cultMind.CurLevel > 0.8;
         }
     }
 }

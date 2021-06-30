@@ -4,14 +4,14 @@ using Verse;
 
 namespace CultOfCthulhu
 {
-    /// <summary>
+    // <summary>
     // Hawtcrab insanity spread social interaction mechanic
     // Pawn encounters Strange Thing ==> Aquires insanity ==> Talks to other Pawn
     //
     // Then either:
     // Reacts positively ===> Pawn loses insanity ==> other Pawn gains smaller amount of insanity
     // Reacts negatively ===> Pawn gains insanity ==> other Pawn does not gain insanity
-    /// </summary>
+    // </summary>
     public class InteractionWorker_SpreadInsanityFailure : InteractionWorker
     {
         //Almost three times the chance

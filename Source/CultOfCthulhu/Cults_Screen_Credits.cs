@@ -132,7 +132,6 @@ namespace CultOfCthulhu
 
                 var num = SongDefOf.EndCreditsSong.clip.length + 5f - 6f;
                 return MaxScrollPosition / num;
-
             }
         }
 

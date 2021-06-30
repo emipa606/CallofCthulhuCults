@@ -27,14 +27,16 @@ namespace CultOfCthulhu
                 where pawns is PawnFlyer
                 select pawns;
             var list = new List<Pawn>(listSel);
-            for (var i = 0; i < list.Count; i++)
+            foreach (var pawn in list)
             {
-                var compTransporter = list[i].TryGetComp<CompTransporterPawn>();
-                if (compTransporter.groupID == transportersGroup)
+                var compTransporter = pawn.TryGetComp<CompTransporterPawn>();
+                if (compTransporter.groupID != transportersGroup)
                 {
-                    Utility.DebugReport("Outlist Added: " + list[i].Label);
-                    outTransporters.Add(compTransporter);
+                    continue;
                 }
+
+                Utility.DebugReport("Outlist Added: " + pawn.Label);
+                outTransporters.Add(compTransporter);
             }
         }
 
@@ -70,15 +72,16 @@ namespace CultOfCthulhu
             var leftToLoad = transporter.leftToLoad;
             if (leftToLoad != null)
             {
-                for (var i = 0; i < leftToLoad.Count; i++)
+                foreach (var transferableOneWay in leftToLoad)
                 {
-                    var transferableOneWay = leftToLoad[i];
-                    if (transferableOneWay.CountToTransfer > 0)
+                    if (transferableOneWay.CountToTransfer <= 0)
                     {
-                        for (var j = 0; j < transferableOneWay.things.Count; j++)
-                        {
-                            neededThings.Add(transferableOneWay.things[j]);
-                        }
+                        continue;
+                    }
+
+                    foreach (var item in transferableOneWay.things)
+                    {
+                        neededThings.Add(item);
                     }
                 }
             }
@@ -100,12 +103,14 @@ namespace CultOfCthulhu
             {
                 foreach (var current in neededThings)
                 {
-                    if (current is Pawn pawn && (!pawn.IsColonist || pawn.Downed) &&
-                        p.CanReserveAndReach(pawn, PathEndMode.Touch, Danger.Deadly))
+                    if (current is not Pawn pawn || pawn.IsColonist && !pawn.Downed ||
+                        !p.CanReserveAndReach(pawn, PathEndMode.Touch, Danger.Deadly))
                     {
-                        Utility.DebugReport("Pawn to load : " + pawn.Label);
-                        return pawn;
+                        continue;
                     }
+
+                    Utility.DebugReport("Pawn to load : " + pawn.Label);
+                    return pawn;
                 }
             }
 

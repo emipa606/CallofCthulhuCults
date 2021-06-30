@@ -37,20 +37,23 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            if (!(parms.target is Map map))
+            {
+                return false;
+            }
+
             var num = 0;
             var countToSpawn = 10;
             for (var i = 0; i < countToSpawn; i++)
             {
                 //Find floors in the home area
-                var intVec = IntVec3.Invalid;
-                intVec = CellFinderLoose.RandomCellWith(c => c.InBounds(map) &&
-                                                             c.Standable(map) &&
-                                                             !c.InNoBuildEdgeArea(map) &&
-                                                             map.terrainGrid.TerrainAt(c).layerable &&
-                                                             map.areaManager.Home.ActiveCells.Contains(c) &&
-                                                             !c.Fogged(map), map);
-                if (intVec == IntVec3.Invalid || intVec == null)
+                var intVec = CellFinderLoose.RandomCellWith(c => c.InBounds(map) &&
+                                                                 c.Standable(map) &&
+                                                                 !c.InNoBuildEdgeArea(map) &&
+                                                                 map.terrainGrid.TerrainAt(c).layerable &&
+                                                                 map.areaManager.Home.ActiveCells.Contains(c) &&
+                                                                 !c.Fogged(map), map);
+                if (intVec == IntVec3.Invalid)
                 {
                     //Find smoothed floors in the home area
                     intVec = CellFinderLoose.RandomCellWith(c => c.InBounds(map) &&
@@ -60,7 +63,7 @@ namespace CultOfCthulhu
                                                                      .Contains("_Smooth") &&
                                                                  map.areaManager.Home.ActiveCells.Contains(c) &&
                                                                  !c.Fogged(map), map);
-                    if (intVec == IntVec3.Invalid || intVec == null)
+                    if (intVec == IntVec3.Invalid)
                     {
                         //Find floors... anywhere
                         intVec = CellFinderLoose.RandomCellWith(c => c.InBounds(map) &&
@@ -68,10 +71,10 @@ namespace CultOfCthulhu
                                                                      !c.InNoBuildEdgeArea(map) &&
                                                                      map.terrainGrid.TerrainAt(c).layerable &&
                                                                      !c.Fogged(map), map);
-                        if (intVec == IntVec3.Invalid || intVec == null)
+                        if (intVec == IntVec3.Invalid)
                         {
                             //Find the ground near the players then.
-                            if (intVec == IntVec3.Invalid || intVec == null)
+                            if (intVec == IntVec3.Invalid)
                             {
                                 intVec = CellFinderLoose.RandomCellWith(c => c.InBounds(map) &&
                                                                              c.Standable(map) &&
@@ -79,7 +82,7 @@ namespace CultOfCthulhu
                                                                              map.areaManager.Home.ActiveCells.Contains(
                                                                                  c) &&
                                                                              !c.Fogged(map), map);
-                                if (intVec == IntVec3.Invalid || intVec == null)
+                                if (intVec == IntVec3.Invalid)
                                 {
                                     Utility.DebugReport("Error: Can't assign cell for Rats in the Walls spell.");
                                     continue;
@@ -104,16 +107,18 @@ namespace CultOfCthulhu
                 num++;
             }
 
-            if (num > 0)
+            if (num <= 0)
             {
-                Find.CameraDriver.shaker.DoShake(1f);
-                Find.LetterStack.ReceiveLetter(def.letterLabel, def.letterText, def.letterDef,
-                    new TargetInfo(map.GetComponent<MapComponent_SacrificeTracker>().lastLocation, map));
-                Messages.Message("Cults_RatsMessage".Translate(), MessageTypeDefOf.NegativeEvent);
-                Utility.ApplyTaleDef("Cults_SpellRatsInTheWalls", map);
+                return false;
             }
 
-            return num > 0;
+            Find.CameraDriver.shaker.DoShake(1f);
+            Find.LetterStack.ReceiveLetter(def.letterLabel, def.letterText, def.letterDef,
+                new TargetInfo(map.GetComponent<MapComponent_SacrificeTracker>().lastLocation, map));
+            Messages.Message("Cults_RatsMessage".Translate(), MessageTypeDefOf.NegativeEvent);
+            Utility.ApplyTaleDef("Cults_SpellRatsInTheWalls", map);
+
+            return true;
         }
     }
 }

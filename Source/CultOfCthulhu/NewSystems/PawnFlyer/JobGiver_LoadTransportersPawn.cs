@@ -14,9 +14,8 @@ namespace CultOfCthulhu
             Utility.DebugReport("JobGiver_LoadTransportersPawn Called");
             var transportersGroup = pawn.mindState.duty.transportersGroup;
             LoadTransportersPawnJobUtility.GetTransportersInGroup(transportersGroup, pawn.Map, tmpTransporters);
-            for (var i = 0; i < tmpTransporters.Count; i++)
+            foreach (var transporter in tmpTransporters)
             {
-                var transporter = tmpTransporters[i];
                 if (LoadTransportersPawnJobUtility.HasJobOnTransporter(pawn, transporter))
                 {
                     return LoadTransportersPawnJobUtility.JobOnTransporter(pawn, transporter);

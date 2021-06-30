@@ -49,13 +49,15 @@ namespace CultOfCthulhu
                     return Altar.preacher;
                 }
 
-                foreach (var pawn in pawn.Map.mapPawns.FreeColonistsSpawned)
+                foreach (var preacherPawn in pawn.Map.mapPawns.FreeColonistsSpawned)
                 {
-                    if (pawn.CurJob.def == CultsDefOf.Cults_HoldWorship)
+                    if (preacherPawn.CurJob.def != CultsDefOf.Cults_HoldWorship)
                     {
-                        setPreacher = pawn;
-                        return pawn;
+                        continue;
                     }
+
+                    setPreacher = preacherPawn;
+                    return preacherPawn;
                 }
 
                 return null;
@@ -96,15 +98,9 @@ namespace CultOfCthulhu
 
 
             yield return Toils_Reserve.Reserve(Spot);
-            Toil gotoPreacher;
-            if (TargetC.HasThing)
-            {
-                gotoPreacher = Toils_Goto.GotoThing(Spot, PathEndMode.OnCell);
-            }
-            else
-            {
-                gotoPreacher = Toils_Goto.GotoCell(Spot, PathEndMode.OnCell);
-            }
+            var gotoPreacher = TargetC.HasThing
+                ? Toils_Goto.GotoThing(Spot, PathEndMode.OnCell)
+                : Toils_Goto.GotoCell(Spot, PathEndMode.OnCell);
 
             yield return gotoPreacher;
 

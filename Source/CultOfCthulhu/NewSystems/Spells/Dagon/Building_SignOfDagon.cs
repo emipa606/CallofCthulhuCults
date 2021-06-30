@@ -25,10 +25,7 @@ namespace CultOfCthulhu
                 }
             }
 
-            if (toDestroy != null)
-            {
-                toDestroy.Destroy();
-            }
+            toDestroy?.Destroy();
 
             var list = map.GetComponent<MapComponent_SacrificeTracker>().defendTheBroodPawns;
             if (list == null)

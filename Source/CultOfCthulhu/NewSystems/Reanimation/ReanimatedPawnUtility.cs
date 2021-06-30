@@ -85,8 +85,9 @@ namespace CultOfCthulhu
                     var nameTriple = sourcePawn.Name as NameTriple;
                     if (!oathOfHastur)
                     {
-                        pawn.Name = new NameTriple(nameTriple.First,
-                            string.Concat("* ", "Reanimated".Translate(), " ", nameTriple.Nick, " *"), nameTriple.Last);
+                        pawn.Name = new NameTriple(nameTriple?.First,
+                            string.Concat("* ", "Reanimated".Translate(), " ", nameTriple?.Nick, " *"),
+                            nameTriple?.Last);
                     }
                     else
                     {
@@ -96,7 +97,7 @@ namespace CultOfCthulhu
 
                 var headGraphicPath = sourcePawn.story.HeadGraphicPath;
                 typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic)
-                    .SetValue(pawn.story, headGraphicPath);
+                    ?.SetValue(pawn.story, headGraphicPath);
                 GenerateZombieApparelFromSource(pawn, sourcePawn);
                 var con = new PawnGenerationRequest();
                 PawnInventoryGenerator.GenerateInventoryFor(pawn, con);
@@ -119,6 +120,11 @@ namespace CultOfCthulhu
 
         public static void AddedPartFixer(ReanimatedPawn pawn, Pawn sourcePawn = null)
         {
+            if (sourcePawn?.health.hediffSet.hediffs == null)
+            {
+                return;
+            }
+
             foreach (var hediff in sourcePawn.health.hediffSet.hediffs)
             {
                 if (hediff is Hediff_AddedPart || hediff is Hediff_Implant)
@@ -131,6 +137,11 @@ namespace CultOfCthulhu
         public static void SkillFixer(ReanimatedPawn pawn, Pawn sourcePawn = null)
         {
             //Add in and fix skill levels
+            if (sourcePawn == null)
+            {
+                return;
+            }
+
             foreach (var skill in sourcePawn.skills.skills)
             {
                 var pawnSkill = pawn.skills.GetSkill(skill.def);
@@ -149,18 +160,26 @@ namespace CultOfCthulhu
         public static void RelationshipFixer(ReanimatedPawn pawn, Pawn sourcePawn = null)
         {
             //Add in and fix all blood relationships
-            if (sourcePawn.relations.DirectRelations != null && sourcePawn.relations.DirectRelations.Count > 0)
+            if (sourcePawn != null && (sourcePawn.relations.DirectRelations == null ||
+                                       sourcePawn.relations.DirectRelations.Count <= 0))
             {
-                foreach (var pawnRel in sourcePawn.relations.DirectRelations)
-                {
-                    if (pawnRel.otherPawn != null && pawnRel.def != null)
-                    {
-                        pawn.relations.AddDirectRelation(pawnRel.def, pawnRel.otherPawn);
-                    }
-                }
-
-                sourcePawn.relations.ClearAllRelations();
+                return;
             }
+
+            if (sourcePawn == null)
+            {
+                return;
+            }
+
+            foreach (var pawnRel in sourcePawn.relations.DirectRelations)
+            {
+                if (pawnRel.otherPawn != null && pawnRel.def != null)
+                {
+                    pawn.relations.AddDirectRelation(pawnRel.def, pawnRel.otherPawn);
+                }
+            }
+
+            sourcePawn.relations.ClearAllRelations();
         }
 
         public static void GiveZombieSkinEffect(ReanimatedPawn pawn, ReanimatedPawn sourcePawn = null,
@@ -186,17 +205,7 @@ namespace CultOfCthulhu
 
         public static bool Zombify(ReanimatedPawn pawn)
         {
-            if (pawn.Drawer == null)
-            {
-                return false;
-            }
-
-            if (pawn.Drawer.renderer == null)
-            {
-                return false;
-            }
-
-            if (pawn.Drawer.renderer.graphics == null)
+            if (pawn.Drawer?.renderer?.graphics == null)
             {
                 return false;
             }
@@ -279,7 +288,7 @@ namespace CultOfCthulhu
             {
                 var headGraphicPath = sourcePawn.story.HeadGraphicPath;
                 typeof(Pawn_StoryTracker).GetField("headGraphicPath", BindingFlags.Instance | BindingFlags.NonPublic)
-                    .SetValue(pawn.story, headGraphicPath);
+                    ?.SetValue(pawn.story, headGraphicPath);
                 pawn.story.melanin = sourcePawn.story.melanin;
                 pawn.story.crownType = sourcePawn.story.crownType;
                 pawn.story.hairColor = sourcePawn.story.hairColor;

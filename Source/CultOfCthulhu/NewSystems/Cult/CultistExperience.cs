@@ -4,24 +4,11 @@ namespace CultOfCthulhu
 {
     public class CultistExperience : IExposable
     {
-        private int sacrificeCount;
         private int preachCount;
-
-        public int SacrificeCount
-        {
-            get => sacrificeCount;
-            set => sacrificeCount = value;
-        }
-
-        public int PreachCount
-        {
-            get => preachCount;
-            set => preachCount = value;
-        }
+        private int sacrificeCount;
 
         public CultistExperience()
         {
-            
         }
 
         public CultistExperience(CultistExperience copy)
@@ -34,6 +21,18 @@ namespace CultOfCthulhu
         {
             this.sacrificeCount = sacrificeCount;
             this.preachCount = preachCount;
+        }
+
+        public int SacrificeCount
+        {
+            get => sacrificeCount;
+            set => sacrificeCount = value;
+        }
+
+        public int PreachCount
+        {
+            get => preachCount;
+            set => preachCount = value;
         }
 
         public void ExposeData()

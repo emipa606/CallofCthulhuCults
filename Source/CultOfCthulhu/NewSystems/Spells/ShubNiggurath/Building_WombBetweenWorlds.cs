@@ -38,9 +38,9 @@ namespace CultOfCthulhu
             {
                 FilterOutUnspawnedPawns();
                 var num = 0f;
-                for (var i = 0; i < spawnedPawns.Count; i++)
+                foreach (var pawn in spawnedPawns)
                 {
-                    num += spawnedPawns[i].kindDef.combatPower;
+                    num += pawn.kindDef.combatPower;
                 }
 
                 return num;
@@ -84,41 +84,35 @@ namespace CultOfCthulhu
                 Activate();
             }
 
-            if (active)
+            if (!active)
             {
-                if (ticksToSpawnInitialPawns > 0)
-                {
-                    ticksToSpawnInitialPawns -= 250;
-                    if (ticksToSpawnInitialPawns <= 0)
-                    {
-                        SpawnInitialPawnsNow();
-                    }
-                }
+                return;
+            }
 
-                if (Find.TickManager.TicksGame >= nextPawnSpawnTick)
+            if (ticksToSpawnInitialPawns > 0)
+            {
+                ticksToSpawnInitialPawns -= 250;
+                if (ticksToSpawnInitialPawns <= 0)
                 {
-                    if (SpawnedPawnsPoints < MaxSpawnedPawnsPoints)
-                    {
-                        var flag = TrySpawnPawn(out var pawn, Map);
-                        if (flag && pawn.caller != null)
-                        {
-                            pawn.caller.DoCall();
-                        }
-                    }
-
-                    CalculateNextPawnSpawnTick();
+                    SpawnInitialPawnsNow();
                 }
             }
-        }
 
-        public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
-        {
-            base.DeSpawn(mode);
-            //List<Lord> lords = Find.LordManager.lords;
-            //for (int i = 0; i < lords.Count; i++)
-            //{
-            //    lords[i].ReceiveMemo("HiveDestroyed");
-            //}
+            if (Find.TickManager.TicksGame < nextPawnSpawnTick)
+            {
+                return;
+            }
+
+            if (SpawnedPawnsPoints < MaxSpawnedPawnsPoints)
+            {
+                var flag = TrySpawnPawn(out var pawn, Map);
+                if (flag)
+                {
+                    pawn.caller?.DoCall();
+                }
+            }
+
+            CalculateNextPawnSpawnTick();
         }
 
         public override void PostApplyDamage(DamageInfo dinfo, float totalDamageDealt)
@@ -237,7 +231,7 @@ namespace CultOfCthulhu
         [DebuggerHidden]
         public override IEnumerable<Gizmo> GetGizmos()
         {
-            var enumerator = base.GetGizmos().GetEnumerator();
+            using var enumerator = base.GetGizmos().GetEnumerator();
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
@@ -250,7 +244,7 @@ namespace CultOfCthulhu
                 {
                     defaultLabel = "DEBUG: Spawn pawn",
                     icon = TexCommand.ReleaseAnimals,
-                    action = delegate { TrySpawnPawn(out var pawn, Map); }
+                    action = delegate { TrySpawnPawn(out _, Map); }
                 };
             }
         }

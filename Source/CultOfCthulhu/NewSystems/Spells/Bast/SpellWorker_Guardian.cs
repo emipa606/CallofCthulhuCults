@@ -31,71 +31,66 @@ namespace BastCult
 
             var guardianProps = def.GetModExtension<GuardianProperties>();
 
-            if (closestCat != null)
+            if (closestCat == null)
             {
-                //Transform Cat
-                //Generate guardian
-                var newGuardian = PawnGenerator.GeneratePawn(new PawnGenerationRequest(
-                    guardianProps.guardianDef, Faction.OfPlayer, PawnGenerationContext.NonPlayer, -1, true, false,
-                    false, false, false,
-                    true, 0f, false, true, true, false, false, false, false, false, 0, null, 0, null, null, null, null,
-                    null, closestCat.ageTracker.AgeBiologicalYears, closestCat.ageTracker.AgeChronologicalYears,
-                    closestCat.gender));
-
-                //Transfer over family trees and relations to guardian from old cat.
-                var oldRelations = closestCat.relations;
-                var newRelations = newGuardian.relations;
-
-                //Transfer over relations.
-                var relationList = new List<DirectPawnRelation>(oldRelations.DirectRelations);
-                foreach (var relation in relationList)
-                {
-                    newRelations.AddDirectRelation(relation.def, relation.otherPawn);
-                    oldRelations.RemoveDirectRelation(relation);
-                }
-
-                //Fully train.
-                foreach (var trainableDef in DefDatabase<TrainableDef>.AllDefs)
-                {
-                    for (var step = 0; step < trainableDef.steps; step++)
-                    {
-                        newGuardian.training.Train(trainableDef, null);
-                    }
-                }
-
-                //Make a new name.
-                if (closestCat.Name != null)
-                {
-                    if (closestCat.gender == Gender.Male)
-                    {
-                        newGuardian.Name =
-                            new NameSingle(NameGenerator.GenerateName(RulePackDef.Named("NamerAnimalGenericMale")));
-                    }
-                    else
-                    {
-                        newGuardian.Name =
-                            new NameSingle(NameGenerator.GenerateName(RulePackDef.Named("NamerAnimalGenericFemale")));
-                    }
-                }
-
-                //Dump inventory, if any.
-                closestCat?.inventory.DropAllNearPawn(closestCat.Position);
-
-                Letter letter = LetterMaker.MakeLetter(
-                    "Cults_BastGuardianTransformationLabel".Translate(closestCat.Name.ToStringShort),
-                    "Cults_BastGuardianTransformationDescription".Translate(closestCat.Name.ToStringFull),
-                    LetterDefOf.PositiveEvent, new GlobalTargetInfo(newGuardian));
-
-                //Remove old cat.
-                var catPosition = closestCat.Position;
-                closestCat.Destroy();
-
-                //Spawn in guardian.
-                GenSpawn.Spawn(newGuardian, catPosition, map);
-                MoteMaker.MakePowerBeamMote(catPosition, map);
-
-                Current.Game.letterStack.ReceiveLetter(letter);
+                return true;
             }
+
+            //Transform Cat
+            //Generate guardian
+            var newGuardian = PawnGenerator.GeneratePawn(new PawnGenerationRequest(
+                guardianProps.guardianDef, Faction.OfPlayer, PawnGenerationContext.NonPlayer, -1, true, false,
+                false, false, false,
+                true, 0f, false, true, true, false, false, false, false, false, 0, null, 0, null, null, null, null,
+                null, closestCat.ageTracker.AgeBiologicalYears, closestCat.ageTracker.AgeChronologicalYears,
+                closestCat.gender));
+
+            //Transfer over family trees and relations to guardian from old cat.
+            var oldRelations = closestCat.relations;
+            var newRelations = newGuardian.relations;
+
+            //Transfer over relations.
+            var relationList = new List<DirectPawnRelation>(oldRelations.DirectRelations);
+            foreach (var relation in relationList)
+            {
+                newRelations.AddDirectRelation(relation.def, relation.otherPawn);
+                oldRelations.RemoveDirectRelation(relation);
+            }
+
+            //Fully train.
+            foreach (var trainableDef in DefDatabase<TrainableDef>.AllDefs)
+            {
+                for (var step = 0; step < trainableDef.steps; step++)
+                {
+                    newGuardian.training.Train(trainableDef, null);
+                }
+            }
+
+            //Make a new name.
+            if (closestCat.Name != null)
+            {
+                newGuardian.Name = closestCat.gender == Gender.Male
+                    ? new NameSingle(NameGenerator.GenerateName(RulePackDef.Named("NamerAnimalGenericMale")))
+                    : new NameSingle(NameGenerator.GenerateName(RulePackDef.Named("NamerAnimalGenericFemale")));
+            }
+
+            //Dump inventory, if any.
+            closestCat.inventory.DropAllNearPawn(closestCat.Position);
+
+            Letter letter = LetterMaker.MakeLetter(
+                "Cults_BastGuardianTransformationLabel".Translate(closestCat.Name?.ToStringShort),
+                "Cults_BastGuardianTransformationDescription".Translate(closestCat.Name?.ToStringFull),
+                LetterDefOf.PositiveEvent, new GlobalTargetInfo(newGuardian));
+
+            //Remove old cat.
+            var catPosition = closestCat.Position;
+            closestCat.Destroy();
+
+            //Spawn in guardian.
+            GenSpawn.Spawn(newGuardian, catPosition, map);
+            MoteMaker.MakePowerBeamMote(catPosition, map);
+
+            Current.Game.letterStack.ReceiveLetter(letter);
 
             return true;
         }
@@ -110,22 +105,20 @@ namespace BastCult
             var mapAltar = altar(map);
             var guardianProps = def.GetModExtension<GuardianProperties>();
 
-            if (mapAltar != null && guardianProps != null)
+            if (mapAltar == null || guardianProps == null)
             {
-                var closestThing = GenClosest.ClosestThingReachable(
-                    mapAltar.InteractionCell, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn),
-                    PathEndMode.ClosestTouch, TraverseParms.For(TraverseMode.PassDoors), 9999,
-                    lookThing => (lookThing?.Faction?.IsPlayer ?? false) &&
-                                 guardianProps.eligiblePawnDefs.Contains(lookThing.def));
-
-                //Found a Cat.
-                if (closestThing != null && closestThing is Pawn)
-                {
-                    return closestThing as Pawn;
-                }
+                return null;
             }
 
-            return null;
+            var closestThing = GenClosest.ClosestThingReachable(
+                mapAltar.InteractionCell, map, ThingRequest.ForGroup(ThingRequestGroup.Pawn),
+                PathEndMode.ClosestTouch, TraverseParms.For(TraverseMode.PassDoors), 9999,
+                lookThing => (lookThing?.Faction?.IsPlayer ?? false) &&
+                             guardianProps.eligiblePawnDefs.Contains(lookThing.def));
+
+            //Found a Cat.
+            var pawn = closestThing as Pawn;
+            return pawn;
         }
     }
 }

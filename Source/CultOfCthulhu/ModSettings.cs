@@ -8,7 +8,7 @@ namespace CultOfCthulhu
     {
         public static bool cultsForcedInvestigation = true;
         public static bool cultsStudySuccessfulCultsIsRepeatable = true;
-        public static bool cultsShowDebugCode = true;
+        public static bool cultsShowDebugCode;
         public static bool makeWorshipsVoluntary;
     }
 

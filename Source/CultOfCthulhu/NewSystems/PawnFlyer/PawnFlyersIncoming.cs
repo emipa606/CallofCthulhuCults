@@ -34,7 +34,6 @@ namespace CultOfCthulhu
         {
             get
             {
-                Vector3 result;
                 //switch (this.def.skyfaller.movementType)
                 //{
                 //    case SkyfallerMovementType.Accelerate:
@@ -48,7 +47,7 @@ namespace CultOfCthulhu
                 //        break;
                 //    default:
                 //        Log.ErrorOnce("SkyfallerMovementType not handled: " + this.def.skyfaller.movementType, this.thingIDNumber ^ 1948576711);
-                result = SkyfallerDrawPosUtility.DrawPos_Accelerate(base.DrawPos, ticksToImpact, angle,
+                var result = SkyfallerDrawPosUtility.DrawPos_Accelerate(base.DrawPos, ticksToImpact, angle,
                     def.skyfaller.speed);
                 //break;
                 //}
@@ -107,14 +106,16 @@ namespace CultOfCthulhu
             base.SpawnSetup(map, respawningAfterLoad);
             // RimWorld.Skyfaller
             base.SpawnSetup(map, respawningAfterLoad);
-            if (!respawningAfterLoad)
+            if (respawningAfterLoad)
             {
-                ticksToImpact = def.skyfaller.ticksToImpactRange.RandomInRange;
-                angle = -33.7f;
-                if (def.rotatable && this.TryGetInnerInteractableThingOwner().Any)
-                {
-                    Rotation = this.TryGetInnerInteractableThingOwner()[0].Rotation;
-                }
+                return;
+            }
+
+            ticksToImpact = def.skyfaller.ticksToImpactRange.RandomInRange;
+            angle = -33.7f;
+            if (def.rotatable && this.TryGetInnerInteractableThingOwner().Any)
+            {
+                Rotation = this.TryGetInnerInteractableThingOwner()[0].Rotation;
             }
         }
 
@@ -158,19 +159,21 @@ namespace CultOfCthulhu
                 Impact();
             }
 
-            if (!soundPlayed && ticksToImpact < 100)
+            if (soundPlayed || ticksToImpact >= 100)
             {
-                soundPlayed = true;
+                return;
+            }
+
+            soundPlayed = true;
 
 
-                if (PawnFlyerDef.landingSound != null)
-                {
-                    PawnFlyerDef.landingSound.PlayOneShot(new TargetInfo(Position, Map));
-                }
-                else
-                {
-                    Log.Warning("PawnFlyersIncoming :: Landing sound not set");
-                }
+            if (PawnFlyerDef.landingSound != null)
+            {
+                PawnFlyerDef.landingSound.PlayOneShot(new TargetInfo(Position, Map));
+            }
+            else
+            {
+                Log.Warning("PawnFlyersIncoming :: Landing sound not set");
             }
         }
 
@@ -206,19 +209,21 @@ namespace CultOfCthulhu
 
         public override void DrawAt(Vector3 drawLoc, bool flipped)
         {
-            if (drawLoc.InBounds(Map))
+            if (!drawLoc.InBounds(Map))
             {
-                pawnFlyer.Drawer.DrawAt(drawLoc);
-
-                var shadowMaterial = ShadowMaterial;
-                if (!(shadowMaterial == null))
-                {
-                    Skyfaller.DrawDropSpotShadow(base.DrawPos, Rotation, shadowMaterial, def.skyfaller.shadowSize,
-                        ticksToImpact);
-                }
-
-                //DropPodAnimationUtility.DrawDropSpotShadow(this, this.ticksToImpact);
+                return;
             }
+
+            pawnFlyer.Drawer.DrawAt(drawLoc);
+
+            var shadowMaterial = ShadowMaterial;
+            if (!(shadowMaterial == null))
+            {
+                Skyfaller.DrawDropSpotShadow(base.DrawPos, Rotation, shadowMaterial, def.skyfaller.shadowSize,
+                    ticksToImpact);
+            }
+
+            //DropPodAnimationUtility.DrawDropSpotShadow(this, this.ticksToImpact);
         }
 
         private void Impact()

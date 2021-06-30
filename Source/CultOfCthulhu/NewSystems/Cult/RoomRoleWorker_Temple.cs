@@ -8,9 +8,8 @@ namespace CultOfCthulhu
         {
             var num = 0;
             var allContainedThings = room.ContainedAndAdjacentThings;
-            for (var i = 0; i < allContainedThings.Count; i++)
+            foreach (var thing in allContainedThings)
             {
-                var thing = allContainedThings[i];
                 if (thing.def.category == ThingCategory.Building &&
                     (thing.def.defName == "Cult_SacrificialAltar" ||
                      thing.def.defName == "Cult_AnimalSacrificeAltar" ||

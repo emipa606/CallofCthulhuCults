@@ -1,8 +1,7 @@
-﻿using System;
-using RimWorld;
+﻿using RimWorld;
+using UnityEngine;
 using Verse;
 using Verse.AI;
-using Random = UnityEngine.Random;
 
 namespace CultOfCthulhu
 {
@@ -46,31 +45,35 @@ namespace CultOfCthulhu
         public override void PreApplyDamage(ref DamageInfo dinfo, out bool absorbed)
         {
             health.PreApplyDamage(dinfo, out absorbed);
-            if (!Destroyed && (dinfo.Def == DamageDefOf.Cut || dinfo.Def == DamageDefOf.Stab))
+            if (Destroyed || dinfo.Def != DamageDefOf.Cut && dinfo.Def != DamageDefOf.Stab)
             {
-                var num = 0f;
-                var num2 = 0f;
-                if (dinfo.Instigator != null && dinfo.Instigator is Pawn)
-                {
-                    var pawn = dinfo.Instigator as Pawn;
-                    if (pawn.skills != null)
-                    {
-                        var expr_9B = pawn.skills.GetSkill(SkillDefOf.Melee);
-                        num = expr_9B.Level * 2;
-                        num2 = expr_9B.Level / 20f * 3f;
-                    }
-
-                    if (Random.Range(0f, 100f) < 20f + num)
-                    {
-                        dinfo.SetAmount(999);
-                        dinfo.SetHitPart(health.hediffSet.GetBrain());
-                        dinfo.Def.Worker.Apply(dinfo, this);
-                        return;
-                    }
-
-                    dinfo.SetAmount((int) (dinfo.Amount * (1f + num2)));
-                }
+                return;
             }
+
+            var num = 0f;
+            var num2 = 0f;
+            if (dinfo.Instigator is not Pawn)
+            {
+                return;
+            }
+
+            var pawn = dinfo.Instigator as Pawn;
+            if (pawn?.skills != null)
+            {
+                var expr_9B = pawn.skills.GetSkill(SkillDefOf.Melee);
+                num = expr_9B.Level * 2;
+                num2 = expr_9B.Level / 20f * 3f;
+            }
+
+            if (Random.Range(0f, 100f) < 20f + num)
+            {
+                dinfo.SetAmount(999);
+                dinfo.SetHitPart(health.hediffSet.GetBrain());
+                dinfo.Def.Worker.Apply(dinfo, this);
+                return;
+            }
+
+            dinfo.SetAmount((int) (dinfo.Amount * (1f + num2)));
         }
 
         public override void Tick()
@@ -111,15 +114,9 @@ namespace CultOfCthulhu
                         natives.NativeVerbsTick();
                     }
 
-                    if (equipment != null)
-                    {
-                        equipment.EquipmentTrackerTick();
-                    }
+                    equipment?.EquipmentTrackerTick();
 
-                    if (apparel != null)
-                    {
-                        apparel.ApparelTrackerTick();
-                    }
+                    apparel?.ApparelTrackerTick();
 
                     if (Spawned)
                     {
@@ -131,43 +128,37 @@ namespace CultOfCthulhu
                         carryTracker.CarryHandsTick();
                     }
 
-                    if (skills != null)
-                    {
-                        skills.SkillsTick();
-                    }
+                    skills?.SkillsTick();
 
-                    if (inventory != null)
-                    {
-                        inventory.InventoryTrackerTick();
-                    }
+                    inventory?.InventoryTrackerTick();
                 }
 
-                if (needs != null && needs.food != null && needs.food.CurLevel <= 0.95f)
+                if (needs?.food != null && needs.food.CurLevel <= 0.95f)
                 {
                     needs.food.CurLevel = 1f;
                 }
 
-                if (needs != null && needs.joy != null && needs.joy.CurLevel <= 0.95f)
+                if (needs?.joy != null && needs.joy.CurLevel <= 0.95f)
                 {
                     needs.joy.CurLevel = 1f;
                 }
 
-                if (needs != null && needs.beauty != null && needs.beauty.CurLevel <= 0.95f)
+                if (needs?.beauty != null && needs.beauty.CurLevel <= 0.95f)
                 {
                     needs.beauty.CurLevel = 1f;
                 }
 
-                if (needs != null && needs.comfort != null && needs.comfort.CurLevel <= 0.95f)
+                if (needs?.comfort != null && needs.comfort.CurLevel <= 0.95f)
                 {
                     needs.comfort.CurLevel = 1f;
                 }
 
-                if (needs != null && needs.rest != null && needs.rest.CurLevel <= 0.95f)
+                if (needs?.rest != null && needs.rest.CurLevel <= 0.95f)
                 {
                     needs.rest.CurLevel = 1f;
                 }
 
-                if (needs != null && needs.mood != null && needs.mood.CurLevel <= 0.45f)
+                if (needs?.mood != null && needs.mood.CurLevel <= 0.45f)
                 {
                     needs.mood.CurLevel = 0.5f;
                 }
@@ -179,16 +170,19 @@ namespace CultOfCthulhu
                     //ZombieMod_Utility.SetZombieName(this);
                 }
 
-                if (Downed || health.Downed || health.InPainShock)
+                if (!Downed && !health.Downed && !health.InPainShock)
                 {
-                    var damageInfo = new DamageInfo(DamageDefOf.Blunt, 9999, 1f, -1f, this);
-                    damageInfo.SetHitPart(health.hediffSet.GetBrain());
-                    //damageInfo.SetPart(new BodyPartDamageInfo(this.health.hediffSet.GetBrain(), false, HediffDefOf.Cut));
-                    TakeDamage(damageInfo);
+                    return;
                 }
+
+                var damageInfo = new DamageInfo(DamageDefOf.Blunt, 9999, 1f, -1f, this);
+                damageInfo.SetHitPart(health.hediffSet.GetBrain());
+                //damageInfo.SetPart(new BodyPartDamageInfo(this.health.hediffSet.GetBrain(), false, HediffDefOf.Cut));
+                TakeDamage(damageInfo);
             }
-            catch (Exception)
+            catch
             {
+                // ignored
             }
         }
     }

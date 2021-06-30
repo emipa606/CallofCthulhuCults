@@ -20,14 +20,14 @@ namespace CultOfCthulhu
                         sacrificeTracker.unspeakableOathPawns = new List<Pawn>();
                     }
 
-                    if (sacrificeTracker.unspeakableOathPawns.Contains(TempExecutioner(map)))
+                    if (!sacrificeTracker.unspeakableOathPawns.Contains(TempExecutioner(map)))
                     {
-                        Messages.Message("Executioner has already taken an unspeakable oath.",
-                            MessageTypeDefOf.RejectInput);
-                        return false;
+                        return true;
                     }
 
-                    return true;
+                    Messages.Message("Executioner has already taken an unspeakable oath.",
+                        MessageTypeDefOf.RejectInput);
+                    return false;
                 }
 
                 Messages.Message("Missing map component.", MessageTypeDefOf.RejectInput);

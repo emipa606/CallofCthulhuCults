@@ -42,6 +42,58 @@ namespace CultOfCthulhu
 
     public static class CultUtility
     {
+        //TraitDef.Named("Masochist")
+        //TraitDef.Named("PsychicSensitivity"),
+        //TraitDef.Named("Nerves"),
+        //TraitDefOf.DrugDesire
+        public enum CultistType
+        {
+            None,
+            Preacher,
+            DarkEmmisary
+        }
+
+        public enum OfferingSize
+        {
+            none = 0,
+            meagre = 5,
+            decent = 10,
+            sizable = 20,
+            worthy = 50,
+            impressive = 100
+        }
+
+        public enum SacrificeResult
+        {
+            none = 0,
+            criticalfailure,
+            failure,
+            mixedsuccess,
+            success
+        }
+
+        public enum SacrificeType
+        {
+            none,
+            meat,
+            plants,
+            meals,
+            animal,
+            human
+        }
+
+
+        public static List<TraitDef> immoralistTraits = new List<TraitDef>
+        {
+            TraitDefOf.Psychopath,
+            TraitDefOf.Bloodlust,
+            TraitDefOf.Cannibal
+        };
+
+        public static readonly int ritualDuration = 740; // 15 seconds max
+
+        public static readonly int reflectDuration = 600; // 10 seconds max
+
         // RimWorld.IncidentWorker_ShipChunkDrop
         public static bool TryFindDropCell(IntVec3 nearLoc, Map map, int maxDist, out IntVec3 pos,
             ThingDef defToCheck = null)
@@ -55,34 +107,13 @@ namespace CultOfCthulhu
                 false, false, false);
         }
 
-
-        public static List<TraitDef> immoralistTraits = new List<TraitDef>
-        {
-            TraitDefOf.Psychopath,
-            TraitDefOf.Bloodlust,
-            TraitDefOf.Cannibal
-        };
-
-        //TraitDef.Named("Masochist")
-        //TraitDef.Named("PsychicSensitivity"),
-        //TraitDef.Named("Nerves"),
-        //TraitDefOf.DrugDesire
-        public enum CultistType
-        {
-            None,
-            Preacher,
-            DarkEmmisary
-        }
-
-        #region Pawn
-
         public static float GetBaseCultistModifier(Pawn pawn)
         {
             float result = 0;
             var bigMod = Rand.Range(0.2f, 0.25f);
             var smallMod = Rand.Range(0.05f, 0.1f);
             if (pawn?.story?.adulthood == null ||
-                pawn?.story?.childhood == null)
+                pawn.story?.childhood == null)
             {
                 return result;
             }
@@ -96,7 +127,10 @@ namespace CultOfCthulhu
             //         I do eat human flesh.
             //         I like to kill.
             //         I don't care about others.
-            result = (from trait in pawn.story.traits.allTraits from def in immoralistTraits where trait.def == def select bigMod).Sum();
+            result = (from trait in pawn.story.traits.allTraits
+                from def in immoralistTraits
+                where trait.def == def
+                select bigMod).Sum();
             //Cult inclined.
             //          Midworlders are more open to superstition.
             //          Abandoned children, looking for 'family.'
@@ -124,6 +158,7 @@ namespace CultOfCthulhu
             {
                 result -= bigMod;
             }
+
             //Cult disinclined.
             //          Glitterworlders. Morality is paramount.
             if (adultStory.Contains("glitterworld") || adultStory.Contains("Glitterworld"))
@@ -144,8 +179,10 @@ namespace CultOfCthulhu
                 {
                     result += bigMod;
                 }
+
                 result -= bigMod;
             }
+
             if (Rand.Range(0, 100) > 50)
             {
                 result += smallMod;
@@ -173,24 +210,27 @@ namespace CultOfCthulhu
                 }
 
                 if (!CellFinder.TryFindRandomEdgeCellWith(c => map.reachability.CanReachColony(c), map,
-                    CellFinder.EdgeRoadChance_Neutral, out IntVec3 loc))
+                    CellFinder.EdgeRoadChance_Neutral, out var loc))
                 {
                     return false;
                 }
-                if (!TryGenerateCultist(out Pawn p, map, type))
+
+                if (!TryGenerateCultist(out var p, map, type))
                 {
                     //Log.Messag("Unable to generate cultist");
                     return false;
                 }
+
                 if (p == null)
                 {
                     //Log.Messag("Pawn is null");
                     return false;
                 }
+
                 GenSpawn.Spawn(p, loc, map);
-                TaggedString text = "CultistJoin".Translate(p.kindDef.label, p.story.adulthood.title.ToLower());
+                var text = "CultistJoin".Translate(p.kindDef.label, p.story.adulthood.title.ToLower());
                 text = text.AdjustedFor(p);
-                TaggedString label = "LetterLabelCultistJoin".Translate();
+                var label = "LetterLabelCultistJoin".Translate();
                 if (showMessage)
                 {
                     Find.LetterStack.ReceiveLetter(label, text, CultsDefOf.Cults_StandardMessage);
@@ -209,7 +249,7 @@ namespace CultOfCthulhu
 
         public static bool TryGenerateCultist(out Pawn cultist, Map map, CultistType type = CultistType.None)
         {
-            PawnKindDef pawnKindDef = new List<PawnKindDef>
+            var pawnKindDef = new List<PawnKindDef>
             {
                 PawnKindDefOf.Villager
             }.RandomElement();
@@ -224,7 +264,6 @@ namespace CultOfCthulhu
             {
                 for (var i = 0; i < 999; i++)
                 {
-                    p = null;
                     request = new PawnGenerationRequest(pawnKindDef, Faction.OfPlayer, PawnGenerationContext.NonPlayer,
                         map.Tile, false, false, false, false, true, true, 20f, false, true, true, false);
                     p = PawnGenerator.GeneratePawn(request);
@@ -234,15 +273,17 @@ namespace CultOfCthulhu
                         continue;
                     }
 
-                    if (p.skills.GetSkill(SkillDefOf.Social).Level >= 5)
+                    if (p.skills.GetSkill(SkillDefOf.Social).Level < 5)
                     {
-                        if (p.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Social))
-                        {
-                            continue;
-                        }
-
-                        break;
+                        continue;
                     }
+
+                    if (p.story.DisabledWorkTagsBackstoryAndTraits.HasFlag(WorkTags.Social))
+                    {
+                        continue;
+                    }
+
+                    break;
                 }
             }
             //If it's a dark emissary of Nyarlathotep, we need to add clothing.
@@ -251,9 +292,9 @@ namespace CultOfCthulhu
                 request = new PawnGenerationRequest(pawnKindDef, Faction.OfPlayer, PawnGenerationContext.NonPlayer,
                     map.Tile, false, false, false, false, true, true, 20f, false, true, true, false);
                 p = PawnGenerator.GeneratePawn(request);
-                Thing tHood = ThingMaker.MakeThing(ThingDef.Named("Apparel_NyarlathotepHood"),
+                var tHood = ThingMaker.MakeThing(ThingDef.Named("Apparel_NyarlathotepHood"),
                     ThingDef.Named("DevilstrandCloth"));
-                Thing tRobe = ThingMaker.MakeThing(ThingDef.Named("Apparel_CultistRobes"),
+                var tRobe = ThingMaker.MakeThing(ThingDef.Named("Apparel_CultistRobes"),
                     ThingDef.Named("DevilstrandCloth"));
                 var Hood = tHood as Apparel;
                 var Robe = tRobe as Apparel;
@@ -266,16 +307,17 @@ namespace CultOfCthulhu
                     map.Tile, false, false, false, false, true, true, 20f, false, true, true, false);
                 p = PawnGenerator.GeneratePawn(request);
             }
+
             //We need psychopathic cannibals
             //GenSpawn.Spawn(p, loc);
             if (p == null)
             {
-                cultist = p;
+                cultist = null;
                 return false;
             }
 
             //Add cultist traits.
-            TraitDef traitToAdd = TraitDefOf.Psychopath;
+            var traitToAdd = TraitDefOf.Psychopath;
             if (!p.story.traits.HasTrait(TraitDefOf.Cannibal))
             {
                 traitToAdd = TraitDefOf.Cannibal;
@@ -292,14 +334,17 @@ namespace CultOfCthulhu
             }
             else
             {
-                foreach (Trait t in p.story.traits.allTraits)
+                foreach (var t in p.story.traits.allTraits)
                 {
-                    if (t.def != TraitDefOf.Cannibal && t.def != TraitDefOf.Psychopath)
+                    if (t.def == TraitDefOf.Cannibal || t.def == TraitDefOf.Psychopath)
                     {
-                        p.story.traits.allTraits.Remove(t);
-                        break; //Remove 1 trait and get out
+                        continue;
                     }
+
+                    p.story.traits.allTraits.Remove(t);
+                    break; //Remove 1 trait and get out
                 }
+
                 p.story.traits.GainTrait(new Trait(traitToAdd));
             }
 
@@ -308,42 +353,6 @@ namespace CultOfCthulhu
 
             cultist = p;
             return true;
-        }
-
-        #endregion Pawn
-
-        public static readonly int ritualDuration = 740; // 15 seconds max
-        public static readonly int reflectDuration = 600; // 10 seconds max
-
-        #region GetResults
-
-        public enum SacrificeResult
-        {
-            none = 0,
-            criticalfailure,
-            failure,
-            mixedsuccess,
-            success
-        }
-
-        public enum SacrificeType
-        {
-            none,
-            meat,
-            plants,
-            meals,
-            animal,
-            human
-        }
-
-        public enum OfferingSize
-        {
-            none = 0,
-            meagre = 5,
-            decent = 10,
-            sizable = 20,
-            worthy = 50,
-            impressive = 100
         }
 
         public static SacrificeResult GetSacrificeResult(Map map)
@@ -361,113 +370,111 @@ namespace CultOfCthulhu
             var failDifficulty = 0;
 
             var altar = map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar;
-            if (altar != null && altar.SacrificeData != null)
+            if (altar?.SacrificeData?.Entity != null)
             {
-                if (altar.SacrificeData.Entity != null)
+                if (altar.SacrificeData.Spell != null)
                 {
-                    if (altar.SacrificeData.Spell != null)
+                    //Setup a Report
+                    ///////////////////
+                    altar.LastReport = "";
+                    var reportHeader = new StringBuilder();
+                    var reportFavorables = new StringBuilder();
+                    var reportUnfavorables = new StringBuilder();
+                    var reportResult = new StringBuilder();
+
+                    //Start the Header
+                    ///////////////////
+                    var date = GenDate.DateFullStringAt(GenDate.TickGameToAbs(Find.TickManager.TicksGame),
+                        Find.WorldGrid.LongLatOf(map.Tile));
+                    reportHeader.AppendLine("Cults_LRHeading".Translate(date));
+                    reportHeader.AppendLine("Cults_LRSacrifice".Translate(altar.SacrificeData.Sacrifice.def.label,
+                        altar.SacrificeData.Entity.LabelCap, altar.SacrificeData.Spell.label));
+                    reportHeader.AppendLine(
+                        "Cults_LRAttendance".Translate(altar.SacrificeData?.Congregation?.Count ?? 0));
+                    reportFavorables.AppendLine("Cults_LRFactorsFavorable".Translate());
+                    reportUnfavorables.AppendLine("Cults_LRFactorsUnfavorable".Translate());
+                    ///////////////////
+
+                    if (altar.SacrificeData.Spell.defName != "Cults_SpellFavor")
                     {
-                        //Setup a Report
-                        ///////////////////
-                        altar.LastReport = "";
-                        var reportHeader = new StringBuilder();
-                        var reportFavorables = new StringBuilder();
-                        var reportUnfavorables = new StringBuilder();
-                        var reportResult = new StringBuilder();
+                        s.AppendLine("Initial Failure Difficulty: " + baseDifficulty);
 
-                        //Start the Header
-                        ///////////////////
-                        var date = GenDate.DateFullStringAt(GenDate.TickGameToAbs(Find.TickManager.TicksGame),
-                            Find.WorldGrid.LongLatOf(map.Tile));
-                        reportHeader.AppendLine("Cults_LRHeading".Translate(date));
-                        reportHeader.AppendLine("Cults_LRSacrifice".Translate(altar.SacrificeData.Sacrifice.def.label,
-                            altar.SacrificeData.Entity.LabelCap, altar.SacrificeData.Spell.label));
-                        reportHeader.AppendLine(
-                            "Cults_LRAttendance".Translate(altar.SacrificeData?.Congregation?.Count ?? 0));
-                        reportFavorables.AppendLine("Cults_LRFactorsFavorable".Translate());
-                        reportUnfavorables.AppendLine("Cults_LRFactorsUnfavorable".Translate());
-                        ///////////////////
+                        //Difficulty modifiers
+                        failDifficulty +=
+                            SpellCalc_TierDifficulty(altar, s, reportUnfavorables,
+                                reportFavorables); //Tier 2 +10, Tier 3 + 20, Final +50
+                        failDifficulty += SpellCalc_GameConditions(altar, s, reportUnfavorables, reportFavorables,
+                            out var successModifier); //+50 stars are wrong / -20 stars are right
+                        failDifficulty += SpellCalc_Characters(altar, s, reportUnfavorables, reportFavorables,
+                            successModifier, out successModifier); //+50 stars are wrong / -20 stars are right
+                        s.AppendLine("Adjusted Failure Difficulty: " + baseDifficulty + failDifficulty);
 
-                        if (altar.SacrificeData.Spell.defName != "Cults_SpellFavor")
+                        //Success modifiers
+                        successModifier +=
+                            SpellCalc_CongregationQuality(altar, s,
+                                reportFavorables); //Some robes +10, Dagger equipped +5, All robed and hooded +15
+                        successModifier +=
+                            SpellCalc_StatuesNearby(altar, s,
+                                reportFavorables); //Minimum one statue of normal quality +10, Statue of deity +10
+                        successModifier +=
+                            SpellCalc_TempleQuality(altar, s,
+                                reportFavorables); //Some quality +10, Great quality +20, Outdoors when deity favors it +20
+                        s.AppendLine("Success Modifier: " + successModifier);
+
+                        //Difficulty check
+                        s.AppendLine("Difficulty check: (Rolling d100. " + diceRoll +
+                                     " result + Success Modifier: " + successModifier +
+                                     ") vs (Difficulty: " + baseDifficulty + " + Modifier: " + failDifficulty +
+                                     ")");
+                        if (diceRoll + successModifier >= baseDifficulty + failDifficulty)
                         {
-                            s.AppendLine("Initial Failure Difficulty: " + baseDifficulty);
-
-                            //Difficulty modifiers
-                            failDifficulty +=
-                                SpellCalc_TierDifficulty(altar, s, reportUnfavorables,
-                                    reportFavorables); //Tier 2 +10, Tier 3 + 20, Final +50
-                            failDifficulty += SpellCalc_GameConditions(altar, s, reportUnfavorables, reportFavorables,
-                                out var successModifier); //+50 stars are wrong / -20 stars are right
-                            failDifficulty += SpellCalc_Characters(altar, s, reportUnfavorables, reportFavorables,
-                                successModifier, out successModifier); //+50 stars are wrong / -20 stars are right
-                            s.AppendLine("Adjusted Failure Difficulty: " + baseDifficulty + failDifficulty);
-
-                            //Success modifiers
-                            successModifier +=
-                                SpellCalc_CongregationQuality(altar, s,
-                                    reportFavorables); //Some robes +10, Dagger equipped +5, All robed and hooded +15
-                            successModifier +=
-                                SpellCalc_StatuesNearby(altar, s,
-                                    reportFavorables); //Minimum one statue of normal quality +10, Statue of deity +10
-                            successModifier +=
-                                SpellCalc_TempleQuality(altar, s,
-                                    reportFavorables); //Some quality +10, Great quality +20, Outdoors when deity favors it +20
-                            s.AppendLine("Success Modifier: " + successModifier);
-
-                            //Difficulty check
-                            s.AppendLine("Difficulty check: (Rolling d100. " + diceRoll +
-                                         " result + Success Modifier: " + successModifier +
-                                         ") vs (Difficulty: " + baseDifficulty + " + Modifier: " + failDifficulty +
-                                         ")");
-                            if (diceRoll + successModifier >= baseDifficulty + failDifficulty)
-                            {
-                                Success = true;
-                            }
-
-                            s.AppendLine("Success = " + Success.ToString().CapitalizeFirst());
-                            reportResult.AppendLine("Cults_LRCheck".Translate(
-                                diceRoll, successModifier, baseDifficulty, failDifficulty));
-                            reportResult.AppendLine(Success
-                                ? "Cults_LRResultSuccess".Translate()
-                                : "Cults_LRResultFailure".Translate());
-
-                            //Table of fun
-                            var randFun = Rand.Range(1, 10);
-                            if (randFun >= 6)
-                            {
-                                TableOfFun = true; //40% chance
-                            }
-
-                            s.AppendLine("Side Effect = " + TableOfFun);
-
-                            altar.LastReport = reportHeader.ToString() + "\n" +
-                                               reportFavorables.ToString() + "\n" +
-                                               reportUnfavorables.ToString() + "\n" +
-                                               reportResult.ToString();
-
-                            Utility.DebugReport(s.ToString());
-                            if (Success && TableOfFun)
-                            {
-                                return SacrificeResult.mixedsuccess;
-                            }
-
-                            if ((!Success) && TableOfFun)
-                            {
-                                return SacrificeResult.failure;
-                            }
-
-                            if (Success && (!TableOfFun))
-                            {
-                                return SacrificeResult.success;
-                            }
+                            Success = true;
                         }
-                        else if (altar.SacrificeData.Spell.defName == "Cults_SpellFavor")
+
+                        s.AppendLine("Success = " + Success.ToString().CapitalizeFirst());
+                        reportResult.AppendLine("Cults_LRCheck".Translate(
+                            diceRoll, successModifier, baseDifficulty, failDifficulty));
+                        reportResult.AppendLine(Success
+                            ? "Cults_LRResultSuccess".Translate()
+                            : "Cults_LRResultFailure".Translate());
+
+                        //Table of fun
+                        var randFun = Rand.Range(1, 10);
+                        if (randFun >= 6)
+                        {
+                            TableOfFun = true; //40% chance
+                        }
+
+                        s.AppendLine("Side Effect = " + TableOfFun);
+
+                        altar.LastReport = reportHeader + "\n" +
+                                           reportFavorables + "\n" +
+                                           reportUnfavorables + "\n" +
+                                           reportResult;
+
+                        Utility.DebugReport(s.ToString());
+                        if (Success && TableOfFun)
+                        {
+                            return SacrificeResult.mixedsuccess;
+                        }
+
+                        if (!Success && TableOfFun)
+                        {
+                            return SacrificeResult.failure;
+                        }
+
+                        if (Success)
                         {
                             return SacrificeResult.success;
                         }
                     }
+                    else if (altar.SacrificeData.Spell.defName == "Cults_SpellFavor")
+                    {
+                        return SacrificeResult.success;
+                    }
                 }
             }
+
             Utility.DebugReport(s.ToString());
             return SacrificeResult.criticalfailure;
         }
@@ -522,6 +529,7 @@ namespace CultOfCthulhu
                 reportFavorables.AppendLine("+" + executionerBonus + " /   5: " +
                                             "Cults_LRExecBonus".Translate(executioner.LabelShort));
             }
+
             worldComponentGlobalCultTracker.GainExperience(executioner, true);
             return modifier;
         }
@@ -589,6 +597,7 @@ namespace CultOfCthulhu
                 reportFavorables.AppendLine("+ 0 /   5: " +
                                             "Cults_LRNoAuroraActive".Translate());
             }
+
             return modifier;
         }
 
@@ -602,99 +611,102 @@ namespace CultOfCthulhu
             StringBuilder reportFavorables)
         {
             var modifier = 0;
-            CosmicEntity deity = altar.SacrificeData.Entity;
+            var deity = altar.SacrificeData.Entity;
             if (!IsOutdoorsAt(altar.Map, altar.Position))
             {
-                Room temple = altar.GetRoom();
-                if (temple != null)
+                var temple = altar.GetRoom();
+                if (temple == null)
                 {
-                    var impressiveScore = temple.GetStat(RoomStatDefOf.Impressiveness);
-                    var wealthScore = temple.GetStat(RoomStatDefOf.Wealth);
-                    var spaceScore = temple.GetStat(RoomStatDefOf.Space);
-                    var beautyScore = temple.GetStat(RoomStatDefOf.Beauty);
+                    return modifier;
+                }
 
-                    //Expected quality. 13x13 tiles. Pews. Altar. 2 objects of Lighting.
+                var impressiveScore = temple.GetStat(RoomStatDefOf.Impressiveness);
+                var wealthScore = temple.GetStat(RoomStatDefOf.Wealth);
+                var spaceScore = temple.GetStat(RoomStatDefOf.Space);
+                var beautyScore = temple.GetStat(RoomStatDefOf.Beauty);
 
-                    //WEALTH
-                    //////////////
-                    if (wealthScore < 2000)
-                    {
-                        s.AppendLine("Temple Wealth Bonus: +0 - Not good");
-                        reportFavorables.AppendLine("+ 0 /   5: " + "Cults_LRTempWealthNo".Translate());
-                    }
-                    if (wealthScore < 4000)
-                    {
-                        modifier += 3;
-                        s.AppendLine("Temple Wealth Bonus: +3 - Good");
-                        reportFavorables.AppendLine("+ 3 /   5: " + "Cults_LRTempWealthDecent".Translate());
-                    }
-                    else if (wealthScore >= 4000)
-                    {
-                        modifier += 5;
-                        s.AppendLine("Temple Wealth Bonus: +5 - Great");
-                        reportFavorables.AppendLine("+ 5 /   5: " + "Cults_LRTempWealth".Translate());
-                    }
+                //Expected quality. 13x13 tiles. Pews. Altar. 2 objects of Lighting.
 
-                    //SPACE
-                    //////////////////
-                    if (spaceScore < 160)
-                    {
-                        s.AppendLine("Temple Space Bonus: +0 - Not good");
-                        reportFavorables.AppendLine("+ 0 /   5: " + "Cults_LRTempSpaceNo".Translate());
-                    }
-                    else if (spaceScore < 400)
-                    {
-                        modifier += 3;
-                        s.AppendLine("Temple Space Bonus: +3 - Good");
-                        reportFavorables.AppendLine("+ 3 /   5: " + "Cults_LRTempSpaceDecent".Translate());
-                    }
-                    else if (spaceScore >= 400)
-                    {
-                        modifier += 5;
-                        s.AppendLine("Temple Space Bonus: +5 - Great");
-                        reportFavorables.AppendLine("+ 5 /   5: " + "Cults_LRTempSpace".Translate());
-                    }
+                //WEALTH
+                //////////////
+                if (wealthScore < 2000)
+                {
+                    s.AppendLine("Temple Wealth Bonus: +0 - Not good");
+                    reportFavorables.AppendLine("+ 0 /   5: " + "Cults_LRTempWealthNo".Translate());
+                }
 
-                    //BEAUTY
-                    ////////////////
+                if (wealthScore < 4000)
+                {
+                    modifier += 3;
+                    s.AppendLine("Temple Wealth Bonus: +3 - Good");
+                    reportFavorables.AppendLine("+ 3 /   5: " + "Cults_LRTempWealthDecent".Translate());
+                }
+                else if (wealthScore >= 4000)
+                {
+                    modifier += 5;
+                    s.AppendLine("Temple Wealth Bonus: +5 - Great");
+                    reportFavorables.AppendLine("+ 5 /   5: " + "Cults_LRTempWealth".Translate());
+                }
 
-                    if (beautyScore < 1.59)
-                    {
-                        s.AppendLine("Temple Beauty Bonus: +0 - Not good");
-                        reportFavorables.AppendLine("+ 0 /   5: " + "Cults_LRTempBeautyNo".Translate());
-                    }
-                    else if (beautyScore <= 2.0)
-                    {
-                        modifier += 3;
-                        s.AppendLine("Temple Beauty Bonus: +3 - Good");
-                        reportFavorables.AppendLine("+ 3 /   5: " + "Cults_LRTempBeautyDecent".Translate());
-                    }
-                    else if (beautyScore >= 2.0)
-                    {
-                        modifier += 5;
-                        s.AppendLine("Temple Beauty Bonus: +5 - Great");
-                        reportFavorables.AppendLine("+ 5 /   5: " + "Cults_LRTempBeauty".Translate());
-                    }
+                //SPACE
+                //////////////////
+                if (spaceScore < 160)
+                {
+                    s.AppendLine("Temple Space Bonus: +0 - Not good");
+                    reportFavorables.AppendLine("+ 0 /   5: " + "Cults_LRTempSpaceNo".Translate());
+                }
+                else if (spaceScore < 400)
+                {
+                    modifier += 3;
+                    s.AppendLine("Temple Space Bonus: +3 - Good");
+                    reportFavorables.AppendLine("+ 3 /   5: " + "Cults_LRTempSpaceDecent".Translate());
+                }
+                else if (spaceScore >= 400)
+                {
+                    modifier += 5;
+                    s.AppendLine("Temple Space Bonus: +5 - Great");
+                    reportFavorables.AppendLine("+ 5 /   5: " + "Cults_LRTempSpace".Translate());
+                }
 
-                    //IMPRESSIVENESS
-                    ////////////////
-                    if (impressiveScore < 80)
-                    {
-                        s.AppendLine("Temple Quality Bonus: +0 - Not good");
-                        reportFavorables.AppendLine("+ 0 /   5: " + "Cults_LRTempImpressNo".Translate());
-                    }
-                    else if (impressiveScore < 150)
-                    {
-                        modifier += 3;
-                        s.AppendLine("Temple Quality Bonus: + 3 - Good");
-                        reportFavorables.AppendLine("+ 3 /   5: " + "Cults_LRTempImpressDecent".Translate());
-                    }
-                    else if (impressiveScore > 150)
-                    {
-                        modifier += 5;
-                        s.AppendLine("Temple Quality Bonus: +5 - Great");
-                        reportFavorables.AppendLine("+ 5 /   5: " + "Cults_LRTempImpress".Translate());
-                    }
+                //BEAUTY
+                ////////////////
+
+                if (beautyScore < 1.59)
+                {
+                    s.AppendLine("Temple Beauty Bonus: +0 - Not good");
+                    reportFavorables.AppendLine("+ 0 /   5: " + "Cults_LRTempBeautyNo".Translate());
+                }
+                else if (beautyScore <= 2.0)
+                {
+                    modifier += 3;
+                    s.AppendLine("Temple Beauty Bonus: +3 - Good");
+                    reportFavorables.AppendLine("+ 3 /   5: " + "Cults_LRTempBeautyDecent".Translate());
+                }
+                else if (beautyScore >= 2.0)
+                {
+                    modifier += 5;
+                    s.AppendLine("Temple Beauty Bonus: +5 - Great");
+                    reportFavorables.AppendLine("+ 5 /   5: " + "Cults_LRTempBeauty".Translate());
+                }
+
+                //IMPRESSIVENESS
+                ////////////////
+                if (impressiveScore < 80)
+                {
+                    s.AppendLine("Temple Quality Bonus: +0 - Not good");
+                    reportFavorables.AppendLine("+ 0 /   5: " + "Cults_LRTempImpressNo".Translate());
+                }
+                else if (impressiveScore < 150)
+                {
+                    modifier += 3;
+                    s.AppendLine("Temple Quality Bonus: + 3 - Good");
+                    reportFavorables.AppendLine("+ 3 /   5: " + "Cults_LRTempImpressDecent".Translate());
+                }
+                else if (impressiveScore > 150)
+                {
+                    modifier += 5;
+                    s.AppendLine("Temple Quality Bonus: +5 - Great");
+                    reportFavorables.AppendLine("+ 5 /   5: " + "Cults_LRTempImpress".Translate());
                 }
             }
             else
@@ -712,6 +724,7 @@ namespace CultOfCthulhu
                                                 "Cults_LRTempNoOutdoorFavored".Translate(deity.LabelCap));
                 }
             }
+
             return modifier;
         }
 
@@ -721,33 +734,29 @@ namespace CultOfCthulhu
             var modifier = 0;
             var statueOfDeityExists = false;
             var qualityExists = false;
-            Room temple = altar.GetRoom();
-            CosmicEntity deity = altar.SacrificeData.Entity;
+            var temple = altar.GetRoom();
+            var deity = altar.SacrificeData.Entity;
 
-            if (temple != null)
+            var sculptures = temple?.ContainedAndAdjacentThings.FindAll(x => x is ThingWithComps y &&
+                                                                             y.TryGetComp<CompFavoredObject>() != null);
+            if (sculptures != null && sculptures.Count > 0)
             {
-                List<Thing> sculptures = temple.ContainedAndAdjacentThings.FindAll(x => x is ThingWithComps y &&
-                    y.TryGetComp<CompFavoredObject>() != null);
-                if (sculptures != null && sculptures.Count > 0)
+                foreach (var sculpture in sculptures)
                 {
-                    foreach (Thing sculpture in sculptures)
+                    var compFavoredObject = sculpture.TryGetComp<CompFavoredObject>();
+                    if (compFavoredObject?.Deities.FirstOrDefault(y => y.deityDef == deity.def.defName) != null)
                     {
-                        CompFavoredObject compFavoredObject = sculpture.TryGetComp<CompFavoredObject>();
-                        if (compFavoredObject != null)
-                        {
-                            if (compFavoredObject.Deities.FirstOrDefault(y => y.deityDef == deity.def.defName) != null)
-                            {
-                                statueOfDeityExists = true;
-                            }
-                        }
+                        statueOfDeityExists = true;
+                    }
 
-                        if (sculpture.TryGetQuality(out QualityCategory qc))
-                        {
-                            if (qc >= QualityCategory.Normal)
-                            {
-                                qualityExists = true;
-                            }
-                        }
+                    if (!sculpture.TryGetQuality(out var qc))
+                    {
+                        continue;
+                    }
+
+                    if (qc >= QualityCategory.Normal)
+                    {
+                        qualityExists = true;
                     }
                 }
             }
@@ -763,6 +772,7 @@ namespace CultOfCthulhu
                 s.AppendLine("No Deity Statue Bonus: Sacrifice modifier + 0");
                 reportFavorables.AppendLine("+ 0 / 10: " + "Cults_LRNoDeityStatue".Translate(deity.LabelCap));
             }
+
             if (qualityExists)
             {
                 modifier += 10;
@@ -783,46 +793,49 @@ namespace CultOfCthulhu
         {
             var modifier = 0;
 
-            if (altar?.SacrificeData?.Congregation != null
-            ) //.Map.GetComponent<MapComponent_SacrificeTracker>().lastSacrificeCongregation != null)
+            if (altar?.SacrificeData?.Congregation == null)
             {
-                CosmicEntity deity = altar.SacrificeData.Entity;
-                _ = altar.SacrificeData.Spell;
-                var value = CongregationBonus(altar.SacrificeData.Congregation, deity, out var perfect,
-                    out var sacrificialDagger, debugLog);
-                if (value > 0)
-                {
-                    modifier += 10;
-                    reportFavorables.AppendLine("+10 / 10: " + "Cults_LRAttireBonus".Translate());
-                    debugLog.AppendLine("Attire Bonus: Sacrifice modifier + 10");
-                }
-                else
-                {
-                    reportFavorables.AppendLine("+ 0 / 10: " + "Cults_LRNoAttireBonus".Translate());
-                    debugLog.AppendLine("No Attire Bonus: Sacrifice modifier + 0");
-                }
-                if (sacrificialDagger)
-                {
-                    modifier += 5;
-                    reportFavorables.AppendLine("+ 5 /  5: " + "Cults_LRDaggerBonus".Translate());
-                    debugLog.AppendLine("Dagger Bonus: Sacrifice modifier + 5");
-                }
-                else
-                {
-                    reportFavorables.AppendLine("+ 0 /   5: " + "Cults_LRNoDaggerBonus".Translate());
-                    debugLog.AppendLine("No Dagger Bonus: Sacrifice modifier + 0");
-                }
-                if (perfect)
-                {
-                    modifier += 15;
-                    reportFavorables.AppendLine("+15 / 15: " + "Cults_LRPerfectBonus".Translate());
-                    debugLog.AppendLine("Perfect Attire Bonus: Sacrifice modifier + 15");
-                }
-                else
-                {
-                    reportFavorables.AppendLine("+ 0 / 15: " + "Cults_LRNoPerfectBonus".Translate());
-                    debugLog.AppendLine("No Perfect Attire Bonus: Sacrifice modifier + 0");
-                }
+                return modifier;
+            }
+
+            var deity = altar.SacrificeData.Entity;
+            _ = altar.SacrificeData.Spell;
+            var value = CongregationBonus(altar.SacrificeData.Congregation, deity, out var perfect,
+                out var sacrificialDagger, debugLog);
+            if (value > 0)
+            {
+                modifier += 10;
+                reportFavorables.AppendLine("+10 / 10: " + "Cults_LRAttireBonus".Translate());
+                debugLog.AppendLine("Attire Bonus: Sacrifice modifier + 10");
+            }
+            else
+            {
+                reportFavorables.AppendLine("+ 0 / 10: " + "Cults_LRNoAttireBonus".Translate());
+                debugLog.AppendLine("No Attire Bonus: Sacrifice modifier + 0");
+            }
+
+            if (sacrificialDagger)
+            {
+                modifier += 5;
+                reportFavorables.AppendLine("+ 5 /  5: " + "Cults_LRDaggerBonus".Translate());
+                debugLog.AppendLine("Dagger Bonus: Sacrifice modifier + 5");
+            }
+            else
+            {
+                reportFavorables.AppendLine("+ 0 /   5: " + "Cults_LRNoDaggerBonus".Translate());
+                debugLog.AppendLine("No Dagger Bonus: Sacrifice modifier + 0");
+            }
+
+            if (perfect)
+            {
+                modifier += 15;
+                reportFavorables.AppendLine("+15 / 15: " + "Cults_LRPerfectBonus".Translate());
+                debugLog.AppendLine("Perfect Attire Bonus: Sacrifice modifier + 15");
+            }
+            else
+            {
+                reportFavorables.AppendLine("+ 0 / 15: " + "Cults_LRNoPerfectBonus".Translate());
+                debugLog.AppendLine("No Perfect Attire Bonus: Sacrifice modifier + 0");
             }
 
             return modifier;
@@ -836,42 +849,48 @@ namespace CultOfCthulhu
             if (altar?.SacrificeData?.Congregation != null
             ) //Map.GetComponent<MapComponent_SacrificeTracker>().lastSacrificeCongregation != null)
             {
-                CosmicEntity deity = altar.SacrificeData.Entity; // currentSacrificeDeity;
-                IncidentDef spell = altar.SacrificeData.Spell; // currentSpell;
+                var deity = altar.SacrificeData.Entity; // currentSacrificeDeity;
+                var spell = altar.SacrificeData.Spell; // currentSpell;
 
                 //Is tier 1?
-                foreach (IncidentDef current in deity.tier1Spells)
+                foreach (var current in deity.tier1Spells)
                 {
-                    if (current == spell)
+                    if (current != spell)
                     {
-                        debugLog.AppendLine(current.defName + " is a tier 1 spell. No difficulty modifier added.");
-                        reportFavorables.AppendLine("+ 0 / 50: " + "Cults_LRSpellDifficultyOne".Translate());
-                        goto GoToTheEnd;
+                        continue;
                     }
+
+                    debugLog.AppendLine(current.defName + " is a tier 1 spell. No difficulty modifier added.");
+                    reportFavorables.AppendLine("+ 0 / 50: " + "Cults_LRSpellDifficultyOne".Translate());
+                    goto GoToTheEnd;
                 }
 
                 //Is tier 2? +10% difficulty
-                foreach (IncidentDef current in deity.tier2Spells)
+                foreach (var current in deity.tier2Spells)
                 {
-                    if (current == spell)
+                    if (current != spell)
                     {
-                        debugLog.AppendLine(current.defName + " is a tier 2 spell. +10 sacrifice failure rate.");
-                        modifier = 10;
-                        reportUnfavorables.AppendLine("+10 / 50: " + "Cults_LRSpellDifficultyTwo".Translate());
-                        goto GoToTheEnd;
+                        continue;
                     }
+
+                    debugLog.AppendLine(current.defName + " is a tier 2 spell. +10 sacrifice failure rate.");
+                    modifier = 10;
+                    reportUnfavorables.AppendLine("+10 / 50: " + "Cults_LRSpellDifficultyTwo".Translate());
+                    goto GoToTheEnd;
                 }
 
                 //Is tier 3? +20% difficulty
-                foreach (IncidentDef current in deity.tier3Spells)
+                foreach (var current in deity.tier3Spells)
                 {
-                    if (current == spell)
+                    if (current != spell)
                     {
-                        debugLog.AppendLine(current.defName + " is a tier 3 spell. +20% sacrifice failure rate.");
-                        modifier = 20;
-                        reportUnfavorables.AppendLine("+20 / 50: " + "Cults_LRSpellDifficultyThree".Translate());
-                        goto GoToTheEnd;
+                        continue;
                     }
+
+                    debugLog.AppendLine(current.defName + " is a tier 3 spell. +20% sacrifice failure rate.");
+                    modifier = 20;
+                    reportUnfavorables.AppendLine("+20 / 50: " + "Cults_LRSpellDifficultyThree".Translate());
+                    goto GoToTheEnd;
                 }
 
                 //Is final spell? +50% difficulty
@@ -884,7 +903,8 @@ namespace CultOfCthulhu
 
                 //Nothing
             }
-        GoToTheEnd:
+
+            GoToTheEnd:
             return modifier;
         }
 
@@ -905,10 +925,6 @@ namespace CultOfCthulhu
             sacrificialDagger = false;
             var result = 0f;
             var count = 0;
-            if (congregation == null)
-            {
-                return result;
-            }
 
             if (congregation.Count == 0)
             {
@@ -919,8 +935,9 @@ namespace CultOfCthulhu
             {
                 return result;
             }
+
             //Are they wearing the right outfits?
-            foreach (Pawn member in congregation)
+            foreach (var member in congregation)
             {
                 var wearingHood = false;
                 var wearingRobes = false;
@@ -929,22 +946,20 @@ namespace CultOfCthulhu
                     count++;
                     continue;
                 }
+
                 if (member.Dead)
                 {
                     count++;
                     continue;
                 }
+
                 if (!member.IsColonist)
                 {
                     count++;
                     continue;
                 }
-                if (member.apparel == null)
-                {
-                    continue;
-                }
 
-                if (member.apparel.WornApparel == null)
+                if (member.apparel?.WornApparel == null)
                 {
                     continue;
                 }
@@ -959,34 +974,38 @@ namespace CultOfCthulhu
                     continue;
                 }
 
-                foreach (Apparel clothing in member.apparel.WornApparel)
+                foreach (var clothing in member.apparel.WornApparel)
                 {
-                    CompFavoredObject favoredObject = clothing.GetComp<CompFavoredObject>();
+                    var favoredObject = clothing.GetComp<CompFavoredObject>();
                     if (favoredObject != null)
                     {
-                        List<FavoredEntry> deities = favoredObject.Deities;
-                        if (deities != null && deities.Count > 0)
+                        var deities = favoredObject.Deities;
+                        if (deities == null || deities.Count <= 0)
                         {
-                            FavoredEntry entry = deities.FirstOrDefault(x => x.deityDef == entity.def.defName);
-                            if (entry != null)
-                            {
-                                result += entry.favorBonus;
-                                if (entry.favorBonus != 0)
-                                {
-                                    s.AppendLine(member.Label + " is wearing " + clothing.Label +
-                                                 " that gives a bonus of " + entry.favorBonus + " for " + entity.Label);
-                                }
+                            continue;
+                        }
 
-                                if (!wearingRobes && clothing.def.apparel.layers.Contains(ApparelLayerDefOf.Shell))
-                                {
-                                    wearingRobes = true;
-                                }
+                        var entry = deities.FirstOrDefault(x => x.deityDef == entity.def.defName);
+                        if (entry == null)
+                        {
+                            continue;
+                        }
 
-                                if (!wearingHood && clothing.def.apparel.layers.Contains(ApparelLayerDefOf.Overhead))
-                                {
-                                    wearingHood = true;
-                                }
-                            }
+                        result += entry.favorBonus;
+                        if (entry.favorBonus != 0)
+                        {
+                            s.AppendLine(member.Label + " is wearing " + clothing.Label +
+                                         " that gives a bonus of " + entry.favorBonus + " for " + entity.Label);
+                        }
+
+                        if (!wearingRobes && clothing.def.apparel.layers.Contains(ApparelLayerDefOf.Shell))
+                        {
+                            wearingRobes = true;
+                        }
+
+                        if (!wearingHood && clothing.def.apparel.layers.Contains(ApparelLayerDefOf.Overhead))
+                        {
+                            wearingHood = true;
                         }
                     }
                     else
@@ -996,6 +1015,7 @@ namespace CultOfCthulhu
                             wearingRobes = true;
                             result += 0.005f;
                         }
+
                         if (clothing.def.defName == "Apparel_CultistHood" ||
                             clothing.def.defName == "Apparel_StandardHood" ||
                             clothing.def.defName == "Apparel_CthulhuMaskHood" ||
@@ -1017,7 +1037,7 @@ namespace CultOfCthulhu
                             continue;
                         }
 
-                        foreach (ThingDef def in entity.favoredApparel)
+                        foreach (var def in entity.favoredApparel)
                         {
                             if (def == null)
                             {
@@ -1031,19 +1051,23 @@ namespace CultOfCthulhu
                         }
                     }
                 }
+
                 if (member.equipment.AllEquipmentListForReading != null &&
                     member.equipment.AllEquipmentListForReading.Count > 0)
                 {
-                    foreach (ThingWithComps eq in member.equipment.AllEquipmentListForReading)
+                    foreach (var eq in member.equipment.AllEquipmentListForReading)
                     {
-                        if (eq.def.defName == "MeleeWeapon_CultKris")
+                        if (eq.def.defName != "MeleeWeapon_CultKris")
                         {
-                            sacrificialDagger = true;
-                            result += 0.005f;
-                            s.AppendLine(member.LabelShort + " is wielding a sacrificial dagger.");
+                            continue;
                         }
+
+                        sacrificialDagger = true;
+                        result += 0.005f;
+                        s.AppendLine(member.LabelShort + " is wielding a sacrificial dagger.");
                     }
                 }
+
                 if (wearingHood && wearingRobes)
                 {
                     count++;
@@ -1056,6 +1080,7 @@ namespace CultOfCthulhu
                     s.AppendLine();
                 }
             }
+
             if (result == 0)
             {
                 RemindPlayerAboutCongregationBonuses();
@@ -1068,6 +1093,7 @@ namespace CultOfCthulhu
                 s.AppendLine();
                 result += 0.05f;
             }
+
             s.AppendLine("Congregation Bonus: " + result.ToString("F"));
             s.AppendLine("=========================");
             Utility.DebugReport(s.ToString());
@@ -1076,20 +1102,16 @@ namespace CultOfCthulhu
 
 
         /// <summary>
-        /// When an execution completes, this method should trigger.
+        ///     When an execution completes, this method should trigger.
         /// </summary>
-        /// <param name="sacrifice"></param>
-        /// <param name="executioner"></param>
         /// <param name="altar"></param>
-        /// <param name="deity"></param>
-        /// <param name="Cults_Spell"></param>
         public static void SacrificeExecutionComplete(Building_SacrificialAltar altar)
         {
             altar.ChangeState(Building_SacrificialAltar.State.sacrificing,
                 Building_SacrificialAltar.SacrificeState.finishing);
-            GameCondition_StarsAreRight starsAreRight =
+            var starsAreRight =
                 altar.Map.GameConditionManager.GetActiveCondition<GameCondition_StarsAreRight>();
-            GameCondition_StarsAreWrong starsAreWrong =
+            var starsAreWrong =
                 altar.Map.GameConditionManager.GetActiveCondition<GameCondition_StarsAreWrong>();
             var bstarsAreRight = starsAreRight != null;
             var bstarsAreWrong = starsAreWrong != null;
@@ -1100,7 +1122,7 @@ namespace CultOfCthulhu
             var SuccessMod = Rand.Range(0.03f, 0.035f);
             var FailureMod = Rand.Range(-0.035f, 0.03f);
 
-            MapComponent_SacrificeTracker tracker = altar.Map.GetComponent<MapComponent_SacrificeTracker>();
+            var tracker = altar.Map.GetComponent<MapComponent_SacrificeTracker>();
             if (tracker != null)
             {
                 tracker.lastUsedAltar = altar;
@@ -1141,46 +1163,50 @@ namespace CultOfCthulhu
                     }
 
                     //If it's a prisoner, oh lordy~
-                    List<Pawn> prisoners = altar.Map.mapPawns.PrisonersOfColonySpawned;
+                    var prisoners = altar.Map.mapPawns.PrisonersOfColonySpawned;
                     if (prisoners != null)
                     {
-                        foreach (Pawn prisoner in prisoners)
+                        foreach (var prisoner in prisoners)
                         {
-                            if (prisoner != null)
+                            if (prisoner == null)
                             {
-                                if (GenSight.LineOfSight(prisoner.Position, altar.Position, altar.Map, true))
-                                {
-                                    if (prisoner.needs != null)
-                                    {
-                                        prisoner.needs.mood.thoughts.memories.TryGainMemory(CultsDefOf
-                                            .Cults_OtherPrisonerWasSacrificed);
-                                    }
-                                }
+                                continue;
+                            }
+
+                            if (GenSight.LineOfSight(prisoner.Position, altar.Position, altar.Map, true))
+                            {
+                                prisoner.needs?.mood.thoughts.memories.TryGainMemory(CultsDefOf
+                                    .Cults_OtherPrisonerWasSacrificed);
                             }
                         }
                     }
                 }
+
                 //Tell the player!
                 MakeSacrificeThoughts(altar.SacrificeData.Executioner, altar.SacrificeData.Sacrifice, true);
                 if (!altar.SacrificeData.Congregation.NullOrEmpty()
                 ) //tracker.lastSacrificeCongregation != null && tracker.lastSacrificeCongregation.Count > 0)
                 {
-                    foreach (Pawn pawn in altar.SacrificeData.Congregation)
+                    foreach (var pawn in altar.SacrificeData.Congregation)
                     {
-                        if (pawn.Spawned && !pawn.Dead && pawn != altar.SacrificeData.Sacrifice)
+                        if (!pawn.Spawned || pawn.Dead || pawn == altar.SacrificeData.Sacrifice)
                         {
-                            TryGainTempleRoomThought(pawn);
-                            if (pawn != altar.SacrificeData.Executioner)
-                            {
-                                MakeSacrificeThoughts(pawn, altar.SacrificeData.Sacrifice);
-                            }
+                            continue;
+                        }
+
+                        TryGainTempleRoomThought(pawn);
+                        if (pawn != altar.SacrificeData.Executioner)
+                        {
+                            MakeSacrificeThoughts(pawn, altar.SacrificeData.Sacrifice);
                         }
                     }
                 }
+
                 tracker.GenerateSacrificeMessage();
                 altar.ChangeState(Building_SacrificialAltar.State.sacrificing,
                     Building_SacrificialAltar.SacrificeState.finished);
             }
+
             //Increase the tally
             Find.World.GetComponent<WorldComponent_GlobalCultTracker>().numHumanSacrifices++;
         }
@@ -1199,7 +1225,7 @@ namespace CultOfCthulhu
             var CultistMod = Rand.Range(0.01f, 0.02f);
             AffectCultMindedness(preacher, CultistMod);
 
-            var factionBase = (Settlement)altar.Map.info.parent;
+            var factionBase = (Settlement) altar.Map.info.parent;
 
             Messages.Message("WorshipFinished".Translate(factionBase.Label), TargetInfo.Invalid,
                 MessageTypeDefOf.PositiveEvent);
@@ -1227,15 +1253,12 @@ namespace CultOfCthulhu
                 offerer.jobs.TryTakeOrderedJob(job);
                 //offerer.jobs.EndCurrentJob(JobCondition.InterruptForced);
             }
-            var factionBase = (Settlement)altar.Map.info.parent;
+
+            var factionBase = (Settlement) altar.Map.info.parent;
 
             Messages.Message("WorshipFinished".Translate(factionBase.Label), TargetInfo.Invalid,
                 MessageTypeDefOf.PositiveEvent);
         }
-
-        #endregion GetResults
-
-        #region Bools
 
         public static bool IsSomeoneInvestigating(Map map)
         {
@@ -1246,20 +1269,26 @@ namespace CultOfCthulhu
                     return true;
                 }
             }
-            if (map.mapPawns.FreeColonists != null)
+
+            if (map.mapPawns.FreeColonists == null)
             {
-                foreach (Pawn colonist in map.mapPawns.FreeColonists)
+                return false;
+            }
+
+            foreach (var colonist in map.mapPawns.FreeColonists)
+            {
+                if (colonist.CurJob == null)
                 {
-                    if (colonist.CurJob != null)
-                    {
-                        if (colonist.CurJob.def.defName == "Investigate" ||
-                            colonist.CurJob.def.defName == "WriteTheBook")
-                        {
-                            return true;
-                        }
-                    }
+                    continue;
+                }
+
+                if (colonist.CurJob.def.defName == "Investigate" ||
+                    colonist.CurJob.def.defName == "WriteTheBook")
+                {
+                    return true;
                 }
             }
+
             return false;
         }
 
@@ -1272,29 +1301,34 @@ namespace CultOfCthulhu
                 Utility.DebugReport("FKC Exists");
                 return true;
             }
+
             //Do we have a book available?
-            if (AreOccultGrimoiresAvailable(map))
+            if (!AreOccultGrimoiresAvailable(map))
             {
-                Utility.DebugReport("Grimoire Exists");
-                return true;
+                return false;
             }
-            return false;
+
+            Utility.DebugReport("Grimoire Exists");
+            return true;
         }
 
         public static bool AreOccultGrimoiresAvailable(Map map)
         {
-            return map != null && map.listerThings.AllThings != null && map.listerThings.ThingsOfDef(ThingDef.Named("Cults_Grimoire")).Count > 0;
+            return map?.listerThings.AllThings != null &&
+                   map.listerThings.ThingsOfDef(ThingDef.Named("Cults_Grimoire")).Count > 0;
         }
 
         public static bool AreForbiddenKnowledgeCentersAvailable(Map map)
         {
-            return map != null && map.listerBuildings.AllBuildingsColonistOfClass<Building_ForbiddenReserachCenter>() != null && map.listerBuildings.AllBuildingsColonistOfClass<Building_ForbiddenReserachCenter>().Count() > 0;
+            return map?.listerBuildings.AllBuildingsColonistOfClass<Building_ForbiddenReserachCenter>() != null &&
+                   map.listerBuildings.AllBuildingsColonistOfClass<Building_ForbiddenReserachCenter>().Any();
         }
 
 
         public static bool AreAltarsAvailable(Map map)
         {
-            return map.listerBuildings.AllBuildingsColonistOfClass<Building_SacrificialAltar>() != null && map.listerBuildings.AllBuildingsColonistOfClass<Building_SacrificialAltar>().Count() > 0;
+            return map.listerBuildings.AllBuildingsColonistOfClass<Building_SacrificialAltar>() != null &&
+                   map.listerBuildings.AllBuildingsColonistOfClass<Building_SacrificialAltar>().Any();
         }
 
         public static bool CheckValidCultName(string str)
@@ -1303,6 +1337,7 @@ namespace CultOfCthulhu
             {
                 return false;
             }
+
             var str2 = new string(Path.GetInvalidFileNameChars());
             var regex = new Regex("[" + Regex.Escape(str2) + "]");
             return !regex.IsMatch(str);
@@ -1310,40 +1345,46 @@ namespace CultOfCthulhu
 
         public static bool IsPreacher(Pawn p)
         {
-            List<Thing> list = p.Map.listerThings.AllThings.FindAll(s => s.GetType() == typeof(Building_SacrificialAltar));
-            foreach (Building_SacrificialAltar b in list)
+            var list = p.Map.listerThings.AllThings.FindAll(s => s.GetType() == typeof(Building_SacrificialAltar));
+            foreach (var thing in list)
             {
+                var b = (Building_SacrificialAltar) thing;
                 if (b.preacher == p)
                 {
                     return true;
                 }
             }
+
             return false;
         }
 
         public static bool IsExecutioner(Pawn p)
         {
-            List<Thing> list = p.Map.listerThings.AllThings.FindAll(s => s.GetType() == typeof(Building_SacrificialAltar));
-            foreach (Building_SacrificialAltar b in list)
+            var list = p.Map.listerThings.AllThings.FindAll(s => s.GetType() == typeof(Building_SacrificialAltar));
+            foreach (var thing in list)
             {
-                if (b?.SacrificeData?.Executioner == p)
+                var b = (Building_SacrificialAltar) thing;
+                if (b.SacrificeData?.Executioner == p)
                 {
                     return true;
                 }
             }
+
             return false;
         }
 
         public static bool IsSacrifice(Pawn p)
         {
-            List<Thing> list = p.Map.listerThings.AllThings.FindAll(s => s.GetType() == typeof(Building_SacrificialAltar));
-            foreach (Building_SacrificialAltar b in list)
+            var list = p.Map.listerThings.AllThings.FindAll(s => s.GetType() == typeof(Building_SacrificialAltar));
+            foreach (var thing in list)
             {
-                if (b?.SacrificeData?.Sacrifice == p)
+                var b = (Building_SacrificialAltar) thing;
+                if (b.SacrificeData?.Sacrifice == p)
                 {
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -1371,42 +1412,47 @@ namespace CultOfCthulhu
                 Utility.DebugReport("IsCultMinded :: Pawn Null Exception");
                 return false;
             }
+
             if (pawn.needs == null)
             {
                 Utility.DebugReport("IsCultMinded :: Pawn Needs Null Exception");
                 return false;
             }
-            if (pawn.needs.TryGetNeed<Need_CultMindedness>() == null)
+
+            if (pawn.needs.TryGetNeed<Need_CultMindedness>() != null)
             {
-                Utility.DebugReport("IsCultMinded :: Pawn has no cult mind");
-                return false;
+                return pawn.needs.TryGetNeed<Need_CultMindedness>().CurLevel > Need_CultMindedness.ThreshHigh;
             }
-            return pawn.needs.TryGetNeed<Need_CultMindedness>().CurLevel > Need_CultMindedness.ThreshHigh;
+
+            Utility.DebugReport("IsCultMinded :: Pawn has no cult mind");
+            return false;
         }
 
         public static bool ShouldAttendSacrifice(Pawn p, Building_SacrificialAltar altar)
         {
-            if (!Utility.IsActorAvailable(altar.SacrificeData.Executioner))
+            if (Utility.IsActorAvailable(altar.SacrificeData.Executioner))
             {
-                AbortCongregation(altar);
-                return false;
+                return p != altar.SacrificeData.Executioner && p != altar.SacrificeData.Sacrifice;
             }
+
+            AbortCongregation(altar);
+            return false;
+
             //Everyone get over here!
-            return p != altar.SacrificeData.Executioner && p != altar.SacrificeData.Sacrifice;
         }
 
         public static bool ShouldAttendWorship(Pawn p, Building_SacrificialAltar altar)
         {
-            if (!Utility.IsActorAvailable(altar.preacher))
+            if (Utility.IsActorAvailable(altar.preacher))
             {
-                AbortCongregation(altar);
-                return false;
+                return p != altar.preacher;
             }
-            //Everyone get over here!
-            return p != altar.preacher;
-        }
 
-        #endregion Bools
+            AbortCongregation(altar);
+            return false;
+
+            //Everyone get over here!
+        }
 
         public static void RemindPlayerAboutCongregationBonuses()
         {
@@ -1416,29 +1462,25 @@ namespace CultOfCthulhu
             }
         }
 
-        #region ThoughtGivers
-
         public static void AffectCultMindedness(Pawn pawn, float amount = 0f, float max = 0.99f)
         {
             var trueMax = max;
-            if (pawn == null)
+
+            var cultMindedNeed = pawn?.needs.TryGetNeed<Need_CultMindedness>();
+            if (cultMindedNeed == null)
             {
                 return;
             }
 
-            Need_CultMindedness cultMindedNeed = pawn.needs.TryGetNeed<Need_CultMindedness>();
-            if (cultMindedNeed != null)
+            var result = pawn.needs.TryGetNeed<Need_CultMindedness>().CurLevel;
+            if (result > trueMax)
             {
-                var result = pawn.needs.TryGetNeed<Need_CultMindedness>().CurLevel;
-                if (result > trueMax)
-                {
-                    trueMax = result;
-                }
-
-                result += amount;
-                result = Mathf.Clamp(result, 0.01f, trueMax);
-                pawn.needs.TryGetNeed<Need_CultMindedness>().CurLevel = result;
+                trueMax = result;
             }
+
+            result += amount;
+            result = Mathf.Clamp(result, 0.01f, trueMax);
+            pawn.needs.TryGetNeed<Need_CultMindedness>().CurLevel = result;
         }
 
         public static void InvestigatedCultSeed(Pawn pawn, Thing investigatee)
@@ -1454,6 +1496,7 @@ namespace CultOfCthulhu
             {
                 TaleRecorder.RecordTale(taleToAdd, pawn);
             }
+
             //Internal memory
             pawn.needs.mood.thoughts.memories.TryGainMemory(CultsDefOf.Cults_MadeInvestigation);
 
@@ -1471,10 +1514,10 @@ namespace CultOfCthulhu
             pawn.Map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedPawn = pawn;
 
             //Spawn in the book.
-            IntVec3 spawnLoc = pawn.Position + GenAdj.AdjacentCells[(int)Direction8Way.South];
-            Thing cultSeed = pawn.Map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedTarget;
+            var spawnLoc = pawn.Position + GenAdj.AdjacentCells[(int) Direction8Way.South];
+            var unused = pawn.Map.GetComponent<MapComponent_LocalCultTracker>().CurrentSeedTarget;
 
-            var thing = (ThingWithComps)ThingMaker.MakeThing(CultsDefOf.Cults_Grimoire);
+            var thing = (ThingWithComps) ThingMaker.MakeThing(CultsDefOf.Cults_Grimoire);
             //thing.SetFaction(Faction.OfPlayer);
             GenPlace.TryPlaceThing(thing, spawnLoc, pawn.Map, ThingPlaceMode.Near);
             Find.WindowStack.Add(new Dialog_MessageBox("CultBookSummary".Translate(pawn.Name.ToStringShort),
@@ -1501,7 +1544,7 @@ namespace CultOfCthulhu
             }
 
             TryGainTempleRoomThought(pawn);
-            ThoughtDef newThought = GetAttendWorshipThoughts(preacher, pawn);
+            var newThought = GetAttendWorshipThoughts(preacher, pawn);
             if (newThought != null)
             {
                 pawn.needs.mood.thoughts.memories.TryGainMemory(newThought);
@@ -1517,7 +1560,7 @@ namespace CultOfCthulhu
 
             TryGainTempleRoomThought(preacher);
             AffectCultMindedness(preacher, 0.1f);
-            ThoughtDef newThought = CultsDefOf.Cults_HeldSermon; // DefDatabase<ThoughtDef>.GetNamed("HeldSermon");
+            var newThought = CultsDefOf.Cults_HeldSermon; // DefDatabase<ThoughtDef>.GetNamed("HeldSermon");
             if (newThought != null)
             {
                 preacher.needs.mood.thoughts.memories.TryGainMemory(newThought);
@@ -1526,140 +1569,108 @@ namespace CultOfCthulhu
 
         public static void MakeSacrificeThoughts(Pawn attendee, Pawn other = null, bool isExcutioner = false)
         {
-            if (attendee != null)
+            if (attendee == null)
             {
-                SacrificeType lastSacrifice =
-                    attendee.Map.GetComponent<MapComponent_SacrificeTracker>().lastSacrificeType;
+                return;
+            }
 
-                //Human sacrifices
-                if (lastSacrifice == SacrificeType.human)
+            var lastSacrifice =
+                attendee.Map.GetComponent<MapComponent_SacrificeTracker>().lastSacrificeType;
+
+            //Human sacrifices
+            if (lastSacrifice == SacrificeType.human)
+            {
+                //Sacrifice Thought
+                ThoughtDef resultThought = null;
+                switch (attendee.Map.GetComponent<MapComponent_SacrificeTracker>().lastResult)
                 {
-                    //Sacrifice Thought
-                    ThoughtDef resultThought = null;
-                    switch (attendee.Map.GetComponent<MapComponent_SacrificeTracker>().lastResult)
-                    {
-                        case SacrificeResult.mixedsuccess:
-                        case SacrificeResult.success:
-                            if (IsCultMinded(attendee))
-                            {
-                                resultThought = CultsDefOf.Cults_AttendedSuccessfulSacrifice;
-                            }
-                            else
-                            {
-                                resultThought = CultsDefOf.Cults_InnocentAttendedSuccessfulSacrifice;
-                            }
+                    case SacrificeResult.mixedsuccess:
+                    case SacrificeResult.success:
+                        resultThought = IsCultMinded(attendee)
+                            ? CultsDefOf.Cults_AttendedSuccessfulSacrifice
+                            : CultsDefOf.Cults_InnocentAttendedSuccessfulSacrifice;
 
-                            break;
-                        case SacrificeResult.failure:
-                        case SacrificeResult.criticalfailure:
-                            if (IsCultMinded(attendee))
-                            {
-                                resultThought = CultsDefOf.Cults_AttendedFailedSacrifice;
-                            }
-                            else
-                            {
-                                resultThought = CultsDefOf.Cults_InnocentAttendedFailedSacrifice;
-                            }
+                        break;
+                    case SacrificeResult.failure:
+                    case SacrificeResult.criticalfailure:
+                        resultThought = IsCultMinded(attendee)
+                            ? CultsDefOf.Cults_AttendedFailedSacrifice
+                            : CultsDefOf.Cults_InnocentAttendedFailedSacrifice;
 
-                            break;
-                        case SacrificeResult.none:
-                            break;
-                    }
-                    attendee.needs.mood.thoughts.memories.TryGainMemory(resultThought);
-
-                    //Relationship Thoughts
-                    if (other != null)
-                    {
-                        //Family
-
-                        ThoughtDef familyThought = null;
-                        if (attendee.relations.FamilyByBlood.Contains(other))
-                        {
-                            if (isExcutioner)
-                            {
-                                familyThought = CultsDefOf.Cults_ExecutedFamily;
-                            }
-                            else
-                            {
-                                familyThought = CultsDefOf.Cults_SacrificedFamily;
-                            }
-                        }
-                        if (familyThought != null)
-                        {
-                            attendee.needs.mood.thoughts.memories.TryGainMemory(familyThought);
-                        }
-
-                        //Friends and Rivals
-                        ThoughtDef relationThought = null;
-                        var num = attendee.relations.OpinionOf(other);
-                        if (num >= 20)
-                        {
-                            if (isExcutioner)
-                            {
-                                relationThought = ThoughtDefOf.KilledMyFriend;
-                            }
-                            else
-                            {
-                                relationThought = CultsDefOf.Cults_SacrificedFriend;
-                            }
-                        }
-                        else if (num <= -20)
-                        {
-                            if (isExcutioner)
-                            {
-                                relationThought = ThoughtDefOf.KilledMyRival;
-                            }
-                            else
-                            {
-                                relationThought = CultsDefOf.Cults_SacrificedRival;
-                            }
-                        }
-                        if (relationThought != null)
-                        {
-                            attendee.needs.mood.thoughts.memories.TryGainMemory(relationThought);
-                        }
-
-                        //Bloodlust
-                        if (attendee.story.traits.HasTrait(TraitDefOf.Bloodlust))
-                        {
-                            if (isExcutioner)
-                            {
-                                attendee.needs.mood.thoughts.memories.TryGainMemory(
-                                    ThoughtDefOf.KilledHumanlikeBloodlust, other);
-                            }
-                            else
-                            {
-                                attendee.needs.mood.thoughts.memories.TryGainMemory(
-                                    ThoughtDefOf.WitnessedDeathBloodlust, other);
-                            }
-                        }
-                    }
+                        break;
+                    case SacrificeResult.none:
+                        break;
                 }
 
-                //Animal Sacrifices
-                else if (lastSacrifice == SacrificeType.animal)
+                attendee.needs.mood.thoughts.memories.TryGainMemory(resultThought);
+
+                //Relationship Thoughts
+                if (other == null)
                 {
-                    if (other != null && other.RaceProps != null)
-                    {
-                        if (other.RaceProps.Animal)
-                        {
-                            //Pet checker
-                            if (other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Bond) == attendee)
-                            {
-                                if (isExcutioner)
-                                {
-                                    attendee.needs.mood.thoughts.memories.TryGainMemory(CultsDefOf.Cults_ExecutedPet,
-                                        other);
-                                }
-                                else
-                                {
-                                    attendee.needs.mood.thoughts.memories.TryGainMemory(CultsDefOf.Cults_SacrificedPet,
-                                        other);
-                                }
-                            }
-                        }
-                    }
+                    return;
                 }
+                //Family
+
+                ThoughtDef familyThought = null;
+                if (attendee.relations.FamilyByBlood.Contains(other))
+                {
+                    familyThought = isExcutioner ? CultsDefOf.Cults_ExecutedFamily : CultsDefOf.Cults_SacrificedFamily;
+                }
+
+                if (familyThought != null)
+                {
+                    attendee.needs.mood.thoughts.memories.TryGainMemory(familyThought);
+                }
+
+                //Friends and Rivals
+                ThoughtDef relationThought = null;
+                var num = attendee.relations.OpinionOf(other);
+                if (num >= 20)
+                {
+                    relationThought = isExcutioner ? ThoughtDefOf.KilledMyFriend : CultsDefOf.Cults_SacrificedFriend;
+                }
+                else if (num <= -20)
+                {
+                    relationThought = isExcutioner ? ThoughtDefOf.KilledMyRival : CultsDefOf.Cults_SacrificedRival;
+                }
+
+                if (relationThought != null)
+                {
+                    attendee.needs.mood.thoughts.memories.TryGainMemory(relationThought);
+                }
+
+                //Bloodlust
+                if (!attendee.story.traits.HasTrait(TraitDefOf.Bloodlust))
+                {
+                    return;
+                }
+
+                attendee.needs.mood.thoughts.memories.TryGainMemory(
+                    isExcutioner ? ThoughtDefOf.KilledHumanlikeBloodlust : ThoughtDefOf.WitnessedDeathBloodlust, other);
+            }
+
+            //Animal Sacrifices
+            else if (lastSacrifice == SacrificeType.animal)
+            {
+                if (other?.RaceProps == null)
+                {
+                    return;
+                }
+
+                if (!other.RaceProps.Animal)
+                {
+                    return;
+                }
+
+                //Pet checker
+                if (other.relations.GetFirstDirectRelationPawn(PawnRelationDefOf.Bond) != attendee)
+                {
+                    return;
+                }
+
+                attendee.needs.mood.thoughts.memories.TryGainMemory(
+                    isExcutioner ? CultsDefOf.Cults_ExecutedPet : CultsDefOf.Cults_SacrificedPet,
+                    other);
             }
         }
 
@@ -1675,84 +1686,69 @@ namespace CultOfCthulhu
             var CultistMod = Rand.Range(0.01f, 0.02f);
             var InnocentMod = Rand.Range(-0.005f, 0.1f);
 
-            if (attendee != null)
+            if (attendee == null)
             {
-                var num = preacher.skills.GetSkill(SkillDefOf.Social).Level;
-                num += Rand.Range(-6, 6); //Randomness
+                return null;
+            }
+
+            var num = preacher.skills.GetSkill(SkillDefOf.Social).Level;
+            num += Rand.Range(-6, 6); //Randomness
 
 
+            switch (num)
+            {
                 //S-Ranked Sermon: WOW!
-                if (num > 20)
-                {
-                    if (IsCultMinded(attendee))
-                    {
-                        AffectCultMindedness(attendee, S_Effect + CultistMod);
-                        return CultsDefOf.Cults_AttendedIncredibleSermonAsCultist;
-                    }
+                case > 20 when IsCultMinded(attendee):
+                    AffectCultMindedness(attendee, S_Effect + CultistMod);
+                    return CultsDefOf.Cults_AttendedIncredibleSermonAsCultist;
+                case > 20:
                     AffectCultMindedness(attendee, S_Effect + InnocentMod);
                     return CultsDefOf.Cults_AttendedIncredibleSermonAsInnocent;
-                }
                 //A-Ranked Sermon: Fantastic
-                if (num <= 20 && num > 15)
-                {
-                    if (IsCultMinded(attendee))
-                    {
-                        AffectCultMindedness(attendee, A_Effect + CultistMod);
-                        return CultsDefOf.Cults_AttendedGreatSermonAsCultist;
-                    }
+                case <= 20 and > 15 when IsCultMinded(attendee):
+                    AffectCultMindedness(attendee, A_Effect + CultistMod);
+                    return CultsDefOf.Cults_AttendedGreatSermonAsCultist;
+                case <= 20 and > 15:
                     AffectCultMindedness(attendee, A_Effect + InnocentMod);
                     return CultsDefOf.Cults_AttendedGreatSermonAsInnocent;
-                }
                 //B-Ranked Sermon: Alright
-                if (num <= 15 && num > 10)
-                {
-                    if (IsCultMinded(attendee))
-                    {
-                        AffectCultMindedness(attendee, B_Effect + CultistMod);
-                        return CultsDefOf.Cults_AttendedGoodSermonAsCultist;
-                    }
+                case <= 15 and > 10 when IsCultMinded(attendee):
+                    AffectCultMindedness(attendee, B_Effect + CultistMod);
+                    return CultsDefOf.Cults_AttendedGoodSermonAsCultist;
+                case <= 15 and > 10:
                     AffectCultMindedness(attendee, B_Effect + InnocentMod);
                     return CultsDefOf.Cults_AttendedGoodSermonAsInnocent;
-                }
                 //C-Ranked Sermon: Average
-                if (num <= 10 && num > 5)
-                {
-                    if (IsCultMinded(attendee))
-                    {
-                        AffectCultMindedness(attendee, C_Effect + CultistMod);
-                        return CultsDefOf.Cults_AttendedDecentSermonAsCultist;
-                    }
+                case <= 10 and > 5 when IsCultMinded(attendee):
+                    AffectCultMindedness(attendee, C_Effect + CultistMod);
+                    return CultsDefOf.Cults_AttendedDecentSermonAsCultist;
+                case <= 10 and > 5:
                     AffectCultMindedness(attendee, C_Effect + InnocentMod);
                     return CultsDefOf.Cults_AttendedDecentSermonAsInnocent;
-                }
-                //F-Ranked Sermon: Garbage
-                if (IsCultMinded(attendee))
-                {
-                    AffectCultMindedness(attendee, F_Effect + CultistMod);
-                    return CultsDefOf.Cults_AttendedAwfulSermonAsCultist;
-                }
-                AffectCultMindedness(attendee, F_Effect + InnocentMod);
-                return CultsDefOf.Cults_AttendedAwfulSermonAsInnocent;
             }
-            return null;
+
+            //F-Ranked Sermon: Garbage
+            if (IsCultMinded(attendee))
+            {
+                AffectCultMindedness(attendee, F_Effect + CultistMod);
+                return CultsDefOf.Cults_AttendedAwfulSermonAsCultist;
+            }
+
+            AffectCultMindedness(attendee, F_Effect + InnocentMod);
+            return CultsDefOf.Cults_AttendedAwfulSermonAsInnocent;
         }
 
         // RimWorld.JoyUtility
         public static void TryGainTempleRoomThought(Pawn pawn)
         {
-            Room room = pawn.GetRoom();
-            ThoughtDef def = CultsDefOf.Cults_PrayedInImpressiveTemple;
+            var room = pawn.GetRoom();
+            var def = CultsDefOf.Cults_PrayedInImpressiveTemple;
             if (pawn == null)
             {
                 return;
             }
 
-            if (room == null)
-            {
-                return;
-            }
-
-            if (room.Role == null)
+            if (room?.Role == null)
             {
                 return;
             }
@@ -1762,28 +1758,20 @@ namespace CultOfCthulhu
                 return;
             }
 
-            if (room.Role == CultsDefOf.Cults_Temple)
+            if (room.Role != CultsDefOf.Cults_Temple)
             {
-                var scoreStageIndex =
-                    RoomStatDefOf.Impressiveness.GetScoreStageIndex(room.GetStat(RoomStatDefOf.Impressiveness));
-                if (def.stages[scoreStageIndex] == null)
-                {
-                    return;
-                }
-
-                pawn.needs.mood.thoughts.memories.TryGainMemory(ThoughtMaker.MakeThought(def, scoreStageIndex));
+                return;
             }
+
+            var scoreStageIndex =
+                RoomStatDefOf.Impressiveness.GetScoreStageIndex(room.GetStat(RoomStatDefOf.Impressiveness));
+            if (def.stages[scoreStageIndex] == null)
+            {
+                return;
+            }
+
+            pawn.needs.mood.thoughts.memories.TryGainMemory(ThoughtMaker.MakeThought(def, scoreStageIndex));
         }
-
-        #endregion ThoughtGivers
-
-        #region AltarJobs
-
-        #region Offering
-
-        #endregion Offering
-
-        #region Sacrifice
 
         public static void GiveAttendSacrificeJob(Building_SacrificialAltar altar, Pawn attendee)
         {
@@ -1822,7 +1810,7 @@ namespace CultOfCthulhu
                 return;
             }
 
-            if (!WatchBuildingUtility.TryFindBestWatchCell(altar, attendee, true, out IntVec3 result, out Building chair))
+            if (!WatchBuildingUtility.TryFindBestWatchCell(altar, attendee, true, out var result, out var chair))
             {
                 if (!WatchBuildingUtility.TryFindBestWatchCell(altar, attendee, false, out result, out chair))
                 {
@@ -1834,7 +1822,7 @@ namespace CultOfCthulhu
 
             if (chair != null)
             {
-                IntVec3 newPos = chair.Position + GenAdj.CardinalDirections[dir];
+                var newPos = chair.Position + GenAdj.CardinalDirections[dir];
 
                 var J = new Job(CultsDefOf.Cults_AttendSacrifice, altar, newPos, chair)
                 {
@@ -1850,7 +1838,7 @@ namespace CultOfCthulhu
             }
             else
             {
-                IntVec3 newPos = result + GenAdj.CardinalDirections[dir];
+                var newPos = result + GenAdj.CardinalDirections[dir];
 
                 var J = new Job(CultsDefOf.Cults_AttendSacrifice, altar, newPos, result)
                 {
@@ -1866,14 +1854,10 @@ namespace CultOfCthulhu
             }
         }
 
-        #endregion Sacrifice
-
-        #region Worship
-
         public static Pawn DetermineBestResearcher(Map map)
         {
             Pawn result = null;
-            foreach (Pawn p in map.mapPawns.FreeColonistsSpawned)
+            foreach (var p in map.mapPawns.FreeColonistsSpawned)
             {
                 if (result == null)
                 {
@@ -1885,13 +1869,14 @@ namespace CultOfCthulhu
                     result = p;
                 }
             }
+
             return result;
         }
 
         public static Pawn DetermineBestPreacher(Map map)
         {
             Pawn result = null;
-            foreach (Pawn p in map.mapPawns.FreeColonistsSpawned)
+            foreach (var p in map.mapPawns.FreeColonistsSpawned)
             {
                 if (result == null)
                 {
@@ -1903,6 +1888,7 @@ namespace CultOfCthulhu
                     result = p;
                 }
             }
+
             if (!IsCultMinded(result))
             {
                 result = null;
@@ -1924,6 +1910,7 @@ namespace CultOfCthulhu
             {
                 return;
             }
+
             if (attendee.Drafted)
             {
                 return;
@@ -1944,13 +1931,14 @@ namespace CultOfCthulhu
                 return;
             }
 
-            if (!WatchBuildingUtility.TryFindBestWatchCell(altar, attendee, true, out IntVec3 result, out Building chair))
+            if (!WatchBuildingUtility.TryFindBestWatchCell(altar, attendee, true, out var result, out var chair))
             {
                 if (!WatchBuildingUtility.TryFindBestWatchCell(altar, attendee, false, out result, out chair))
                 {
                     return;
                 }
             }
+
             //Log.Message("2");
             var dir = altar.Rotation.Opposite.AsInt;
             Job attendJob;
@@ -1985,6 +1973,7 @@ namespace CultOfCthulhu
                     ignoreForbidden = true
                 };
             }
+
             if (!ModSettings_Data.makeWorshipsVoluntary)
             {
                 attendee.jobs.EndCurrentJob(JobCondition.Incompletable);
@@ -2002,41 +1991,32 @@ namespace CultOfCthulhu
 
         public static void AbortCongregation(Building_SacrificialAltar altar)
         {
-            if (altar != null)
-            {
-                altar.ChangeState(Building_SacrificialAltar.State.notinuse);
-            }
+            altar?.ChangeState(Building_SacrificialAltar.State.notinuse);
         }
 
         public static void AbortCongregation(Building_SacrificialAltar altar, string reason)
         {
-            if (altar != null)
-            {
-                altar.ChangeState(Building_SacrificialAltar.State.notinuse);
-            }
+            altar?.ChangeState(Building_SacrificialAltar.State.notinuse);
 
             Messages.Message(reason + " Aborting congregation.", MessageTypeDefOf.NegativeEvent);
         }
-
-        #endregion Worship
-
-        #endregion AltarJobs
-
-        #region Spells
 
         public static void CastSpell(IncidentDef spell, Map map, bool fromAltar = false)
         {
             if (spell != null)
             {
-                IncidentParms parms = StorytellerUtility.DefaultParmsNow(spell.category, map);
+                var parms = StorytellerUtility.DefaultParmsNow(spell.category, map);
                 spell.Worker.TryExecute(parms);
                 Utility.DebugReport("Cults_Spell cast: " + spell);
             }
-            if (fromAltar)
+
+            if (!fromAltar)
             {
-                Building_SacrificialAltar lastAltar = map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar;
-                SacrificeSpellComplete(lastAltar.SacrificeData.Executioner, lastAltar);
+                return;
             }
+
+            var lastAltar = map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar;
+            SacrificeSpellComplete(lastAltar.SacrificeData.Executioner, lastAltar);
         }
 
         public static void SacrificeSpellComplete(Pawn executioner, Building_SacrificialAltar altar)
@@ -2046,25 +2026,26 @@ namespace CultOfCthulhu
                 Utility.DebugReport("Altar Null Exception");
                 return;
             }
+
             if (executioner == null)
             {
                 Utility.DebugReport("Executioner null exception");
             }
+
             if (Utility.IsActorAvailable(executioner))
             {
                 var job = new Job(CultsDefOf.Cults_ReflectOnResult)
                 {
                     targetA = altar
                 };
-                executioner.jobs.TryTakeOrderedJob(job);
+                executioner?.jobs.TryTakeOrderedJob(job);
                 //executioner.jobs.EndCurrentJob(JobCondition.InterruptForced);
             }
+
             altar.ChangeState(Building_SacrificialAltar.State.sacrificing,
                 Building_SacrificialAltar.SacrificeState.finished);
             //altar.currentState = Building_SacrificialAltar.State.finished;
             //Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.ChangeState(Building_SacrificialAltar.State.sacrificing, Building_SacrificialAltar.SacrificeState.finished);
         }
-
-        #endregion Spells
     }
 }

@@ -72,20 +72,19 @@ namespace CultOfCthulhu
             {
                 initAction = delegate
                 {
-                    if (job.def.makeTargetPrisoner)
+                    if (!job.def.makeTargetPrisoner)
                     {
-                        var pawn = (Pawn) job.targetA.Thing;
-                        var lord = pawn.GetLord();
-                        if (lord != null)
-                        {
-                            lord.Notify_PawnAttemptArrested(pawn);
-                        }
+                        return;
+                    }
 
-                        GenClamor.DoClamor(pawn, 10f, ClamorDefOf.Harm);
-                        if (job.def == JobDefOf.Arrest && !pawn.CheckAcceptArrest(this.pawn))
-                        {
-                            this.pawn.jobs.EndCurrentJob(JobCondition.Incompletable);
-                        }
+                    var targetAThing = (Pawn) job.targetA.Thing;
+                    var lord = targetAThing.GetLord();
+                    lord?.Notify_PawnAttemptArrested(targetAThing);
+
+                    GenClamor.DoClamor(targetAThing, 10f, ClamorDefOf.Harm);
+                    if (job.def == JobDefOf.Arrest && !targetAThing.CheckAcceptArrest(pawn))
+                    {
+                        pawn.jobs.EndCurrentJob(JobCondition.Incompletable);
                     }
                 }
             };
@@ -102,15 +101,17 @@ namespace CultOfCthulhu
                 {
                     //In-case this fails...
                     var position = DropAltar.Position;
-                    pawn.carryTracker.TryDropCarriedThing(position, ThingPlaceMode.Direct, out var thing);
-                    if (!DropAltar.Destroyed && DropAltar.AnyUnoccupiedLyingSlot)
+                    pawn.carryTracker.TryDropCarriedThing(position, ThingPlaceMode.Direct, out _);
+                    if (DropAltar.Destroyed || !DropAltar.AnyUnoccupiedLyingSlot)
                     {
-                        Takee.Position = DropAltar.GetLyingSlotPos();
-                        Takee.Notify_Teleported(false);
-                        Takee.stances.CancelBusyStanceHard();
-                        var job = new Job(CultsDefOf.Cults_WaitTiedDown, DropAltar);
-                        Takee.jobs.StartJob(job);
+                        return;
                     }
+
+                    Takee.Position = DropAltar.GetLyingSlotPos();
+                    Takee.Notify_Teleported(false);
+                    Takee.stances.CancelBusyStanceHard();
+                    var newJob = new Job(CultsDefOf.Cults_WaitTiedDown, DropAltar);
+                    Takee.jobs.StartJob(newJob);
                 },
                 defaultCompleteMode = ToilCompleteMode.Instant
             };

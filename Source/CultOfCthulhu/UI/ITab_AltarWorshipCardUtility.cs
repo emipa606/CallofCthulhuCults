@@ -2,7 +2,6 @@
 // These are basic usings. Always let them be here.
 // ----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Text;
 using CallOfCthulhu;
@@ -130,14 +129,13 @@ namespace CultOfCthulhu
                     var num = 15f;
                     var num2 = 270f;
                     var hourWidth = 20.833334f;
-                    Texture2D texture;
                     for (var day = 0; day <= 14; day++)
                     {
                         var rect9 = new Rect(num + 4f, num2 + 0f, hourWidth, 20f);
                         Widgets.Label(rect9, (day + 1).ToString());
                         var rect10 = new Rect(num, num2 + 20f, hourWidth, 30f);
                         rect10 = rect10.ContractedBy(1f);
-                        texture = TimeAssignmentDefOf.Anything.ColorTexture;
+                        var texture = TimeAssignmentDefOf.Anything.ColorTexture;
                         switch (altar.seasonSchedule[day])
                         {
                             case 1:
@@ -276,13 +274,13 @@ namespace CultOfCthulhu
 
         private static string PreacherLabel(Building_SacrificialAltar altar)
         {
-            if (altar.tempPreacher == null)
+            if (altar.tempPreacher != null)
             {
-                altar.tempPreacher = CultUtility.DetermineBestPreacher(altar.Map);
-                return altar.tempPreacher == null ? "None" : altar.tempPreacher.Name.ToStringShort;
+                return altar.tempPreacher.Name.ToStringShort;
             }
 
-            return altar.tempPreacher.Name.ToStringShort;
+            altar.tempPreacher = CultUtility.DetermineBestPreacher(altar.Map);
+            return altar.tempPreacher == null ? "None" : altar.tempPreacher.Name.ToStringShort;
         }
 
         private static string DeityLabel(Building_SacrificialAltar altar)
@@ -312,18 +310,21 @@ namespace CultOfCthulhu
 
             foreach (var current in CultTracker.Get.PlayerCult.MembersAt(altar.Map))
             {
-                if (current.health.capacities.CapableOf(PawnCapacityDefOf.Talking) &&
-                    current.health.capacities.CapableOf(PawnCapacityDefOf.Moving))
+                if (!current.health.capacities.CapableOf(PawnCapacityDefOf.Talking) ||
+                    !current.health.capacities.CapableOf(PawnCapacityDefOf.Moving))
                 {
-                    Action action;
-                    var localCol = current;
-                    action = delegate
-                    {
-                        //Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
-                        altar.tempPreacher = localCol;
-                    };
-                    list.Add(new FloatMenuOption(localCol.LabelShort, action));
+                    continue;
                 }
+
+                var localCol = current;
+
+                void Action()
+                {
+                    //Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
+                    altar.tempPreacher = localCol;
+                }
+
+                list.Add(new FloatMenuOption(localCol.LabelShort, Action));
             }
 
             Find.WindowStack.Add(new FloatMenu(list));
@@ -348,21 +349,21 @@ namespace CultOfCthulhu
                     continue;
                 }
 
-                Action action;
                 var localDeity = current;
-                action = delegate
+
+                void Action()
                 {
                     //Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
                     altar.tempCurrentWorshipDeity = localDeity;
                     //altar.tempCurrentSpell = null;
-                };
+                }
 
                 bool extraPartOnGUI(Rect rect)
                 {
                     return DeityInfoCardButton(rect.x + 5f, rect.y + ((rect.height - 24f) / 2f), current);
                 }
 
-                list.Add(new FloatMenuOption(localDeity.LabelCap, action, MenuOptionPriority.Default, null, null, 29f,
+                list.Add(new FloatMenuOption(localDeity.LabelCap, Action, MenuOptionPriority.Default, null, null, 29f,
                     extraPartOnGUI));
             }
 

@@ -15,11 +15,13 @@ namespace CultOfCthulhu
         private MapComponent_LocalCultTracker GetTracker(Map map)
         {
             var result = map.GetComponent<MapComponent_LocalCultTracker>();
-            if (map.GetComponent<MapComponent_LocalCultTracker>() == null)
+            if (map.GetComponent<MapComponent_LocalCultTracker>() != null)
             {
-                result = new MapComponent_LocalCultTracker(map);
-                map.components.Add(result);
+                return result;
             }
+
+            result = new MapComponent_LocalCultTracker(map);
+            map.components.Add(result);
 
             return result;
         }

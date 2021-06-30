@@ -49,11 +49,13 @@ namespace CultOfCthulhu
             var stringBuilder = new StringBuilder();
             foreach (var current2 in map.mapPawns.FreeColonists)
             {
-                if (current2.Spawned)
+                if (!current2.Spawned)
                 {
-                    stringBuilder.AppendLine("   " + current2.LabelCap);
-                    current2.DeSpawn();
+                    continue;
                 }
+
+                stringBuilder.AppendLine("   " + current2.LabelCap);
+                current2.DeSpawn();
             }
 
             if (stringBuilder.Length == 0)

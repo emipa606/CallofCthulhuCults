@@ -97,14 +97,16 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (foragedFoodPerDayDirty)
+                if (!foragedFoodPerDayDirty)
                 {
-                    foragedFoodPerDayDirty = false;
-                    var stringBuilder = new StringBuilder();
-                    cachedForagedFoodPerDay = ForagedFoodPerDayCalculator.ForagedFoodPerDay(transferables,
-                        Biome, Faction.OfPlayer, stringBuilder);
-                    cachedForagedFoodPerDayExplanation = stringBuilder.ToString();
+                    return cachedForagedFoodPerDay;
                 }
+
+                foragedFoodPerDayDirty = false;
+                var stringBuilder = new StringBuilder();
+                cachedForagedFoodPerDay = ForagedFoodPerDayCalculator.ForagedFoodPerDay(transferables,
+                    Biome, Faction.OfPlayer, stringBuilder);
+                cachedForagedFoodPerDayExplanation = stringBuilder.ToString();
 
                 return cachedForagedFoodPerDay;
             }
@@ -114,13 +116,15 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (visibilityDirty)
+                if (!visibilityDirty)
                 {
-                    visibilityDirty = false;
-                    var stringBuilder = new StringBuilder();
-                    cachedVisibility = CaravanVisibilityCalculator.Visibility(transferables, stringBuilder);
-                    cachedVisibilityExplanation = stringBuilder.ToString();
+                    return cachedVisibility;
                 }
+
+                visibilityDirty = false;
+                var stringBuilder = new StringBuilder();
+                cachedVisibility = CaravanVisibilityCalculator.Visibility(transferables, stringBuilder);
+                cachedVisibilityExplanation = stringBuilder.ToString();
 
                 return cachedVisibility;
             }
@@ -132,10 +136,10 @@ namespace CultOfCthulhu
             get
             {
                 var num = 0;
-                for (var i = 0; i < transporters.Count; i++)
+                foreach (var compTransporterPawn in transporters)
                 {
                     var result = 1; //In-case PawnFlyer doesn't work out
-                    if (transporters[i].parent is PawnFlyer pawnFlyer)
+                    if (compTransporterPawn.parent is PawnFlyer pawnFlyer)
                     {
                         if (pawnFlyer.def is PawnFlyerDef pawnFlyerDef)
                         {
@@ -158,10 +162,10 @@ namespace CultOfCthulhu
             get
             {
                 var num = 0f;
-                for (var i = 0; i < transporters.Count; i++)
+                foreach (var compTransporterPawn in transporters)
                 {
                     var result = 150f; //In-case PawnFlyer doesn't work out
-                    if (transporters[i].parent is PawnFlyer pawnFlyer)
+                    if (compTransporterPawn.parent is PawnFlyer pawnFlyer)
                     {
                         result = pawnFlyer.GetStatValue(StatDefOf.CarryingCapacity);
                         //PawnFlyerDef pawnFlyerDef = pawnFlyer.def as PawnFlyerDef;
@@ -186,12 +190,14 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (massUsageDirty)
+                if (!massUsageDirty)
                 {
-                    massUsageDirty = false;
-                    cachedMassUsage = CollectionsMassCalculator.MassUsageTransferables(transferables,
-                        IgnorePawnsInventoryMode.DontIgnore, true);
+                    return cachedMassUsage;
                 }
+
+                massUsageDirty = false;
+                cachedMassUsage = CollectionsMassCalculator.MassUsageTransferables(transferables,
+                    IgnorePawnsInventoryMode.DontIgnore, true);
 
                 return cachedMassUsage;
             }
@@ -201,14 +207,16 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (tilesPerDayDirty)
+                if (!tilesPerDayDirty)
                 {
-                    tilesPerDayDirty = false;
-                    var stringBuilder = new StringBuilder();
-                    cachedTilesPerDay = TilesPerDayCalculator.ApproxTilesPerDay(transferables, MassUsage,
-                        MassCapacity, map.Tile, -1, stringBuilder);
-                    cachedTilesPerDayExplanation = stringBuilder.ToString();
+                    return cachedTilesPerDay;
                 }
+
+                tilesPerDayDirty = false;
+                var stringBuilder = new StringBuilder();
+                cachedTilesPerDay = TilesPerDayCalculator.ApproxTilesPerDay(transferables, MassUsage,
+                    MassCapacity, map.Tile, -1, stringBuilder);
+                cachedTilesPerDayExplanation = stringBuilder.ToString();
 
                 return cachedTilesPerDay;
             }
@@ -219,15 +227,17 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (daysWorthOfFoodDirty)
+                if (!daysWorthOfFoodDirty)
                 {
-                    daysWorthOfFoodDirty = false;
-                    var first = DaysWorthOfFoodCalculator.ApproxDaysWorthOfFood(transferables, map.Tile,
-                        IgnorePawnsInventoryMode.IgnoreIfAssignedToUnload, Faction.OfPlayer, null, 0f, 3500);
-                    cachedDaysWorthOfFood = new Pair<float, float>(first,
-                        DaysUntilRotCalculator.ApproxDaysUntilRot(transferables, map.Tile,
-                            IgnorePawnsInventoryMode.IgnoreIfAssignedToUnload, null, 0f, 3500));
+                    return cachedDaysWorthOfFood;
                 }
+
+                daysWorthOfFoodDirty = false;
+                var first = DaysWorthOfFoodCalculator.ApproxDaysWorthOfFood(transferables, map.Tile,
+                    IgnorePawnsInventoryMode.IgnoreIfAssignedToUnload, Faction.OfPlayer, null, 0f, 3500);
+                cachedDaysWorthOfFood = new Pair<float, float>(first,
+                    DaysUntilRotCalculator.ApproxDaysUntilRot(transferables, map.Tile,
+                        IgnorePawnsInventoryMode.IgnoreIfAssignedToUnload, null, 0f, 3500));
 
                 return cachedDaysWorthOfFood;
             }
@@ -256,11 +266,11 @@ namespace CultOfCthulhu
                 map.Tile, null, lastMassFlashTime, new Rect(12f, 35f, inRect.width - 24f, 40f), false);
             tabsList.Clear();
             tabsList.Add(new TabRecord("PawnsTab".Translate(),
-                delegate { this.tab = Tab.Pawns; },
-                this.tab == Tab.Pawns));
+                delegate { tab = Tab.Pawns; },
+                tab == Tab.Pawns));
             tabsList.Add(new TabRecord("ItemsTab".Translate(),
-                delegate { this.tab = Tab.Items; },
-                this.tab == Tab.Items));
+                delegate { tab = Tab.Items; },
+                tab == Tab.Items));
             inRect.yMin += 119f;
             Widgets.DrawMenuSection(inRect);
             TabDrawer.DrawTabs(inRect, tabsList);
@@ -271,10 +281,10 @@ namespace CultOfCthulhu
             var inRect2 = rect2;
             inRect2.yMax -= 59f;
             var flag = false;
-            var tab = this.tab;
-            if (tab != Tab.Pawns)
+            var tab1 = tab;
+            if (tab1 != Tab.Pawns)
             {
-                if (tab == Tab.Items)
+                if (tab1 == Tab.Items)
                 {
                     itemsTransfer.OnGUI(inRect2, out flag);
                 }
@@ -385,24 +395,28 @@ namespace CultOfCthulhu
                 Close();
             }
 
-            if (Prefs.DevMode)
+            if (!Prefs.DevMode)
             {
-                var num = 200f;
-                var num2 = BottomButtonSize.y / 2f;
-                var rect5 = new Rect(rect.width - num, rect.height - 55f, num, num2);
-                if (Widgets.ButtonText(rect5, "Dev: Load instantly", true, false) && DebugTryLoadInstantly())
-                {
-                    SoundDefOf.Tick_High.PlayOneShotOnCamera();
-                    Close(false);
-                }
-
-                var rect6 = new Rect(rect.width - num, rect.height - 55f + num2, num, num2);
-                if (Widgets.ButtonText(rect6, "Dev: Select everything", true, false))
-                {
-                    SoundDefOf.Tick_High.PlayOneShotOnCamera();
-                    SetToLoadEverything();
-                }
+                return;
             }
+
+            var num = 200f;
+            var num2 = BottomButtonSize.y / 2f;
+            var rect5 = new Rect(rect.width - num, rect.height - 55f, num, num2);
+            if (Widgets.ButtonText(rect5, "Dev: Load instantly", true, false) && DebugTryLoadInstantly())
+            {
+                SoundDefOf.Tick_High.PlayOneShotOnCamera();
+                Close(false);
+            }
+
+            var rect6 = new Rect(rect.width - num, rect.height - 55f + num2, num, num2);
+            if (!Widgets.ButtonText(rect6, "Dev: Select everything", true, false))
+            {
+                return;
+            }
+
+            SoundDefOf.Tick_High.PlayOneShotOnCamera();
+            SetToLoadEverything();
         }
 
         private void CalculateAndRecacheTransferables()
@@ -428,10 +442,11 @@ namespace CultOfCthulhu
             int i;
             for (i = 0; i < transferables.Count; i++)
             {
+                var i1 = i;
                 TransferableUtility.Transfer(transferables[i].things, transferables[i].CountToTransfer,
-                    delegate(Thing splitPiece, IThingHolder originalThing)
+                    delegate(Thing splitPiece, IThingHolder _)
                     {
-                        transporters[i % transporters.Count].GetDirectlyHeldThings().TryAdd(splitPiece);
+                        transporters[i1 % transporters.Count].GetDirectlyHeldThings().TryAdd(splitPiece);
                     });
             }
 
@@ -478,17 +493,21 @@ namespace CultOfCthulhu
             var transferableOneWay =
                 transferables.MaxBy(x => x.CountToTransfer);
             var num = 0;
-            for (var i = 0; i < transferables.Count; i++)
+            foreach (var oneWay in transferables)
             {
-                if (transferables[i] != transferableOneWay)
+                if (oneWay == transferableOneWay)
                 {
-                    if (transferables[i].CountToTransfer > 0)
-                    {
-                        transporters[num % transporters.Count].AddToTheToLoadList(transferables[i],
-                            transferables[i].CountToTransfer);
-                        num++;
-                    }
+                    continue;
                 }
+
+                if (oneWay.CountToTransfer <= 0)
+                {
+                    continue;
+                }
+
+                transporters[num % transporters.Count].AddToTheToLoadList(oneWay,
+                    oneWay.CountToTransfer);
+                num++;
             }
 
             if (num < transporters.Count)
@@ -517,9 +536,9 @@ namespace CultOfCthulhu
         {
             Utility.DebugReport("CreateAndAssignNewTransportersGroup Called");
             var nextTransporterGroupID = Find.UniqueIDsManager.GetNextTransporterGroupID();
-            for (var i = 0; i < transporters.Count; i++)
+            foreach (var compTransporterPawn in transporters)
             {
-                transporters[i].groupID = nextTransporterGroupID;
+                compTransporterPawn.groupID = nextTransporterGroupID;
             }
 
             return nextTransporterGroupID;
@@ -559,49 +578,56 @@ namespace CultOfCthulhu
                 return false;
             }
 
-            var map = transporters[0].parent.Map;
-            for (var i = 0; i < transferables.Count; i++)
+            var parentMap = transporters[0].parent.Map;
+            foreach (var transferableOneWay in transferables)
             {
-                if (transferables[i].ThingDef.category == ThingCategory.Item)
+                if (transferableOneWay.ThingDef.category != ThingCategory.Item)
                 {
-                    var countToTransfer = transferables[i].CountToTransfer;
-                    var num = 0;
-                    if (countToTransfer > 0)
+                    continue;
+                }
+
+                var countToTransfer = transferableOneWay.CountToTransfer;
+                var num = 0;
+                if (countToTransfer <= 0)
+                {
+                    continue;
+                }
+
+                foreach (var thing in transferableOneWay.things)
+                {
+                    if (!parentMap.reachability.CanReach(thing.Position, transporters[0].parent,
+                        PathEndMode.Touch, TraverseParms.For(TraverseMode.PassDoors)))
                     {
-                        for (var j = 0; j < transferables[i].things.Count; j++)
-                        {
-                            var thing = transferables[i].things[j];
-                            if (map.reachability.CanReach(thing.Position, transporters[0].parent,
-                                PathEndMode.Touch, TraverseParms.For(TraverseMode.PassDoors)))
-                            {
-                                num += thing.stackCount;
-                                if (num >= countToTransfer)
-                                {
-                                    break;
-                                }
-                            }
-                        }
+                        continue;
+                    }
 
-                        if (num < countToTransfer)
-                        {
-                            if (countToTransfer == 1)
-                            {
-                                Messages.Message("TransporterItemIsUnreachableSingle".Translate(
-                                    transferables[i].ThingDef.label
-                                ), MessageTypeDefOf.RejectInput);
-                            }
-                            else
-                            {
-                                Messages.Message("TransporterItemIsUnreachableMulti".Translate(
-                                    countToTransfer,
-                                    transferables[i].ThingDef.label
-                                ), MessageTypeDefOf.RejectInput);
-                            }
-
-                            return false;
-                        }
+                    num += thing.stackCount;
+                    if (num >= countToTransfer)
+                    {
+                        break;
                     }
                 }
+
+                if (num >= countToTransfer)
+                {
+                    continue;
+                }
+
+                if (countToTransfer == 1)
+                {
+                    Messages.Message("TransporterItemIsUnreachableSingle".Translate(
+                        transferableOneWay.ThingDef.label
+                    ), MessageTypeDefOf.RejectInput);
+                }
+                else
+                {
+                    Messages.Message("TransporterItemIsUnreachableMulti".Translate(
+                        countToTransfer,
+                        transferableOneWay.ThingDef.label
+                    ), MessageTypeDefOf.RejectInput);
+                }
+
+                return false;
             }
 
             return true;
@@ -610,11 +636,11 @@ namespace CultOfCthulhu
         private void AddPawnsToTransferables()
         {
             var list = CaravanFormingUtility.AllSendablePawns(map);
-            for (var i = 0; i < list.Count; i++)
+            foreach (var pawn in list)
             {
-                if (list[i].TryGetComp<CompLaunchablePawn>() == null)
+                if (pawn.TryGetComp<CompLaunchablePawn>() == null)
                 {
-                    AddToTransferables(list[i]);
+                    AddToTransferables(pawn);
                 }
             }
         }
@@ -622,9 +648,9 @@ namespace CultOfCthulhu
         private void AddItemsToTransferables()
         {
             var list = CaravanFormingUtility.AllReachableColonyItems(map);
-            for (var i = 0; i < list.Count; i++)
+            foreach (var thing in list)
             {
-                AddToTransferables(list[i]);
+                AddToTransferables(thing);
             }
         }
 
@@ -635,9 +661,9 @@ namespace CultOfCthulhu
 
         private void SetToLoadEverything()
         {
-            for (var i = 0; i < transferables.Count; i++)
+            foreach (var transferableOneWay in transferables)
             {
-                transferables[i].AdjustTo(transferables[i].GetMaximumToTransfer()); // SetToTransferMaxToDest();
+                transferableOneWay.AdjustTo(transferableOneWay.GetMaximumToTransfer()); // SetToTransferMaxToDest();
                 //TransferableUIUtility.ClearEditBuffer(this.transferables[i]);
             }
 

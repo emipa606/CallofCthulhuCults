@@ -55,16 +55,18 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (tempList.NullOrEmpty() || listNeedsUpdate)
+                if (!tempList.NullOrEmpty() && !listNeedsUpdate)
                 {
-                    listNeedsUpdate = false;
-                    tempList = new List<IntVec3>();
-                    foreach (var totem in FertilityTotems)
+                    return tempList;
+                }
+
+                listNeedsUpdate = false;
+                tempList = new List<IntVec3>();
+                foreach (var totem in FertilityTotems)
+                {
+                    foreach (var cell in totem.GrowableCells)
                     {
-                        foreach (var cell in totem.GrowableCells)
-                        {
-                            tempList.Add(cell);
-                        }
+                        tempList.Add(cell);
                     }
                 }
 
@@ -77,12 +79,13 @@ namespace CultOfCthulhu
             get
             {
                 var MapComponent_FertilityMods = map.components.OfType<MapComponent_FertilityMods>().FirstOrDefault();
-                var flag = MapComponent_FertilityMods == null;
-                if (flag)
+                if (MapComponent_FertilityMods != null)
                 {
-                    MapComponent_FertilityMods = new MapComponent_FertilityMods(map);
-                    map.components.Add(MapComponent_FertilityMods);
+                    return MapComponent_FertilityMods;
                 }
+
+                MapComponent_FertilityMods = new MapComponent_FertilityMods(map);
+                map.components.Add(MapComponent_FertilityMods);
 
                 return MapComponent_FertilityMods;
             }
@@ -102,11 +105,6 @@ namespace CultOfCthulhu
             listNeedsUpdate = true;
 
             var cells = GrowableCells.ToList();
-            if (cells == null)
-            {
-                Log.Error("Missing Growable Cells List");
-                return;
-            }
 
             GrowableCells.RemoveAll(x => cells.Contains(x));
             listNeedsUpdate = true;

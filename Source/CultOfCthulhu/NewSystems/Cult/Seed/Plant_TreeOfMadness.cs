@@ -29,20 +29,24 @@ namespace CultOfCthulhu
             DoTickWork();
         }
 
-        public void Setup()
+        private void Setup()
         {
-            if (!setup)
+            if (setup)
             {
-                setup = true;
-                if (!def.building.soundAmbient.NullOrUndefined() && sustainerAmbient == null)
-                {
-                    var info = SoundInfo.InMap(this);
-                    sustainerAmbient = def.building.soundAmbient.TrySpawnSustainer(info);
-                }
+                return;
             }
+
+            setup = true;
+            if (def.building.soundAmbient.NullOrUndefined() || sustainerAmbient != null)
+            {
+                return;
+            }
+
+            var info = SoundInfo.InMap(this);
+            sustainerAmbient = def.building.soundAmbient.TrySpawnSustainer(info);
         }
 
-        public void DoTickWork()
+        private void DoTickWork()
         {
             if (isQuiet)
             {
@@ -50,88 +54,89 @@ namespace CultOfCthulhu
             }
 
             ticksUntilQuiet--;
-            if (ticksUntilQuiet <= 0)
+            if (ticksUntilQuiet > 0)
             {
-                isQuiet = true;
-                sustainerAmbient.End();
+                return;
             }
+
+            isQuiet = true;
+            sustainerAmbient.End();
         }
 
         public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
         {
             base.DeSpawn(mode);
-            if (sustainerAmbient != null)
-            {
-                sustainerAmbient.End();
-            }
+            sustainerAmbient?.End();
         }
 
 
         public Thought_Memory GiveObservedThought()
         {
-            if (this.StoringThing() == null)
+            if (this.StoringThing() != null)
             {
-                Thought_MemoryObservation thought_MemoryObservation;
-                thought_MemoryObservation =
-                    (Thought_MemoryObservation) ThoughtMaker.MakeThought(
-                        DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareTree"));
-                thought_MemoryObservation.Target = this;
-                var Dave = thought_MemoryObservation.pawn;
-                if (Dave == null)
-                {
-                    return null;
-                }
+                return null;
+            }
 
-                if (!Dave.IsColonist)
-                {
-                    return thought_MemoryObservation;
-                }
+            var thought_MemoryObservation = (Thought_MemoryObservation) ThoughtMaker.MakeThought(
+                DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareTree"));
+            thought_MemoryObservation.Target = this;
+            var Dave = thought_MemoryObservation.pawn;
+            if (Dave == null)
+            {
+                return null;
+            }
 
-                if (Dave.needs.TryGetNeed<Need_CultMindedness>().CurLevel > 0.7)
-                {
-                    thought_MemoryObservation =
-                        (Thought_MemoryObservation) ThoughtMaker.MakeThought(
-                            DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareTreeCultist"));
-                }
-
+            if (!Dave.IsColonist)
+            {
                 return thought_MemoryObservation;
             }
 
-            return null;
+            if (Dave.needs.TryGetNeed<Need_CultMindedness>().CurLevel > 0.7)
+            {
+                thought_MemoryObservation =
+                    (Thought_MemoryObservation) ThoughtMaker.MakeThought(
+                        DefDatabase<ThoughtDef>.GetNamed("Cults_ObservedNightmareTreeCultist"));
+            }
+
+            return thought_MemoryObservation;
         }
 
 
         public override IEnumerable<FloatMenuOption> GetFloatMenuOptions(Pawn myPawn)
         {
-            ///This code returns all the other float menu options first!
-            var enumerator = base.GetFloatMenuOptions(myPawn).GetEnumerator();
+            // This code returns all the other float menu options first!
+            using var enumerator = base.GetFloatMenuOptions(myPawn).GetEnumerator();
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
                 yield return current;
             }
 
-            if (CultUtility.AreCultObjectsAvailable(Map) == false)
+            if (CultUtility.AreCultObjectsAvailable(Map))
             {
-                if (CultUtility.IsSomeoneInvestigating(Map) == false)
-                {
-                    void action0()
-                    {
-                        var job = new Job(CultsDefOf.Cults_Investigate, myPawn, this)
-                        {
-                            playerForced = true
-                        };
-                        myPawn.jobs.TryTakeOrderedJob(job);
-                        //mypawn.CurJob.EndCurrentJob(JobCondition.InterruptForced);
-                    }
-
-                    yield return new FloatMenuOption("Cults_Investigate".Translate(), action0);
-                }
+                yield break;
             }
+
+            if (CultUtility.IsSomeoneInvestigating(Map))
+            {
+                yield break;
+            }
+
+            void action0()
+            {
+                var job = new Job(CultsDefOf.Cults_Investigate, myPawn, this)
+                {
+                    playerForced = true
+                };
+                myPawn.jobs.TryTakeOrderedJob(job);
+                //mypawn.CurJob.EndCurrentJob(JobCondition.InterruptForced);
+            }
+
+            yield return new FloatMenuOption("Cults_Investigate".Translate(), action0);
         }
 
 
-        public void MuteToggle()
+        private void MuteToggle()
         {
             isMuted = !isMuted;
             if (sustainerAmbient != null && isMuted)
@@ -151,7 +156,7 @@ namespace CultOfCthulhu
 
         public override IEnumerable<Gizmo> GetGizmos()
         {
-            var enumerator = base.GetGizmos().GetEnumerator();
+            using var enumerator = base.GetGizmos().GetEnumerator();
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
@@ -165,16 +170,9 @@ namespace CultOfCthulhu
                 defaultLabel = "Mute".Translate(),
                 defaultDesc = "MuteDesc".Translate(),
                 isActive = () => isMuted,
-                toggleAction = delegate { MuteToggle(); }
+                toggleAction = MuteToggle
             };
             yield return toggleDef;
-        }
-
-        public override void ExposeData()
-        {
-            base.ExposeData();
-            // Save and load the work variables, so they don't default after loading
-            //Scribe_Values.Look<bool>(ref isMuted, "isMuted", false);
         }
     }
 }

@@ -40,12 +40,14 @@ namespace CultOfCthulhu
 
         public void MakeHediff()
         {
-            if (isTransmogrified && Hediff == null)
+            if (!isTransmogrified || Hediff != null)
             {
-                var hediff = HediffMaker.MakeHediff(CultsDefOf.Cults_MonstrousBody, Pawn);
-                hediff.Severity = 1.0f;
-                Pawn.health.AddHediff(hediff);
+                return;
             }
+
+            var hediff = HediffMaker.MakeHediff(CultsDefOf.Cults_MonstrousBody, Pawn);
+            hediff.Severity = 1.0f;
+            Pawn.health.AddHediff(hediff);
         }
 
         public override void PostExposeData()

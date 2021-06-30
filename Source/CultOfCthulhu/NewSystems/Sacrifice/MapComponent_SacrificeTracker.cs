@@ -62,7 +62,10 @@ namespace CultOfCthulhu
 
         public bool wasDoubleTheFun;
 
-        #region Tick
+        public MapComponent_SacrificeTracker(Map map) : base(map)
+        {
+            this.map = map;
+        }
 
         public override void MapComponentTick()
         {
@@ -70,8 +73,6 @@ namespace CultOfCthulhu
             ResolveHasturOathtakers();
             ResolveHasturResurrections();
         }
-
-        #endregion Tick
 
         public override void ExposeData()
         {
@@ -103,25 +104,20 @@ namespace CultOfCthulhu
             base.ExposeData();
         }
 
-        #region Setup
-
         //In-case our component injector doesn't pick up the map component,
         //this method causes a new map component to be generated from a static method.
         public static MapComponent_SacrificeTracker Get(Map map)
         {
             var mapComponent_SacrificeTracker = map.components.OfType<MapComponent_SacrificeTracker>().FirstOrDefault();
-            if (mapComponent_SacrificeTracker == null)
+            if (mapComponent_SacrificeTracker != null)
             {
-                mapComponent_SacrificeTracker = new MapComponent_SacrificeTracker(map);
-                map.components.Add(mapComponent_SacrificeTracker);
+                return mapComponent_SacrificeTracker;
             }
 
-            return mapComponent_SacrificeTracker;
-        }
+            mapComponent_SacrificeTracker = new MapComponent_SacrificeTracker(map);
+            map.components.Add(mapComponent_SacrificeTracker);
 
-        public MapComponent_SacrificeTracker(Map map) : base(map)
-        {
-            this.map = map;
+            return mapComponent_SacrificeTracker;
         }
 
 
@@ -143,10 +139,6 @@ namespace CultOfCthulhu
             ASMwasExcMaster = false;
             HSMwasFamily = false;
         }
-
-        #endregion Setup
-
-        #region Reports
 
         public string GenerateFailureString()
         {
@@ -191,9 +183,9 @@ namespace CultOfCthulhu
                     }
 
                     string familyString = "HumanSacrificeWasFamily".Translate(
-                        lastUsedAltar.SacrificeData.Executioner.LabelShort,
-                        lastUsedAltar.SacrificeData.Executioner.gender.GetPossessive(),
-                        lastRelation.label,
+                        lastUsedAltar.SacrificeData.Executioner?.LabelShort,
+                        lastUsedAltar.SacrificeData.Executioner?.gender.GetPossessive(),
+                        lastRelation?.label,
                         lastSacrificeName
                     );
                     s.Append(familyString + ". ");
@@ -307,7 +299,5 @@ namespace CultOfCthulhu
             LetterStack:
             Find.LetterStack.ReceiveLetter(textLabel, s.ToString(), letterDef, new TargetInfo(lastLocation, map));
         }
-
-        #endregion Reports
     }
 }

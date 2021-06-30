@@ -82,7 +82,7 @@ namespace CultOfCthulhu
         public override void Tick()
         {
             age++;
-            if ((this?.contents?.openDelay ?? -1) > -1 && age > contents.openDelay)
+            if (contents != null && (int) contents?.openDelay > -1 && age > contents.openDelay)
             {
                 DismountAll();
             }
@@ -93,13 +93,15 @@ namespace CultOfCthulhu
             contents?.innerContainer?.ClearAndDestroyContents();
             var map = Map;
             base.Destroy(mode);
-            if (mode == DestroyMode.KillFinalize)
+            if (mode != DestroyMode.KillFinalize)
             {
-                for (var i = 0; i < 1; i++)
-                {
-                    var thing = ThingMaker.MakeThing(ThingDefOf.ChunkSlagSteel);
-                    GenPlace.TryPlaceThing(thing, Position, map, ThingPlaceMode.Near);
-                }
+                return;
+            }
+
+            for (var i = 0; i < 1; i++)
+            {
+                var thing = ThingMaker.MakeThing(ThingDefOf.ChunkSlagSteel);
+                GenPlace.TryPlaceThing(thing, Position, map, ThingPlaceMode.Near);
             }
         }
 
@@ -115,7 +117,7 @@ namespace CultOfCthulhu
                 }
                 else
                 {
-                    GenPlace.TryPlaceThing(pawnFlyer, Position, Map, ThingPlaceMode.Near, out var pawnFlyer2,
+                    GenPlace.TryPlaceThing(pawnFlyer, Position, Map, ThingPlaceMode.Near, out _,
                         delegate { Utility.DebugReport("Successfully Spawned: " + pawnFlyer.Label); });
                 }
             }
@@ -132,7 +134,7 @@ namespace CultOfCthulhu
                 //this.contents.innerContainer.TryDrop(thing, ThingPlaceMode.Near, out thing2);
 
                 GenPlace.TryPlaceThing(thing, Position, Map, ThingPlaceMode.Near, out var thing2,
-                    delegate(Thing placedThing, int count)
+                    delegate(Thing placedThing, int _)
                     {
                         //Log.Message("3");
 
@@ -144,27 +146,28 @@ namespace CultOfCthulhu
                     });
                 //Log.Message("4");
 
-                if (thing2 is Pawn pawn)
+                if (thing2 is not Pawn pawn)
                 {
-                    //Log.Message("5");
+                    continue;
+                }
+                //Log.Message("5");
 
-                    //if (!pawn.IsPrisoner)
-                    //{
-                    //    if (pawn.Faction != pawnFlyer.Faction)
-                    //        pawn.SetFaction(pawnFlyer.Faction);
-                    //}
-                    if (pawn.RaceProps.Humanlike)
+                //if (!pawn.IsPrisoner)
+                //{
+                //    if (pawn.Faction != pawnFlyer.Faction)
+                //        pawn.SetFaction(pawnFlyer.Faction);
+                //}
+                if (pawn.RaceProps.Humanlike)
+                {
+                    if (PawnFlyerDef.landedTale != null)
                     {
-                        if (PawnFlyerDef.landedTale != null)
-                        {
-                            TaleRecorder.RecordTale(PawnFlyerDef.landedTale, pawn);
-                        }
+                        TaleRecorder.RecordTale(PawnFlyerDef.landedTale, pawn);
                     }
+                }
 
-                    if (pawn.IsColonist && pawn.Spawned && !Map.IsPlayerHome)
-                    {
-                        pawn.drafter.Drafted = true;
-                    }
+                if (pawn.IsColonist && pawn.Spawned && !Map.IsPlayerHome)
+                {
+                    pawn.drafter.Drafted = true;
                 }
             }
 

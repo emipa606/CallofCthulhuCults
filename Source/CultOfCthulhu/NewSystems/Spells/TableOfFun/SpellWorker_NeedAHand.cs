@@ -46,7 +46,7 @@ namespace CultOfCthulhu
                 where peeps.RaceProps.Humanlike && peeps.Faction == Faction.OfPlayer && !peeps.Dead &&
                       (peeps.Downed || peeps.InBed()) && !peeps.health.capacities.CapableOf(PawnCapacityDefOf.Moving)
                 select peeps;
-            if (one.Count() > 0)
+            if (one.Any())
             {
                 return one;
             }
@@ -64,32 +64,34 @@ namespace CultOfCthulhu
             BodyPartRecord tempRecord = null;
             foreach (var current in pawn.RaceProps.body.AllParts.InRandomOrder())
             {
-                if (current.def == BodyPartDefOf.Leg ||
-                    current.def == BodyPartDefOf.Arm ||
-                    current.def == BodyPartDefOf.Hand ||
-                    current.def == BodyPartDefOf.Eye ||
-                    current.def == BodyPartDefOf.Jaw)
+                if (current.def != BodyPartDefOf.Leg && current.def != BodyPartDefOf.Arm &&
+                    current.def != BodyPartDefOf.Hand && current.def != BodyPartDefOf.Eye &&
+                    current.def != BodyPartDefOf.Jaw)
                 {
-                    if (pawn.health.hediffSet.PartIsMissing(current))
-                    {
-                        pawn.health.RestorePart(current);
-                        tempRecord = current;
-                        goto Leap;
-                    }
+                    continue;
                 }
+
+                if (!pawn.health.hediffSet.PartIsMissing(current))
+                {
+                    continue;
+                }
+
+                pawn.health.RestorePart(current);
+                tempRecord = current;
+                goto Leap;
             }
 
             foreach (var current in pawn.RaceProps.body.AllParts.InRandomOrder())
             {
-                if (current.def == BodyPartDefOf.Leg ||
-                    current.def == BodyPartDefOf.Arm ||
-                    current.def == BodyPartDefOf.Hand ||
-                    current.def == BodyPartDefOf.Eye ||
-                    current.def == BodyPartDefOf.Jaw)
+                if (current.def != BodyPartDefOf.Leg && current.def != BodyPartDefOf.Arm &&
+                    current.def != BodyPartDefOf.Hand && current.def != BodyPartDefOf.Eye &&
+                    current.def != BodyPartDefOf.Jaw)
                 {
-                    tempRecord = current;
-                    break;
+                    continue;
                 }
+
+                tempRecord = current;
+                break;
             }
 
             Leap:

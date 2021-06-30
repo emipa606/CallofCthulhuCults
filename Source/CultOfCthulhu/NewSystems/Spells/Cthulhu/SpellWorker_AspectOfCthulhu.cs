@@ -80,78 +80,78 @@ namespace CultOfCthulhu
 
             Find.Targeter.BeginTargeting(parms, delegate(LocalTargetInfo t)
             {
-                if (t.Thing is Pawn pawn)
+                if (t.Thing is not Pawn pawn)
                 {
-                    BodyPartRecord tempRecord = null;
-                    var isEye = false;
-                    foreach (var current in pawn.RaceProps.body.AllParts.InRandomOrder())
-                    {
-                        if (current.def == BodyPartDefOf.Eye)
-                        {
-                            if (pawn.health.hediffSet.PartIsMissing(current))
-                            {
-                                isEye = true;
-                                pawn.health.RestorePart(current);
-                                tempRecord = current;
-                                goto Leap;
-                            }
-                        }
+                    return;
+                }
 
-                        if (current.def == BodyPartDefOf.Leg ||
-                            current.def == BodyPartDefOf.Arm ||
-                            current.def == BodyPartDefOf.Hand)
-                        {
-                            if (pawn.health.hediffSet.PartIsMissing(current))
-                            {
-                                pawn.health.RestorePart(current);
-                                tempRecord = current;
-                                goto Leap;
-                            }
-                        }
-                    }
-
-                    foreach (var current in pawn.RaceProps.body.AllParts.InRandomOrder())
+                BodyPartRecord tempRecord = null;
+                var isEye = false;
+                foreach (var current in pawn.RaceProps.body.AllParts.InRandomOrder())
+                {
+                    if (current.def == BodyPartDefOf.Eye)
                     {
-                        if (current.def == BodyPartDefOf.Eye)
+                        if (pawn.health.hediffSet.PartIsMissing(current))
                         {
                             isEye = true;
+                            pawn.health.RestorePart(current);
                             tempRecord = current;
-                            break;
-                        }
-
-                        if (current.def == BodyPartDefOf.Leg ||
-                            current.def == BodyPartDefOf.Arm ||
-                            current.def == BodyPartDefOf.Hand)
-                        {
-                            tempRecord = current;
-                            break;
+                            goto Leap;
                         }
                     }
 
-                    Leap:
-
-
-                    //Error catch: Missing parts!
-                    if (tempRecord == null)
+                    if (current.def != BodyPartDefOf.Leg && current.def != BodyPartDefOf.Arm &&
+                        current.def != BodyPartDefOf.Hand)
                     {
-                        Log.Error("Couldn't find part of the pawn to replace.");
-                        return;
+                        continue;
                     }
 
-                    if (isEye)
+                    if (!pawn.health.hediffSet.PartIsMissing(current))
                     {
-                        pawn.health.AddHediff(CultsDefOf.Cults_CthulhidEyestalk, tempRecord);
-                    }
-                    else
-                    {
-                        pawn.health.AddHediff(CultsDefOf.Cults_CthulhidTentacle, tempRecord);
+                        continue;
                     }
 
-                    Messages.Message("Cults_AspectOfCthulhuDesc".Translate(
-                        pawn.LabelShort, tempRecord.def.label), MessageTypeDefOf.PositiveEvent);
-                    pawn.Map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = pawn.Position;
-                    foundPawn = true;
+                    pawn.health.RestorePart(current);
+                    tempRecord = current;
+                    goto Leap;
                 }
+
+                foreach (var current in pawn.RaceProps.body.AllParts.InRandomOrder())
+                {
+                    if (current.def == BodyPartDefOf.Eye)
+                    {
+                        isEye = true;
+                        tempRecord = current;
+                        break;
+                    }
+
+                    if (current.def != BodyPartDefOf.Leg && current.def != BodyPartDefOf.Arm &&
+                        current.def != BodyPartDefOf.Hand)
+                    {
+                        continue;
+                    }
+
+                    tempRecord = current;
+                    break;
+                }
+
+                Leap:
+
+
+                //Error catch: Missing parts!
+                if (tempRecord == null)
+                {
+                    Log.Error("Couldn't find part of the pawn to replace.");
+                    return;
+                }
+
+                pawn.health.AddHediff(isEye ? CultsDefOf.Cults_CthulhidEyestalk : CultsDefOf.Cults_CthulhidTentacle,
+                    tempRecord);
+
+                Messages.Message("Cults_AspectOfCthulhuDesc".Translate(
+                    pawn.LabelShort, tempRecord.def.label), MessageTypeDefOf.PositiveEvent);
+                pawn.Map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = pawn.Position;
+                foundPawn = true;
             }, null, delegate
             {
                 if (!foundPawn)

@@ -62,12 +62,12 @@ namespace CultOfCthulhu
         {
             get
             {
-                for (var i = 0; i < pods.Count; i++)
+                foreach (var activeDropPodInfo in pods)
                 {
-                    var innerContainer = pods[i].innerContainer;
-                    for (var j = 0; j < innerContainer.Count; j++)
+                    var innerContainer = activeDropPodInfo.innerContainer;
+                    foreach (var thing in innerContainer)
                     {
-                        if (innerContainer[j] is Pawn pawn && pawn.IsColonist && pawn.HostFaction == null)
+                        if (thing is Pawn {IsColonist: true, HostFaction: null})
                         {
                             return true;
                         }
@@ -82,18 +82,14 @@ namespace CultOfCthulhu
         {
             get
             {
-                for (var i = 0; i < pods.Count; i++)
+                foreach (var activeDropPodInfo in pods)
                 {
-                    var innerContainer = pods[i].innerContainer;
-                    for (var j = 0; j < innerContainer.Count; j++)
+                    var innerContainer = activeDropPodInfo.innerContainer;
+                    foreach (var thing in innerContainer)
                     {
-                        if (innerContainer[j] is Pawn pawn)
+                        if (thing is Pawn pawn)
                         {
                             yield return pawn;
-                        }
-                        else if (innerContainer[j] is PawnFlyer pawnFlyer)
-                        {
-                            yield return pawnFlyer;
                         }
                     }
                 }
@@ -127,11 +123,13 @@ namespace CultOfCthulhu
         {
             base.Tick();
             traveledPct += TraveledPctStepPerTick;
-            if (traveledPct >= 1f)
+            if (!(traveledPct >= 1f))
             {
-                traveledPct = 1f;
-                Arrived();
+                return;
             }
+
+            traveledPct = 1f;
+            Arrived();
         }
 
         public void AddPod(ActiveDropPodInfo contents, bool justLeftTheMap)
@@ -139,9 +137,9 @@ namespace CultOfCthulhu
             contents.parent = null;
             pods.Add(contents);
             var innerContainer = contents.innerContainer;
-            for (var i = 0; i < innerContainer.Count; i++)
+            foreach (var thing in innerContainer)
             {
-                if (innerContainer[i] is Pawn pawn && !pawn.IsWorldPawn())
+                if (thing is Pawn pawn && !pawn.IsWorldPawn())
                 {
                     if (!Spawned)
                     {
@@ -159,22 +157,24 @@ namespace CultOfCthulhu
                     }
                 }
 
-                if (innerContainer[i] is PawnFlyer pawnFlyer && !pawnFlyer.IsWorldPawn())
+                if (thing is not PawnFlyer flyer || flyer.IsWorldPawn())
                 {
-                    if (!Spawned)
-                    {
-                        Log.Warning("Passing pawn " + pawnFlyer +
-                                    " to world, but the TravelingTransportPod is not spawned. This means that WorldPawns can discard this pawn which can cause bugs.");
-                    }
+                    continue;
+                }
 
-                    if (justLeftTheMap)
-                    {
-                        pawnFlyer.ExitMap(false, Rot4.Random);
-                    }
-                    else
-                    {
-                        Find.WorldPawns.PassToWorld(pawnFlyer);
-                    }
+                if (!Spawned)
+                {
+                    Log.Warning("Passing pawn " + flyer +
+                                " to world, but the TravelingTransportPod is not spawned. This means that WorldPawns can discard this pawn which can cause bugs.");
+                }
+
+                if (justLeftTheMap)
+                {
+                    flyer.ExitMap(false, Rot4.Random);
+                }
+                else
+                {
+                    Find.WorldPawns.PassToWorld(flyer);
                 }
             }
 
@@ -183,9 +183,9 @@ namespace CultOfCthulhu
 
         public bool ContainsPawn(Pawn p)
         {
-            for (var i = 0; i < pods.Count; i++)
+            foreach (var activeDropPodInfo in pods)
             {
-                if (pods[i].innerContainer.Contains(p))
+                if (activeDropPodInfo.innerContainer.Contains(p))
                 {
                     return true;
                 }
@@ -196,9 +196,9 @@ namespace CultOfCthulhu
 
         public bool ContainsPawnFlyer(PawnFlyer p)
         {
-            for (var i = 0; i < pods.Count; i++)
+            foreach (var activeDropPodInfo in pods)
             {
-                if (pods[i].innerContainer.Contains(p))
+                if (activeDropPodInfo.innerContainer.Contains(p))
                 {
                     return true;
                 }
@@ -230,9 +230,9 @@ namespace CultOfCthulhu
                 }
                 else
                 {
-                    for (var i = 0; i < pods.Count; i++)
+                    foreach (var activeDropPodInfo in pods)
                     {
-                        pods[i].innerContainer.ClearAndDestroyContentsOrPassToWorld();
+                        activeDropPodInfo.innerContainer.ClearAndDestroyContentsOrPassToWorld();
                     }
 
                     RemoveAllPods();
@@ -248,7 +248,7 @@ namespace CultOfCthulhu
                 {
                     LongEventHandler.QueueLongEvent(delegate
                     {
-                        var orGenerateMap = GetOrGenerateMapUtility.GetOrGenerateMap(mapParent.Tile, null);
+                        var unused = GetOrGenerateMapUtility.GetOrGenerateMap(mapParent.Tile, null);
                         string extraMessagePart = null;
                         if (!mapParent.Faction.HostileTo(Faction.OfPlayer))
                         {
@@ -296,14 +296,14 @@ namespace CultOfCthulhu
                 intVec = DropCellFinder.FindRaidDropCenterDistant(map);
             }
 
-            for (var i = 0; i < pods.Count; i++)
+            foreach (var activeDropPodInfo in pods)
             {
                 Utility.DebugReport("PawnFlyerIncoming Generation Started");
                 DropCellFinder.TryFindDropSpotNear(intVec, map, out var c, false, true);
                 var pawnFlyerIncoming =
                     (PawnFlyersIncoming) ThingMaker.MakeThing(PawnFlyerDef.incomingDef);
                 pawnFlyerIncoming.pawnFlyer = pawnFlyer;
-                pawnFlyerIncoming.Contents = pods[i];
+                pawnFlyerIncoming.Contents = activeDropPodInfo;
                 GenSpawn.Spawn(pawnFlyerIncoming, c, map);
             }
 
@@ -320,38 +320,34 @@ namespace CultOfCthulhu
 
         private void GivePodContentsToCaravan(Caravan caravan)
         {
-            for (var i = 0; i < pods.Count; i++)
+            foreach (var activeDropPodInfo in pods)
             {
                 var tmpContainedThings = new List<Thing>();
                 //PawnFlyersTraveling.tmpContainedThing.Clear();
 
-                tmpContainedThings.AddRange(pods[i].innerContainer);
+                tmpContainedThings.AddRange(activeDropPodInfo.innerContainer);
                 //this.pods[i].innerContainer.
-                for (var j = 0; j < tmpContainedThings.Count; j++)
+                foreach (var thing in tmpContainedThings)
                 {
-                    pods[i].innerContainer.Remove(tmpContainedThings[j]);
-                    tmpContainedThings[j].holdingOwner = null;
-                    if (tmpContainedThings[j] is Pawn pawn)
+                    activeDropPodInfo.innerContainer.Remove(thing);
+                    thing.holdingOwner = null;
+                    if (thing is Pawn pawn)
                     {
                         caravan.AddPawn(pawn, true);
                     }
-                    else if (tmpContainedThings[j] is PawnFlyer pawnFlyer)
-                    {
-                        caravan.AddPawn(pawnFlyer, true);
-                    }
                     else
                     {
-                        var pawn2 = CaravanInventoryUtility.FindPawnToMoveInventoryTo(tmpContainedThings[j],
+                        var pawn2 = CaravanInventoryUtility.FindPawnToMoveInventoryTo(thing,
                             caravan.PawnsListForReading, null);
                         var flag = false;
                         if (pawn2 != null)
                         {
-                            flag = pawn2.inventory.innerContainer.TryAdd(tmpContainedThings[j]);
+                            flag = pawn2.inventory.innerContainer.TryAdd(thing);
                         }
 
                         if (!flag)
                         {
-                            tmpContainedThings[j].Destroy();
+                            thing.Destroy();
                         }
                     }
                 }
@@ -367,18 +363,14 @@ namespace CultOfCthulhu
         private void SpawnCaravanAtDestinationTile()
         {
             tmpPawns.Clear();
-            for (var i = 0; i < pods.Count; i++)
+            foreach (var activeDropPodInfo in pods)
             {
-                var innerContainer = pods[i].innerContainer;
-                for (var j = 0; j < innerContainer.Count; j++)
+                var innerContainer = activeDropPodInfo.innerContainer;
+                foreach (var thing in innerContainer)
                 {
-                    if (innerContainer[j] is Pawn pawn)
+                    if (thing is Pawn pawn)
                     {
                         tmpPawns.Add(pawn);
-                    }
-                    else if (innerContainer[j] is PawnFlyer pawnFlyer)
-                    {
-                        tmpPawns.Add(pawnFlyer);
                     }
                 }
             }
@@ -390,26 +382,28 @@ namespace CultOfCthulhu
 
             var o = CaravanMaker.MakeCaravan(tmpPawns, Faction.OfPlayer, startingTile, true);
             o.AddPawn(pawnFlyer, false);
-            for (var k = 0; k < pods.Count; k++)
+            foreach (var activeDropPodInfo in pods)
             {
-                var innerContainer2 = pods[k].innerContainer;
-                for (var l = 0; l < innerContainer2.Count; l++)
+                var innerContainer2 = activeDropPodInfo.innerContainer;
+                foreach (var thing in innerContainer2)
                 {
-                    if (!(innerContainer2[l] is Pawn))
+                    if (!(thing is Pawn))
                     {
-                        var pawn2 = CaravanInventoryUtility.FindPawnToMoveInventoryTo(innerContainer2[l],
+                        var pawn2 = CaravanInventoryUtility.FindPawnToMoveInventoryTo(thing,
                             tmpPawns, null);
-                        pawn2.inventory.innerContainer.TryAdd(innerContainer2[l]);
+                        pawn2.inventory.innerContainer.TryAdd(thing);
                     }
                     else
                     {
-                        var pawn3 = innerContainer2[l] as Pawn;
-                        if (!pawn3.IsPrisoner)
+                        var pawn3 = thing as Pawn;
+                        if (pawn3.IsPrisoner)
                         {
-                            if (pawn3.Faction != pawnFlyer.Faction)
-                            {
-                                pawn3.SetFaction(pawnFlyer.Faction);
-                            }
+                            continue;
+                        }
+
+                        if (pawn3.Faction != pawnFlyer.Faction)
+                        {
+                            pawn3.SetFaction(pawnFlyer.Faction);
                         }
                     }
                 }
@@ -422,20 +416,20 @@ namespace CultOfCthulhu
 
         private void RemoveAllPawnsFromWorldPawns()
         {
-            for (var i = 0; i < pods.Count; i++)
+            foreach (var activeDropPodInfo in pods)
             {
-                var innerContainer = pods[i].innerContainer;
-                for (var j = 0; j < innerContainer.Count; j++)
+                var innerContainer = activeDropPodInfo.innerContainer;
+                foreach (var thing in innerContainer)
                 {
-                    var pawn = innerContainer[j] as Pawn;
-                    Pawn pawnFlyer = innerContainer[j] as PawnFlyer;
+                    var pawn = thing as Pawn;
+                    Pawn flyer = thing as PawnFlyer;
                     if (pawn != null && pawn.IsWorldPawn())
                     {
                         Find.WorldPawns.RemovePawn(pawn);
                     }
-                    else if (pawnFlyer != null && pawn.IsWorldPawn())
+                    else if (flyer != null && pawn.IsWorldPawn())
                     {
-                        Find.WorldPawns.RemovePawn(pawnFlyer);
+                        Find.WorldPawns.RemovePawn(flyer);
                     }
                 }
             }
@@ -443,9 +437,9 @@ namespace CultOfCthulhu
 
         private void RemoveAllPods()
         {
-            for (var i = 0; i < pods.Count; i++)
+            foreach (var activeDropPodInfo in pods)
             {
-                pods[i].savePawnsWithReferenceMode = false;
+                activeDropPodInfo.savePawnsWithReferenceMode = false;
             }
 
             pods.Clear();

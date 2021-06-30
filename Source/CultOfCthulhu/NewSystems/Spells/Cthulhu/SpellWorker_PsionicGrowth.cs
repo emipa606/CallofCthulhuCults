@@ -69,12 +69,14 @@ namespace CultOfCthulhu
             //Check if their brain is already upgraded.
             foreach (var current in pawn(map).health.hediffSet.hediffs)
             {
-                if (current.def == CultsDefOf.Cults_PsionicBrain)
+                if (current.def != CultsDefOf.Cults_PsionicBrain)
                 {
-                    Messages.Message(pawn(map).LabelShort + " already posesses a brain with psionic power.",
-                        MessageTypeDefOf.RejectInput);
-                    return false;
+                    continue;
                 }
+
+                Messages.Message(pawn(map).LabelShort + " already posesses a brain with psionic power.",
+                    MessageTypeDefOf.RejectInput);
+                return false;
             }
 
             //Cthulhu.Utility.DebugReport("CanFire: " + this.def.defName);
@@ -95,46 +97,60 @@ namespace CultOfCthulhu
 
 
             var rand = new Random().Next(1, 100);
-            if (rand > 90)
+            switch (rand)
             {
-                // No effect
-            }
-            else if (rand > 50 && rand <= 90)
-            {
-                //A15 code...
-                //HediffDef quiet = null;
-                //BodyPartDamageInfo value = new BodyPartDamageInfo(tempRecord, false, quiet);
-                //pawn(map).TakeDamage(new DamageInfo(DamageDefOf.Cut, Rand.Range(5, 8), null, new BodyPartDamageInfo?(value), null));
-                if (headRecord != null)
+                case > 90:
+                    // No effect
+                    break;
+                case > 50 and <= 90:
                 {
-                    pawn(map).TakeDamage(new DamageInfo(DamageDefOf.Cut, Rand.Range(5, 8), 1f, -1f, null, headRecord));
+                    //A15 code...
+                    //HediffDef quiet = null;
+                    //BodyPartDamageInfo value = new BodyPartDamageInfo(tempRecord, false, quiet);
+                    //pawn(map).TakeDamage(new DamageInfo(DamageDefOf.Cut, Rand.Range(5, 8), null, new BodyPartDamageInfo?(value), null));
+                    if (headRecord != null)
+                    {
+                        pawn(map).TakeDamage(new DamageInfo(DamageDefOf.Cut, Rand.Range(5, 8), 1f, -1f, null,
+                            headRecord));
+                    }
+
+                    break;
                 }
-            }
-            else if (rand > 10 && rand <= 50)
-            {
-                //HediffDef quiet = null;
-                //BodyPartDamageInfo value = new BodyPartDamageInfo(tempRecord, false, quiet);
-                if (headRecord != null)
+                case > 10 and <= 50:
                 {
-                    pawn(map).TakeDamage(
-                        new DamageInfo(DamageDefOf.Blunt, Rand.Range(8, 10), 1f, -1f, null, headRecord));
+                    //HediffDef quiet = null;
+                    //BodyPartDamageInfo value = new BodyPartDamageInfo(tempRecord, false, quiet);
+                    if (headRecord != null)
+                    {
+                        pawn(map).TakeDamage(
+                            new DamageInfo(DamageDefOf.Blunt, Rand.Range(8, 10), 1f, -1f, null, headRecord));
+                    }
+
+                    break;
                 }
-            }
-            else if (rand <= 10)
-            {
-                //HediffDef quiet = null;
-                //BodyPartDamageInfo value = new BodyPartDamageInfo(tempRecord, false, quiet);
-                if (headRecord != null)
+                case <= 10:
                 {
-                    pawn(map).TakeDamage(
-                        new DamageInfo(DamageDefOf.Bite, Rand.Range(10, 12), -1f, 1f, null, headRecord));
-                    pawn(map).health.AddHediff(HediffDefOf.WoundInfection, headRecord);
+                    //HediffDef quiet = null;
+                    //BodyPartDamageInfo value = new BodyPartDamageInfo(tempRecord, false, quiet);
+                    if (headRecord != null)
+                    {
+                        pawn(map).TakeDamage(
+                            new DamageInfo(DamageDefOf.Bite, Rand.Range(10, 12), -1f, 1f, null, headRecord));
+                        pawn(map).health.AddHediff(HediffDefOf.WoundInfection, headRecord);
+                    }
+
+                    break;
                 }
             }
 
             pawn(map).health.AddHediff(CultsDefOf.Cults_PsionicBrain, pawn(map).health.hediffSet.GetBrain());
             Messages.Message(pawn(map).LabelShort + "'s brain has been enhanced with great psionic power.",
                 MessageTypeDefOf.PositiveEvent);
+
+            if (map == null)
+            {
+                return true;
+            }
 
             map.GetComponent<MapComponent_SacrificeTracker>().lastLocation = pawn(map).Position;
             Utility.ApplyTaleDef("Cults_SpellPsionicGrowth", pawn(map));

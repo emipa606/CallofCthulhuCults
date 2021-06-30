@@ -21,6 +21,11 @@ namespace BastCult
             var inspirations = DefDatabase<InspirationDef>.AllDefsListForReading;
 
             //Grab all colonists.
+            if (map?.PlayerPawnsForStoryteller == null)
+            {
+                return true;
+            }
+
             foreach (var colonist in map.PlayerPawnsForStoryteller)
             {
                 //Try twice.

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using CallOfCthulhu;
 using Cthulhu;
@@ -230,19 +229,22 @@ namespace CultOfCthulhu
 
             foreach (var current in altar.Map.mapPawns.AllPawnsSpawned)
             {
-                if (current.RaceProps.Animal && current.Faction == Faction.OfPlayer)
+                if (!current.RaceProps.Animal || current.Faction != Faction.OfPlayer)
                 {
-                    Action action;
-                    var localCol = current;
-                    action = delegate
-                    {
-                        altar.Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
-                        altar.Map.GetComponent<MapComponent_SacrificeTracker>().lastSacrificeType =
-                            CultUtility.SacrificeType.animal;
-                        altar.tempSacrifice = localCol;
-                    };
-                    list.Add(new FloatMenuOption(localCol.LabelShort, action));
+                    continue;
                 }
+
+                var localCol = current;
+
+                void Action()
+                {
+                    altar.Map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar = altar;
+                    altar.Map.GetComponent<MapComponent_SacrificeTracker>().lastSacrificeType =
+                        CultUtility.SacrificeType.animal;
+                    altar.tempSacrifice = localCol;
+                }
+
+                list.Add(new FloatMenuOption(localCol.LabelShort, Action));
             }
 
             Find.WindowStack.Add(new FloatMenu(list));
@@ -250,9 +252,6 @@ namespace CultOfCthulhu
 
         public static void OpenActorSelectMenu(Building_SacrificialAltar altar, ActorType actorType)
         {
-            ///
-            /// Error Handling
-            ///
             if (altar == null)
             {
                 Utility.ErrorReport("Altar Null Exception");
@@ -264,7 +263,7 @@ namespace CultOfCthulhu
                 Utility.ErrorReport("Map Null Exception");
             }
 
-            if (altar.Map.mapPawns == null)
+            if (altar.Map?.mapPawns == null)
             {
                 Utility.ErrorReport("mapPawns Null Exception");
                 return;
@@ -281,10 +280,6 @@ namespace CultOfCthulhu
             //    return;
             //}
 
-            ///
-            /// Get Actor List
-            /// 
-
             var actorList = new List<Pawn>();
             var s = new StringBuilder();
             switch (actorType)
@@ -300,13 +295,15 @@ namespace CultOfCthulhu
                         }
 
                         // Executioners must be able to use tool and move.
-                        if (candidate.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation) &&
-                            candidate.health.capacities.CapableOf(PawnCapacityDefOf.Moving))
+                        if (!candidate.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation) ||
+                            !candidate.health.capacities.CapableOf(PawnCapacityDefOf.Moving))
                         {
-                            // Add the actors.
-                            actorList.Add(candidate);
-                            Utility.DebugReport("Actor List :: Added " + candidate.Name);
+                            continue;
                         }
+
+                        // Add the actors.
+                        actorList.Add(candidate);
+                        Utility.DebugReport("Actor List :: Added " + candidate.Name);
                     }
 
                     Utility.DebugReport(s.ToString());
@@ -321,21 +318,20 @@ namespace CultOfCthulhu
                         }
 
                         // Preachers must be able to move and talk.
-                        if (candidate.health.capacities.CapableOf(PawnCapacityDefOf.Moving) &&
-                            candidate.health.capacities.CapableOf(PawnCapacityDefOf.Talking))
+                        if (!candidate.health.capacities.CapableOf(PawnCapacityDefOf.Moving) ||
+                            !candidate.health.capacities.CapableOf(PawnCapacityDefOf.Talking))
                         {
-                            // Add the actors.
-                            actorList.Add(candidate);
-                            Utility.DebugReport("Actor List :: Added " + candidate.Name);
+                            continue;
                         }
+
+                        // Add the actors.
+                        actorList.Add(candidate);
+                        Utility.DebugReport("Actor List :: Added " + candidate.Name);
                     }
 
                     Utility.DebugReport(s.ToString());
                     break;
                 case ActorType.prisoner:
-                    ///
-                    /// ERROR HANDLING
-                    /// 
 
                     if (altar.Map.mapPawns.PrisonersOfColonySpawned == null)
                     {
@@ -350,7 +346,7 @@ namespace CultOfCthulhu
                     }
 
 
-                    /// Cycle through possible candidates in the map's prisoner list
+                    // Cycle through possible candidates in the map's prisoner list
                     foreach (var candidate in altar.Map.mapPawns.PrisonersOfColonySpawned)
                     {
                         if (!Utility.IsActorAvailable(candidate, true))
@@ -363,9 +359,6 @@ namespace CultOfCthulhu
 
                     break;
                 case ActorType.animalSacrifice:
-                    ///
-                    /// ERROR HANDLING
-                    /// 
 
                     if (altar.Map.mapPawns.AllPawnsSpawned == null)
                     {
@@ -379,7 +372,7 @@ namespace CultOfCthulhu
                         return;
                     }
 
-                    /// Cycle through possible candidates in the player's owned animals list.
+                    // Cycle through possible candidates in the player's owned animals list.
                     foreach (var candidate in altar.Map.mapPawns.AllPawnsSpawned)
                     {
                         if (!Utility.IsActorAvailable(candidate, true))
@@ -408,19 +401,12 @@ namespace CultOfCthulhu
                     break;
             }
 
-            /// Let the player know there are no prisoners available.
-            if (actorList != null)
+            // Let the player know there are no prisoners available.
+            if (actorList.Count <= 0)
             {
-                if (actorList.Count <= 0)
-                {
-                    Messages.Message("No " + actorType + "s available.", MessageTypeDefOf.RejectInput);
-                    return;
-                }
+                Messages.Message("No " + actorType + "s available.", MessageTypeDefOf.RejectInput);
+                return;
             }
-
-            ///
-            /// Create float menus
-            ///
 
             //There must always be a none.
             var list = new List<FloatMenuOption>
@@ -430,9 +416,9 @@ namespace CultOfCthulhu
 
             foreach (var actor in actorList)
             {
-                Action action;
                 var localCol = actor;
-                action = delegate
+
+                void Action()
                 {
                     switch (actorType)
                     {
@@ -460,8 +446,9 @@ namespace CultOfCthulhu
                             altar.tempSacrifice = localCol;
                             break;
                     }
-                };
-                list.Add(new FloatMenuOption(localCol.LabelShort, action));
+                }
+
+                list.Add(new FloatMenuOption(localCol.LabelShort, Action));
             }
 
             Find.WindowStack.Add(new FloatMenu(list));
@@ -501,9 +488,9 @@ namespace CultOfCthulhu
                     continue;
                 }
 
-                Action action;
                 var localDeity = current;
-                action = delegate
+
+                void Action()
                 {
                     MapComponent_SacrificeTracker.Get(altar.Map).lastUsedAltar = altar;
                     switch (deityType)
@@ -519,14 +506,14 @@ namespace CultOfCthulhu
                             altar.tempCurrentSpell = null;
                             break;
                     }
-                };
+                }
 
                 bool extraPartOnGUI(Rect rect)
                 {
                     return DeityInfoCardButton(rect.x + 5f, rect.y + ((rect.height - 24f) / 2f), current);
                 }
 
-                list.Add(new FloatMenuOption(localDeity.LabelCap, action, MenuOptionPriority.Default, null, null, 29f,
+                list.Add(new FloatMenuOption(localDeity.LabelCap, Action, MenuOptionPriority.Default, null, null, 29f,
                     extraPartOnGUI));
             }
 

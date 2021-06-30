@@ -89,18 +89,22 @@ namespace CultOfCthulhu
             return result;
         }
 
+
         private void RevealDeityCheck()
         {
             //Cthulhu.Utility.DebugReport("Reveal Deity Check");
-            var deityResearch = ResearchProjectDef.Named("Forbidden_Deities");
+            if (!Utility.deityResearch.IsFinished)
+            {
+                return;
+            }
 
-            if (deityResearch.IsFinished && undiscoveredEntities().Count > 0)
+            if (DeityCache.Any(pair => !pair.Key.discovered))
             {
                 foreach (var entity in undiscoveredEntities())
                 {
                     entity.discovered = true;
                     Utility.DebugReport("Change research should be called.");
-                    Utility.ChangeResearchProgress(deityResearch, 0f, true);
+                    Utility.ChangeResearchProgress(Utility.deityResearch, 0f, true);
                     var message = "Cults_DiscoveredDeityMessage".Translate(entity.Label);
                     Messages.Message(message, MessageTypeDefOf.PositiveEvent);
 
@@ -113,9 +117,9 @@ namespace CultOfCthulhu
                     break;
                 }
             }
-            else if (undiscoveredEntities().Count == 0)
+            else
             {
-                Utility.ChangeResearchProgress(deityResearch, deityResearch.baseCost);
+                Utility.ChangeResearchProgress(Utility.deityResearch, Utility.deityResearch.baseCost);
             }
         }
 

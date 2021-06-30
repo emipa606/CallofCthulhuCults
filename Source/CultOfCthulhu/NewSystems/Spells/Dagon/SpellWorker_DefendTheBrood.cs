@@ -20,25 +20,27 @@ namespace CultOfCthulhu
 
         public override bool CanSummonNow(Map map)
         {
-            if (Brood(map) != null)
+            if (Brood(map) == null)
             {
-                var tempPawns = new List<Pawn>(Brood(map));
-                foreach (var p in tempPawns)
-                {
-                    if (p.Dead)
-                    {
-                        Brood(map).Remove(p);
-                    }
-                }
+                return true;
+            }
 
-                if (Brood(map).Count + NUMTOSPAWN > HARDLIMIT)
+            var tempPawns = new List<Pawn>(Brood(map));
+            foreach (var p in tempPawns)
+            {
+                if (p.Dead)
                 {
-                    Messages.Message("DefendTheBroodLimit".Translate(), MessageTypeDefOf.RejectInput);
-                    return false;
+                    Brood(map).Remove(p);
                 }
             }
 
-            return true;
+            if (Brood(map).Count + NUMTOSPAWN <= HARDLIMIT)
+            {
+                return true;
+            }
+
+            Messages.Message("DefendTheBroodLimit".Translate(), MessageTypeDefOf.RejectInput);
+            return false;
         }
 
         protected override bool CanFireNowSub(IncidentParms parms)
@@ -50,7 +52,7 @@ namespace CultOfCthulhu
 
         protected List<Pawn> SpawnPawns(IncidentParms parms)
         {
-            var map = (Map) parms.target;
+            var unused = (Map) parms.target;
             var list = new List<Pawn>();
 
             var listBugs = new List<PawnKindDef>
@@ -134,7 +136,11 @@ namespace CultOfCthulhu
                 return false;
             }
 
-            var map = parms.target as Map;
+            if (!(parms.target is Map map))
+            {
+                return false;
+            }
+
             //Find a drop spot
             if (!CultUtility.TryFindDropCell(map.Center, map, 70, out var intVec))
             {
@@ -148,7 +154,7 @@ namespace CultOfCthulhu
                 return false;
             }
 
-            var spotFound = RCellFinder.TryFindRandomSpotJustOutsideColony(list[0], out var chillSpot);
+            var unused = RCellFinder.TryFindRandomSpotJustOutsideColony(list[0], out var chillSpot);
             //LordJob_VisitColony lordJob = new LordJob_VisitColony(parms.faction, chillSpot);
 
             //If they have the sign of dagon, then use it.
@@ -160,15 +166,7 @@ namespace CultOfCthulhu
                 chillSpot2 = dagonSign.Position;
             }
 
-            if (chillSpot2 != null)
-            {
-                chillSpot = chillSpot2;
-            }
-
-            if (chillSpot == null)
-            {
-                return false;
-            }
+            chillSpot = chillSpot2;
 
             //Log.Message("SpellWorker_DefendTheBrood LordJob_DefendPoint");
             var lordJob = new LordJob_DefendPoint(chillSpot);

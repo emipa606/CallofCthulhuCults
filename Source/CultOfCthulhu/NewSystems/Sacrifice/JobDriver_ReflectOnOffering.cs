@@ -67,14 +67,16 @@ namespace CultOfCthulhu
             {
                 initAction = delegate
                 {
-                    if (altar != null)
+                    if (altar == null)
                     {
-                        if (altar.currentOfferingState == Building_SacrificialAltar.OfferingState.offering)
-                        {
-                            altar.ChangeState(Building_SacrificialAltar.State.offering,
-                                Building_SacrificialAltar.OfferingState.finished);
-                            //Map.GetComponent<MapComponent_SacrificeTracker>().ClearVariables();
-                        }
+                        return;
+                    }
+
+                    if (altar.currentOfferingState == Building_SacrificialAltar.OfferingState.offering)
+                    {
+                        altar.ChangeState(Building_SacrificialAltar.State.offering,
+                            Building_SacrificialAltar.OfferingState.finished);
+                        //Map.GetComponent<MapComponent_SacrificeTracker>().ClearVariables();
                     }
                 },
                 defaultCompleteMode = ToilCompleteMode.Instant

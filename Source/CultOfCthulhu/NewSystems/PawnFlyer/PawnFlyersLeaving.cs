@@ -152,18 +152,20 @@ namespace CultOfCthulhu
 
         public override void DrawAt(Vector3 drawLoc, bool flip)
         {
-            if (drawLoc.InBounds(Map))
+            if (!drawLoc.InBounds(Map))
             {
-                pawnFlyer.Drawer.DrawAt(drawLoc);
-                var shadowMaterial = ShadowMaterial;
-                if (!(shadowMaterial == null))
-                {
-                    Skyfaller.DrawDropSpotShadow(base.DrawPos, Rotation, shadowMaterial, def.skyfaller.shadowSize,
-                        ticksSinceStart);
-                }
-
-                //DropPodAnimationUtility.DrawDropSpotShadow(this, this.ticksSinceStart);
+                return;
             }
+
+            pawnFlyer.Drawer.DrawAt(drawLoc);
+            var shadowMaterial = ShadowMaterial;
+            if (!(shadowMaterial == null))
+            {
+                Skyfaller.DrawDropSpotShadow(base.DrawPos, Rotation, shadowMaterial, def.skyfaller.shadowSize,
+                    ticksSinceStart);
+            }
+
+            //DropPodAnimationUtility.DrawDropSpotShadow(this, this.ticksSinceStart);
         }
 
         private void GroupLeftMap()
@@ -199,16 +201,18 @@ namespace CultOfCthulhu
             tmpActiveDropPods.Clear();
             tmpActiveDropPods.AddRange(Map.listerThings.ThingsInGroup(ThingRequestGroup.ActiveDropPod));
 
-            for (var i = 0; i < tmpActiveDropPods.Count; i++)
+            foreach (var thing in tmpActiveDropPods)
             {
-                if (tmpActiveDropPods[i] is PawnFlyersLeaving pawnFlyerLeaving && pawnFlyerLeaving.groupID == groupID)
+                if (thing is not PawnFlyersLeaving pawnFlyerLeaving || pawnFlyerLeaving.groupID != groupID)
                 {
-                    Utility.DebugReport("Transport Already Left");
-                    pawnFlyerLeaving.alreadyLeft = true;
-                    PawnFlyersTraveling.AddPod(pawnFlyerLeaving.contents, true);
-                    pawnFlyerLeaving.contents = null;
-                    pawnFlyerLeaving.Destroy();
+                    continue;
                 }
+
+                Utility.DebugReport("Transport Already Left");
+                pawnFlyerLeaving.alreadyLeft = true;
+                PawnFlyersTraveling.AddPod(pawnFlyerLeaving.contents, true);
+                pawnFlyerLeaving.contents = null;
+                pawnFlyerLeaving.Destroy();
             }
         }
 
@@ -216,12 +220,12 @@ namespace CultOfCthulhu
         public static Lord FindLord(int transportersGroup, Map map)
         {
             var lords = map.lordManager.lords;
-            for (var i = 0; i < lords.Count; i++)
+            foreach (var findLord in lords)
             {
-                if (lords[i].LordJob is LordJob_LoadAndEnterTransportersPawn lordJob_LoadAndEnterTransporters &&
+                if (findLord.LordJob is LordJob_LoadAndEnterTransportersPawn lordJob_LoadAndEnterTransporters &&
                     lordJob_LoadAndEnterTransporters.transportersGroup == transportersGroup)
                 {
-                    return lords[i];
+                    return findLord;
                 }
             }
 

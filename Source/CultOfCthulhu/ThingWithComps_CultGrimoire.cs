@@ -42,18 +42,11 @@ namespace CultOfCthulhu
                 icon = des.icon,
                 iconProportions = des.iconProportions,
                 iconDrawScale = des.iconDrawScale,
-                iconTexCoords = des.iconTexCoords
+                iconTexCoords = des.iconTexCoords,
+                defaultIconColor = stuff?.stuffProps.color ?? buildable.uiIconColor,
+                hotKey = KeyBindingDefOf.Misc11
             };
-            if (stuff != null)
-            {
-                command_Action.defaultIconColor = stuff.stuffProps.color;
-            }
-            else
-            {
-                command_Action.defaultIconColor = buildable.uiIconColor;
-            }
 
-            command_Action.hotKey = KeyBindingDefOf.Misc11;
             yield return command_Action;
         }
 
@@ -61,9 +54,9 @@ namespace CultOfCthulhu
         private static Designator_Build FindDesignator(BuildableDef buildable)
         {
             var allDefsListForReading = DefDatabase<DesignationCategoryDef>.AllDefsListForReading;
-            for (var i = 0; i < allDefsListForReading.Count; i++)
+            foreach (var designationCategoryDef in allDefsListForReading)
             {
-                foreach (var current in allDefsListForReading[i].ResolvedAllowedDesignators)
+                foreach (var current in designationCategoryDef.ResolvedAllowedDesignators)
                 {
                     if (current is Designator_Build designator_Build && designator_Build.PlacingDef == buildable)
                     {

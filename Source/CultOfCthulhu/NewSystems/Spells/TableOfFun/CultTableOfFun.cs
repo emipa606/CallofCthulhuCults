@@ -59,7 +59,7 @@ namespace CultOfCthulhu
                 return;
             }
 
-            Utility.DebugReport("Failed to utilize " + temp);
+            Utility.DebugReport("Failed to utilize");
         }
 
 

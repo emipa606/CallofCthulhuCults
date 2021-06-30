@@ -46,14 +46,13 @@ namespace CultOfCthulhu
             {
                 if (Colonists((Map) parms.target).Count() != 0)
                 {
-                    if (Colonists((Map) parms.target).TryRandomElement(out var colonist))
+                    if (!Colonists((Map) parms.target).TryRandomElement(out var colonist))
                     {
-                        if (colonist != null)
-                        {
-                            //Cthulhu.Utility.DebugReport("Destroyed: " + item.ToString());
-                            colonist.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.Berserk);
-                        }
+                        continue;
                     }
+
+                    //Cthulhu.Utility.DebugReport("Destroyed: " + item.ToString());
+                    colonist?.mindState.mentalStateHandler.TryStartMentalState(MentalStateDefOf.Berserk);
                 }
                 else
                 {

@@ -28,7 +28,7 @@ namespace CultOfCthulhu
 
         public override bool ShouldSkip(Pawn pawn, bool forced = false)
         {
-            return NightmareAltars(pawn).Count() == 0;
+            return !NightmareAltars(pawn).Any();
         }
 
         public override bool HasJobOnThing(Pawn pawn, Thing t, bool forced = false)

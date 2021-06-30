@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using RimWorld;
 using Verse;
@@ -27,7 +26,7 @@ namespace CultOfCthulhu
             get
             {
                 var curState = State.Asleep;
-                switch (ActiveVictims.Count())
+                switch (ActiveVictims.Count)
                 {
                     case 0:
                         curState = State.Awake;
@@ -49,12 +48,14 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (tempCells.NullOrEmpty() || cellsDirty)
+                if (!tempCells.NullOrEmpty() && !cellsDirty)
                 {
-                    cellsDirty = false;
-                    tempCells = new List<IntVec3>(GenRadial.RadialCellsAround(Position, def.specialDisplayRadius,
-                        true));
+                    return tempCells;
                 }
+
+                cellsDirty = false;
+                tempCells = new List<IntVec3>(GenRadial.RadialCellsAround(Position, def.specialDisplayRadius,
+                    true));
 
                 return tempCells;
             }
@@ -66,22 +67,24 @@ namespace CultOfCthulhu
         {
             get
             {
-                if (curGraphic == null)
+                if (curGraphic != null)
                 {
-                    switch (CurState)
-                    {
-                        case State.Asleep:
-                            curGraphic = GraphicConstructor(
-                                "Building/Exotic/SleepTotem/SleepTotemAsleep");
-                            break;
-                        case State.Drowsy:
-                            curGraphic = DefaultGraphic;
-                            break;
-                        case State.Awake:
-                            curGraphic = GraphicConstructor(
-                                "Building/Exotic/SleepTotem/SleepTotemAwake");
-                            break;
-                    }
+                    return curGraphic;
+                }
+
+                switch (CurState)
+                {
+                    case State.Asleep:
+                        curGraphic = GraphicConstructor(
+                            "Building/Exotic/SleepTotem/SleepTotemAsleep");
+                        break;
+                    case State.Drowsy:
+                        curGraphic = DefaultGraphic;
+                        break;
+                    case State.Awake:
+                        curGraphic = GraphicConstructor(
+                            "Building/Exotic/SleepTotem/SleepTotemAwake");
+                        break;
                 }
 
                 return curGraphic;
@@ -114,7 +117,7 @@ namespace CultOfCthulhu
             base.TickRare();
             if (CurState != State.Asleep)
             {
-                var potentialVictim = PotentialVictims()?.RandomElement() ?? null;
+                var potentialVictim = PotentialVictims()?.RandomElement();
                 if (potentialVictim != null)
                 {
                     TryToSendToSleep(potentialVictim);
@@ -149,26 +152,30 @@ namespace CultOfCthulhu
                     break;
             }
 
-            if (TicksToReset != -1 && TicksToReset > Find.TickManager.TicksGame)
+            if (TicksToReset == -1 || TicksToReset <= Find.TickManager.TicksGame)
             {
-                var ticksUntilRecovery = TicksToReset - Find.TickManager.TicksGame;
-                s.AppendLine("Cults_SleepTotem_FullyAwakensIn".Translate(ticksUntilRecovery.ToStringTicksToPeriod()));
+                return s.ToString().TrimEndNewlines();
             }
+
+            var ticksUntilRecovery = TicksToReset - Find.TickManager.TicksGame;
+            s.AppendLine("Cults_SleepTotem_FullyAwakensIn".Translate(ticksUntilRecovery.ToStringTicksToPeriod()));
 
             return s.ToString().TrimEndNewlines();
         }
 
         public IEnumerable<Pawn> PotentialVictims()
         {
-            if (!SleepableCells.NullOrEmpty())
+            if (SleepableCells.NullOrEmpty())
             {
-                foreach (var cell in SleepableCells)
+                yield break;
+            }
+
+            foreach (var cell in SleepableCells)
+            {
+                var victim = cell.GetFirstPawn(MapHeld);
+                if (victim != null && CanSendToSleep(victim))
                 {
-                    var victim = cell.GetFirstPawn(MapHeld);
-                    if (victim != null && CanSendToSleep(victim))
-                    {
-                        yield return victim;
-                    }
+                    yield return victim;
                 }
             }
         }
@@ -177,7 +184,7 @@ namespace CultOfCthulhu
         {
             return CurState != State.Asleep && !ActiveVictims.Contains(victim) && !victim.Dead && victim.Spawned &&
                    victim.Faction != null && victim.Faction.HostileTo(Faction) &&
-                   !victim.RaceProps.IsMechanoid && victim?.needs?.rest != null &&
+                   !victim.RaceProps.IsMechanoid && victim.needs?.rest != null &&
                    !victim.health.hediffSet.HasHediff(CultsDefOf.Cults_SleepHediff);
         }
 

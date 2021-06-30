@@ -35,14 +35,11 @@ namespace CultOfCthulhu
         protected override IEnumerable<Toil> MakeNewToils()
         {
             //Toil 0 -- Go here first to reflect.
-            if (altar != null)
+            if (altar?.SacrificeData?.Executioner != null)
             {
-                if (altar?.SacrificeData?.Executioner != null)
+                if (pawn == altar.SacrificeData.Executioner)
                 {
-                    if (pawn == altar.SacrificeData.Executioner)
-                    {
-                        yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.InteractionCell);
-                    }
+                    yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.InteractionCell);
                 }
             }
 
@@ -74,15 +71,19 @@ namespace CultOfCthulhu
             {
                 initAction = delegate
                 {
-                    if (altar != null)
+                    if (altar == null)
                     {
-                        if (altar.currentSacrificeState != Building_SacrificialAltar.SacrificeState.finished)
-                        {
-                            altar.ChangeState(Building_SacrificialAltar.State.sacrificing,
-                                Building_SacrificialAltar.SacrificeState.finished);
-                            Map.GetComponent<MapComponent_SacrificeTracker>().ClearSacrificeVariables();
-                        }
+                        return;
                     }
+
+                    if (altar.currentSacrificeState == Building_SacrificialAltar.SacrificeState.finished)
+                    {
+                        return;
+                    }
+
+                    altar.ChangeState(Building_SacrificialAltar.State.sacrificing,
+                        Building_SacrificialAltar.SacrificeState.finished);
+                    Map.GetComponent<MapComponent_SacrificeTracker>().ClearSacrificeVariables();
                 },
                 defaultCompleteMode = ToilCompleteMode.Instant
             };

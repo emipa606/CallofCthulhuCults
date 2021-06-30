@@ -12,7 +12,7 @@ namespace CultOfCthulhu
         public override bool CanSummonNow(Map map)
         {
             //Cthulhu.Utility.DebugReport("CanFire: " + this.def.defName);
-            if (PetsToTransmogrify(map).Count() > 0)
+            if (PetsToTransmogrify(map).Any())
             {
                 return true;
             }
@@ -39,7 +39,7 @@ namespace CultOfCthulhu
                       pets.playerSettings.Master != null
                 select pets;
             //No master? Okay, still search for pets.
-            if (one.Count() == 0)
+            if (!one.Any())
             {
                 one = from Pawn pets in map.mapPawns.AllPawnsSpawned
                     where !(pets?.GetComp<CompTransmogrified>()?.IsTransmogrified ?? true) && pets.RaceProps.Animal &&
@@ -48,7 +48,7 @@ namespace CultOfCthulhu
             }
 
             //No pets? Okay, search for player animals.
-            if (one.Count() == 0)
+            if (!one.Any())
             {
                 one = from Pawn pets in map.mapPawns.AllPawnsSpawned
                     where !(pets?.GetComp<CompTransmogrified>()?.IsTransmogrified ?? true) && pets.RaceProps.Animal &&
@@ -87,22 +87,28 @@ namespace CultOfCthulhu
 
             Find.Targeter.BeginTargeting(parms, delegate(LocalTargetInfo t)
             {
-                if (t.Thing is Pawn tP)
+                if (t.Thing is not Pawn tP)
                 {
-                    if (tP?.RaceProps?.Animal ?? false)
-                    {
-                        pawn = tP;
-                        var compTrans = tP.GetComp<CompTransmogrified>();
-                        if (compTrans != null)
-                        {
-                            compTrans.IsTransmogrified = true;
-                            foundTarget = true;
-                            Messages.Message("Cults_TransmogrifyMessage".Translate(
-                                pawn.LabelShort
-                            ), MessageTypeDefOf.PositiveEvent);
-                        }
-                    }
+                    return;
                 }
+
+                if (!(tP.RaceProps?.Animal ?? false))
+                {
+                    return;
+                }
+
+                pawn = tP;
+                var compTrans = tP.GetComp<CompTransmogrified>();
+                if (compTrans == null)
+                {
+                    return;
+                }
+
+                compTrans.IsTransmogrified = true;
+                foundTarget = true;
+                Messages.Message("Cults_TransmogrifyMessage".Translate(
+                    pawn.LabelShort
+                ), MessageTypeDefOf.PositiveEvent);
             }, null, delegate
             {
                 if (!foundTarget)

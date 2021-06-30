@@ -56,9 +56,8 @@ namespace CultOfCthulhu
             //Check if we have level 0 skills
             var allDefsListForReading = DefDatabase<SkillDef>.AllDefsListForReading;
             HarmonyPatches.DebugMessage("AllDefsForReading");
-            for (var i = 0; i < allDefsListForReading.Count; i++)
+            foreach (var skillDef in allDefsListForReading)
             {
-                var skillDef = allDefsListForReading[i];
                 var skill = TempExecutioner(map).skills.GetSkill(skillDef);
                 if (skill.Level == 0)
                 {
@@ -84,13 +83,13 @@ namespace CultOfCthulhu
                     return false;
                 }
 
-                if (!HasIncapableSkills(TempExecutioner(map)) && !HasIncapableWorkTags(TempExecutioner(map)))
+                if (HasIncapableSkills(TempExecutioner(map)) || HasIncapableWorkTags(TempExecutioner(map)))
                 {
-                    Messages.Message("Executioner is already fully capable.", MessageTypeDefOf.RejectInput);
-                    return false;
+                    return true;
                 }
 
-                return true;
+                Messages.Message("Executioner is already fully capable.", MessageTypeDefOf.RejectInput);
+                return false;
             }
             catch (Exception e)
             {
@@ -103,7 +102,11 @@ namespace CultOfCthulhu
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             HarmonyPatches.DebugMessage("Chaos Theory attempted");
-            var map = parms.target as Map;
+            if (!(parms.target is Map map))
+            {
+                return false;
+            }
+
             var pawn = map.GetComponent<MapComponent_SacrificeTracker>().lastUsedAltar.SacrificeData.Executioner;
             HarmonyPatches.DebugMessage("Executioner selected");
             if (HasIncapableWorkTags(pawn))
@@ -120,7 +123,7 @@ namespace CultOfCthulhu
                     for (var i = 0; i < 200; i++)
                     {
                         childWorkList = pawn.story.childhood.DisabledWorkTypes;
-                        if (childWorkList.Count() == 0)
+                        if (!childWorkList.Any())
                         {
                             goto FirstLeap;
                         }
@@ -191,9 +194,8 @@ namespace CultOfCthulhu
                 //pawn.story.GenerateSkillsFromBackstory();
                 var allDefsListForReading = DefDatabase<SkillDef>.AllDefsListForReading;
 
-                for (var i = 0; i < allDefsListForReading.Count; i++)
+                foreach (var skillDef in allDefsListForReading)
                 {
-                    var skillDef = allDefsListForReading[i];
                     var skill = pawn.skills.GetSkill(skillDef);
                     if (skill.Level <= 3)
                     {

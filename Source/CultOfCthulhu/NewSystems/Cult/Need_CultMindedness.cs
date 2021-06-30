@@ -116,7 +116,7 @@ namespace CultOfCthulhu
             }
         }
 
-        public void SetBaseLevels()
+        private void SetBaseLevels()
         {
             baseSet = true;
             var temp = CurLevel;
@@ -162,61 +162,63 @@ namespace CultOfCthulhu
         public override void DrawOnGUI(Rect rect, int maxThresholdMarkers = int.MaxValue, float customMargin = -1F,
             bool drawArrows = true, bool doTooltip = true)
         {
-            if (CultTracker.Get.ExposedToCults)
+            if (!CultTracker.Get.ExposedToCults)
             {
-                //base.DrawOnGUI(rect, maxThresholdMarkers, customMargin, drawArrows, doTooltip);
-                if (rect.height > 70f)
-                {
-                    var num = (rect.height - 70f) / 2f;
-                    rect.height = 70f;
-                    rect.y += num;
-                }
-
-                if (Mouse.IsOver(rect))
-                {
-                    Widgets.DrawHighlight(rect);
-                }
-
-                TooltipHandler.TipRegion(rect, new TipSignal(() => GetTipString(), rect.GetHashCode()));
-                var num2 = 14f;
-                var num3 = num2 + 15f;
-                if (rect.height < 50f)
-                {
-                    num2 *= Mathf.InverseLerp(0f, 50f, rect.height);
-                }
-
-                Text.Font = rect.height <= 55f ? GameFont.Tiny : GameFont.Small;
-                Text.Anchor = TextAnchor.LowerLeft;
-                var rect2 = new Rect(rect.x + num3 + (rect.width * 0.1f), rect.y,
-                    rect.width - num3 - (rect.width * 0.1f), rect.height / 2f);
-                Widgets.Label(rect2, LabelCap);
-                Text.Anchor = TextAnchor.UpperLeft;
-                var rect3 = new Rect(rect.x, rect.y + (rect.height / 2f), rect.width, rect.height / 2f);
-                rect3 = new Rect(rect3.x + num3, rect3.y, rect3.width - (num3 * 2f), rect3.height - num2);
-                Widgets.FillableBar(rect3, CurLevelPercentage, Buttons.RedTex);
-                //else Widgets.FillableBar(rect3, this.CurLevelPercentage);
-                //Widgets.FillableBarChangeArrows(rect3, this.GUIChangeArrow);
-                if (threshPercents != null)
-                {
-                    for (var i = 0; i < threshPercents.Count; i++)
-                    {
-                        DrawBarThreshold(rect3, threshPercents[i]);
-                    }
-                }
-
-                var curInstantLevelPercentage = CurInstantLevelPercentage;
-                if (curInstantLevelPercentage >= 0f)
-                {
-                    DrawBarInstantMarkerAt(rect3, curInstantLevelPercentage);
-                }
-
-                if (!def.tutorHighlightTag.NullOrEmpty())
-                {
-                    UIHighlighter.HighlightOpportunity(rect, def.tutorHighlightTag);
-                }
-
-                Text.Font = GameFont.Small;
+                return;
             }
+
+            //base.DrawOnGUI(rect, maxThresholdMarkers, customMargin, drawArrows, doTooltip);
+            if (rect.height > 70f)
+            {
+                var num = (rect.height - 70f) / 2f;
+                rect.height = 70f;
+                rect.y += num;
+            }
+
+            if (Mouse.IsOver(rect))
+            {
+                Widgets.DrawHighlight(rect);
+            }
+
+            TooltipHandler.TipRegion(rect, new TipSignal(GetTipString, rect.GetHashCode()));
+            var num2 = 14f;
+            var num3 = num2 + 15f;
+            if (rect.height < 50f)
+            {
+                num2 *= Mathf.InverseLerp(0f, 50f, rect.height);
+            }
+
+            Text.Font = rect.height <= 55f ? GameFont.Tiny : GameFont.Small;
+            Text.Anchor = TextAnchor.LowerLeft;
+            var rect2 = new Rect(rect.x + num3 + (rect.width * 0.1f), rect.y,
+                rect.width - num3 - (rect.width * 0.1f), rect.height / 2f);
+            Widgets.Label(rect2, LabelCap);
+            Text.Anchor = TextAnchor.UpperLeft;
+            var rect3 = new Rect(rect.x, rect.y + (rect.height / 2f), rect.width, rect.height / 2f);
+            rect3 = new Rect(rect3.x + num3, rect3.y, rect3.width - (num3 * 2f), rect3.height - num2);
+            Widgets.FillableBar(rect3, CurLevelPercentage, Buttons.RedTex);
+            //else Widgets.FillableBar(rect3, this.CurLevelPercentage);
+            //Widgets.FillableBarChangeArrows(rect3, this.GUIChangeArrow);
+            if (threshPercents != null)
+            {
+                foreach (var threshPct in threshPercents)
+                {
+                    DrawBarThreshold(rect3, threshPct);
+                }
+            }
+
+            var curInstantLevelPercentage = CurInstantLevelPercentage;
+            if (curInstantLevelPercentage >= 0f)
+            {
+                DrawBarInstantMarkerAt(rect3, curInstantLevelPercentage);
+            }
+
+            if (!def.tutorHighlightTag.NullOrEmpty())
+            {
+                UIHighlighter.HighlightOpportunity(rect, def.tutorHighlightTag);
+            }
+
+            Text.Font = GameFont.Small;
         }
 
         private void DrawBarThreshold(Rect barRect, float threshPct)

@@ -8,8 +8,12 @@ namespace CultOfCthulhu
     {
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
             //Create a spawn point for our nightmare Tree
+            if (!(parms.target is Map map))
+            {
+                return false;
+            }
+
             if (!Utility.TryFindSpawnCell(CultsDefOf.Cults_MonolithNightmare, map.Center, map, 60, out var intVec))
             {
                 return false;

@@ -70,11 +70,11 @@ namespace CultOfCthulhu
             var affectedMaps = AffectedMaps;
             if (firstTick)
             {
-                for (var i = 0; i < affectedMaps.Count; i++)
+                foreach (var map in affectedMaps)
                 {
-                    foreach (var pawn in affectedMaps[i].mapPawns.FreeColonistsAndPrisoners)
+                    foreach (var pawn in map.mapPawns.FreeColonistsAndPrisoners)
                     {
-                        if (!pawn.Position.Roofed(affectedMaps[i]) && pawn.def.race.IsFlesh)
+                        if (!pawn.Position.Roofed(map) && pawn.def.race.IsFlesh)
                         {
                             pawn.needs.mood.thoughts.memories.TryGainMemory(CultsDefOf.Cults_SawAurora);
                         }
@@ -84,9 +84,9 @@ namespace CultOfCthulhu
                 firstTick = false;
             }
 
-            for (var i = 0; i < affectedMaps.Count; i++)
+            foreach (var map in affectedMaps)
             {
-                foreach (var pawn in affectedMaps[i].mapPawns.FreeColonistsAndPrisoners)
+                foreach (var unused in map.mapPawns.FreeColonistsAndPrisoners)
                 {
                     if (!switchTime)
                     {
@@ -96,7 +96,7 @@ namespace CultOfCthulhu
                         transition.g = (int) Green;
                         AuroraSkyColors = new SkyColorSet(transition.ToColor, Color.white, new Color(0.6f, 0.6f, 0.6f),
                             0.8f);
-                        SkyTarget(affectedMaps[i]);
+                        SkyTarget(map);
                     }
 
                     if (switchTime)
@@ -107,7 +107,7 @@ namespace CultOfCthulhu
                         transition.g = (int) Green;
                         AuroraSkyColors = new SkyColorSet(transition.ToColor, Color.white, new Color(0.6f, 0.6f, 0.6f),
                             0.8f);
-                        SkyTarget(affectedMaps[i]);
+                        SkyTarget(map);
                     }
 
                     if (switchCount >= 0)
@@ -117,17 +117,7 @@ namespace CultOfCthulhu
                     else
                     {
                         switchCount = switchTicks;
-                        if (switchTime)
-                        {
-                            //Cthulhu.Utility.DebugReport("Switch");
-                            switchTime = false;
-                        }
-
-                        else
-                        {
-                            //Cthulhu.Utility.DebugReport("Switch");
-                            switchTime = true;
-                        }
+                        switchTime = !switchTime;
                     }
                 }
             }

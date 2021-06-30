@@ -6,7 +6,7 @@ namespace CultOfCthulhu
 {
     public class LordToil_LoadAndEnterTransportersPawn : LordToil
     {
-        private readonly int transportersGroup = -1;
+        private readonly int transportersGroup;
 
         public LordToil_LoadAndEnterTransportersPawn(int transportersGroup)
         {
@@ -18,13 +18,13 @@ namespace CultOfCthulhu
 
         public override void UpdateAllDuties()
         {
-            for (var i = 0; i < lord.ownedPawns.Count; i++)
+            foreach (var pawn in lord.ownedPawns)
             {
                 var pawnDuty = new PawnDuty(CultsDefOf.Cults_LoadAndEnterTransportersPawn)
                 {
                     transportersGroup = transportersGroup
                 };
-                lord.ownedPawns[i].mindState.duty = pawnDuty;
+                pawn.mindState.duty = pawnDuty;
             }
         }
     }

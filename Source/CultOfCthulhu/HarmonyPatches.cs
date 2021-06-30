@@ -174,7 +174,6 @@ namespace CultOfCthulhu
 
             GUI.color = Color.white;
             return false;
-
         }
 
 
@@ -206,7 +205,7 @@ namespace CultOfCthulhu
         public static void DrawAt_PostFix(Pawn_DrawTracker __instance, Vector3 loc)
         {
             var pawn = (Pawn) AccessTools.Field(typeof(Pawn_DrawTracker), "pawn").GetValue(__instance);
-            if (!(pawn?.GetComp<CompTransmogrified>() is CompTransmogrified compTrans) || !compTrans.IsTransmogrified ||
+            if (!(pawn?.GetComp<CompTransmogrified>() is CompTransmogrified {IsTransmogrified: true} compTrans) ||
                 !pawn.Spawned)
             {
                 return;
@@ -235,7 +234,7 @@ namespace CultOfCthulhu
         public static void BestKindLabel_PostFix(Pawn pawn, bool mustNoteGender,
             bool mustNoteLifeStage, bool plural, int pluralCount, ref string __result)
         {
-            if (pawn?.GetComp<CompTransmogrified>() is CompTransmogrified compTrans && compTrans.IsTransmogrified)
+            if (pawn?.GetComp<CompTransmogrified>() is CompTransmogrified {IsTransmogrified: true})
             {
                 __result = "Cults_Monstrous".Translate(__result);
             }
@@ -244,7 +243,7 @@ namespace CultOfCthulhu
 
         public static void get_BodySize_PostFix(Pawn __instance, ref float __result)
         {
-            if (__instance?.GetComp<CompTransmogrified>() is CompTransmogrified compTrans && compTrans.IsTransmogrified)
+            if (__instance?.GetComp<CompTransmogrified>() is CompTransmogrified {IsTransmogrified: true})
             {
                 __result *= 3;
             }
@@ -252,7 +251,7 @@ namespace CultOfCthulhu
 
         public static void get_HealthScale_PostFix(Pawn __instance, ref float __result)
         {
-            if (__instance?.GetComp<CompTransmogrified>() is CompTransmogrified compTrans && compTrans.IsTransmogrified)
+            if (__instance?.GetComp<CompTransmogrified>() is CompTransmogrified {IsTransmogrified: true})
             {
                 __result *= 3;
             }

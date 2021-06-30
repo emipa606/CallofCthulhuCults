@@ -9,7 +9,7 @@ namespace CultOfCthulhu
         {
             //Map map = (Map)parms.target;
             _ = Find.Maps;
-            var cultConditionActive = 
+            var cultConditionActive =
                 Find.World.GameConditionManager.ConditionIsActive(CultsDefOf.CultgameCondition_StarsAreWrong) ||
                 Find.World.GameConditionManager.ConditionIsActive(CultsDefOf.CultgameCondition_StarsAreRight);
             var cultAvailable = CultTracker.Get.PlayerCult != null && CultTracker.Get.PlayerCult.active;

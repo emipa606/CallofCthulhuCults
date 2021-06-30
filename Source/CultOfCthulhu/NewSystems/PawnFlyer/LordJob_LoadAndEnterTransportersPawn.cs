@@ -42,23 +42,31 @@ namespace CultOfCthulhu
         private void CancelLoadingProcess()
         {
             var list = lord.Map.listerThings.ThingsInGroup(ThingRequestGroup.Pawn);
-            for (var i = 0; i < list.Count; i++)
+            foreach (var thing in list)
             {
-                if (list[i] != null)
+                if (thing == null)
                 {
-                    if (list[i] is Pawn || list[i] is PawnFlyer)
-                    {
-                        var compTransporter = list[i].TryGetComp<CompTransporterPawn>();
-                        if (compTransporter != null)
-                        {
-                            if (compTransporter.groupID == transportersGroup)
-                            {
-                                compTransporter.CancelLoad();
-                                break;
-                            }
-                        }
-                    }
+                    continue;
                 }
+
+                if (thing is not Pawn)
+                {
+                    continue;
+                }
+
+                var compTransporter = thing.TryGetComp<CompTransporterPawn>();
+                if (compTransporter == null)
+                {
+                    continue;
+                }
+
+                if (compTransporter.groupID != transportersGroup)
+                {
+                    continue;
+                }
+
+                compTransporter.CancelLoad();
+                break;
             }
         }
     }

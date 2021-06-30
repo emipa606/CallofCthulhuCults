@@ -38,7 +38,11 @@ namespace CultOfCthulhu
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            var map = parms.target as Map;
+            if (!(parms.target is Map map))
+            {
+                return false;
+            }
+
             //Find a drop spot
             if (!CultUtility.TryFindDropCell(map.Center, map, 999999, out var intVec))
             {

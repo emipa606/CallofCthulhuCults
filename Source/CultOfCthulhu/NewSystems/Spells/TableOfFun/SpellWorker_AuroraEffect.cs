@@ -48,15 +48,7 @@ namespace CultOfCthulhu
                 (GameCondition_AuroraEffect) GameConditionMaker.MakeCondition(CultsDefOf.Cults_Aurora, duration);
             //Cthulhu.Utility.DebugReport("Getting coords.");
             var coords = Find.WorldGrid.LongLatOf(map.Tile);
-            string text3;
-            if (coords.y >= 74)
-            {
-                text3 = "Borealis";
-            }
-            else
-            {
-                text3 = "Australis";
-            }
+            var text3 = coords.y >= 74 ? "Borealis" : "Australis";
 
             //Cthulhu.Utility.DebugReport("Getting label");
             string textLabel = "LetterLabelAurora".Translate(
