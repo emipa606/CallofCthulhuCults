@@ -1,5 +1,8 @@
 # Changelog for CallofCthulhuCults
 
+1.0.21.0 - Should now skip diety check if all dietys are discovered
+
+
 1.0.20.0 - refactored the code and optimized the RevealDeityCheck
 
 

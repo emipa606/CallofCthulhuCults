@@ -69,7 +69,8 @@ namespace Cthulhu
         public static bool loadedCults;
         public static bool loadedFactions;
 
-        public static ResearchProjectDef deityResearch = ResearchProjectDef.Named("Forbidden_Deities");
+        public static readonly ResearchProjectDef deityResearch = ResearchProjectDef.Named("Forbidden_Deities");
+        public static bool deityResearchDone;
 
         public static string Prefix => ModProps.main + " :: " + ModProps.mod + " :: ";
 

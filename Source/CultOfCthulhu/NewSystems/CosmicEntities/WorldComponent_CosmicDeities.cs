@@ -93,7 +93,7 @@ namespace CultOfCthulhu
         private void RevealDeityCheck()
         {
             //Cthulhu.Utility.DebugReport("Reveal Deity Check");
-            if (!Utility.deityResearch.IsFinished)
+            if (Utility.deityResearchDone || !Utility.deityResearch.IsFinished)
             {
                 return;
             }
@@ -120,6 +120,7 @@ namespace CultOfCthulhu
             else
             {
                 Utility.ChangeResearchProgress(Utility.deityResearch, Utility.deityResearch.baseCost);
+                Utility.deityResearchDone = true;
             }
         }
 
